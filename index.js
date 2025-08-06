@@ -1,13 +1,31 @@
+
 import { signal, effect, derived } from "./xyn_html.js"
 
+// Create output function to append to DOM
+function output(message) {
+    const div = document.createElement('div');
+    div.textContent = message;
+    div.style.marginBottom = '5px';
+    document.body.appendChild(div);
+}
+
+function outputHeader(message) {
+    const h3 = document.createElement('h3');
+    h3.textContent = message;
+    h3.style.color = '#333';
+    h3.style.marginTop = '20px';
+    h3.style.marginBottom = '10px';
+    document.body.appendChild(h3);
+}
+
 // Example 1: Basic Signal Usage
-console.log("=== Example 1: Basic Signal Usage ===");
+outputHeader("Example 1: Basic Signal Usage");
 const counter = signal(0);
-console.log("Initial counter value:", counter.value);
+output("Initial counter value: " + counter.value);
 
 // Subscribe to changes - returns unsubscribe function
 const unsubscribeCounter = counter.subscribe(() => {
-    console.log("Counter changed to:", counter.value);
+    output("Counter changed to: " + counter.value);
 });
 
 // Update the signal value
@@ -18,13 +36,13 @@ counter.value = 10;
 unsubscribeCounter();
 
 // Example 2: Multiple Signals and Effects
-console.log("\n=== Example 2: Multiple Signals and Effects ===");
+outputHeader("Example 2: Multiple Signals and Effects");
 const firstName = signal("John");
 const lastName = signal("Doe");
 
 // Effect that runs when either firstName or lastName changes
 const unsubscribeEffect = effect(() => {
-    console.log(`Full name: ${firstName.value} ${lastName.value}`);
+    output(`Full name: ${firstName.value} ${lastName.value}`);
 }, [firstName, lastName]);
 
 // Update the signals
@@ -35,7 +53,7 @@ lastName.value = "Smith";
 unsubscribeEffect();
 
 // Example 3: Derived Values
-console.log("\n=== Example 3: Derived Values ===");
+outputHeader("Example 3: Derived Values");
 const price = signal(100);
 const quantity = signal(2);
 const taxRate = signal(0.1);
@@ -52,21 +70,21 @@ const [total, unsubscribeTotal] = derived(() => {
 
 // Subscribe to derived values to see changes
 const unsubscribeSubtotalSub = subtotal.subscribe(() => {
-    console.log(`Subtotal: $${subtotal.value}`);
+    output(`Subtotal: $${subtotal.value}`);
 });
 
 const unsubscribeTotalSub = total.subscribe(() => {
-    console.log(`Total with tax: $${total.value.toFixed(2)}`);
+    output(`Total with tax: $${total.value.toFixed(2)}`);
 });
 
 // Update base values to trigger derived calculations
-console.log("Initial values:");
+output("Initial values:");
 price.value = price.value; // Trigger initial calculation
-console.log("Updating price to $150:");
+output("Updating price to $150:");
 price.value = 150;
-console.log("Updating quantity to 3:");
+output("Updating quantity to 3:");
 quantity.value = 3;
-console.log("Updating tax rate to 15%:");
+output("Updating tax rate to 15%:");
 taxRate.value = 0.15;
 
 // Clean up all subscriptions
@@ -76,7 +94,7 @@ unsubscribeSubtotal();
 unsubscribeTotal();
 
 // Example 4: Complex State Management
-console.log("\n=== Example 4: Complex State Management ===");
+outputHeader("Example 4: Complex State Management");
 const todos = signal([]);
 const filter = signal("all"); // "all", "completed", "pending"
 
@@ -100,12 +118,12 @@ const [todoStats, unsubscribeStats] = derived(() => {
 
 // Subscribe to see changes
 const unsubscribeFilteredSub = filteredTodos.subscribe(() => {
-    console.log("Filtered todos:", filteredTodos.value);
+    output("Filtered todos: " + JSON.stringify(filteredTodos.value));
 });
 
 const unsubscribeStatsSub = todoStats.subscribe(() => {
     const stats = todoStats.value;
-    console.log(`Todo Stats - Total: ${stats.total}, Completed: ${stats.completed}, Pending: ${stats.pending}`);
+    output(`Todo Stats - Total: ${stats.total}, Completed: ${stats.completed}, Pending: ${stats.pending}`);
 });
 
 // Add some todos
@@ -116,14 +134,14 @@ todos.value = [
 ];
 
 // Change filter
-console.log("Setting filter to 'pending':");
+output("Setting filter to 'pending':");
 filter.value = "pending";
 
-console.log("Setting filter to 'completed':");
+output("Setting filter to 'completed':");
 filter.value = "completed";
 
 // Update a todo
-console.log("Marking 'Learn XynHTML' as completed:");
+output("Marking 'Learn XynHTML' as completed:");
 todos.value = todos.value.map(todo => 
     todo.id === 1 ? { ...todo, completed: true } : todo
 );
@@ -135,48 +153,48 @@ unsubscribeFiltered();
 unsubscribeStats();
 
 // Example 5: Performance - No unnecessary updates
-console.log("\n=== Example 5: Performance - No Unnecessary Updates ===");
+outputHeader("Example 5: Performance - No Unnecessary Updates");
 const performanceSignal = signal("test");
 let updateCount = 0;
 
 const unsubscribePerf = performanceSignal.subscribe(() => {
     updateCount++;
-    console.log(`Performance signal updated ${updateCount} times, value: ${performanceSignal.value}`);
+    output(`Performance signal updated ${updateCount} times, value: ${performanceSignal.value}`);
 });
 
-console.log("Setting same value (should not trigger update):");
+output("Setting same value (should not trigger update):");
 performanceSignal.value = "test";
 
-console.log("Setting different value (should trigger update):");
+output("Setting different value (should trigger update):");
 performanceSignal.value = "new value";
 
-console.log("Setting same value again (should not trigger update):");
+output("Setting same value again (should not trigger update):");
 performanceSignal.value = "new value";
 
 // Clean up
 unsubscribePerf();
 
 // Example 6: Subscription Management
-console.log("\n=== Example 6: Subscription Management ===");
+outputHeader("Example 6: Subscription Management");
 const tempSignal = signal(0);
 let cleanupCount = 0;
 
 const unsubscribeTemp = tempSignal.subscribe(() => {
     cleanupCount++;
-    console.log(`Temp signal updated ${cleanupCount} times`);
+    output(`Temp signal updated ${cleanupCount} times`);
 });
 
 tempSignal.value = 1;
 tempSignal.value = 2;
 
-console.log("Unsubscribing...");
+output("Unsubscribing...");
 unsubscribeTemp();
 
-console.log("Updating after unsubscribe (should not log):");
+output("Updating after unsubscribe (should not log):");
 tempSignal.value = 3;
 
 // Example 7: Chained Derived Values
-console.log("\n=== Example 7: Chained Derived Values ===");
+outputHeader("Example 7: Chained Derived Values");
 const input = signal("hello world");
 
 const [uppercase, unsubscribeUpper] = derived(() => {
@@ -197,7 +215,7 @@ const [analysis, unsubscribeAnalysis] = derived(() => {
 }, [input, uppercase, wordCount]);
 
 const unsubscribeAnalysisSub = analysis.subscribe(() => {
-    console.log("Text analysis:", analysis.value);
+    output("Text analysis: " + JSON.stringify(analysis.value));
 });
 
 input.value = "XynHTML is awesome";
@@ -210,33 +228,32 @@ unsubscribeWordCount();
 unsubscribeUpper();
 
 // Example 8: Multiple Subscribers to One Signal
-console.log("\n=== Example 8: Multiple Subscribers to One Signal ===");
+outputHeader("Example 8: Multiple Subscribers to One Signal");
 const sharedSignal = signal("shared");
 
 const unsubscribeShared1 = sharedSignal.subscribe(() => {
-    console.log("Subscriber 1 received:", sharedSignal.value);
+    output("Subscriber 1 received: " + sharedSignal.value);
 });
 
 const unsubscribeShared2 = sharedSignal.subscribe(() => {
-    console.log("Subscriber 2 received:", sharedSignal.value);
+    output("Subscriber 2 received: " + sharedSignal.value);
 });
 
 const unsubscribeShared3 = sharedSignal.subscribe(() => {
-    console.log("Subscriber 3 received:", sharedSignal.value);
+    output("Subscriber 3 received: " + sharedSignal.value);
 });
 
-console.log("Updating shared signal:");
+output("Updating shared signal:");
 sharedSignal.value = "updated value";
 
-console.log("Removing subscriber 2:");
+output("Removing subscriber 2:");
 unsubscribeShared2();
 
-console.log("Updating again (subscriber 2 should not receive):");
+output("Updating again (subscriber 2 should not receive):");
 sharedSignal.value = "final value";
 
 // Clean up remaining subscribers
 unsubscribeShared1();
 unsubscribeShared3();
 
-console.log("\n=== All Examples Complete ===");
-
+outputHeader("All Examples Complete");
