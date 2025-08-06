@@ -35,26 +35,31 @@ class XynHTML {
                 }
 
                 value = newValue;
-                registeredSubscribers.forEach(subscriberId => XynHTML.subscribers.get(subscriberId)[1]());
+                registeredSubscribers.keys().forEach(subscriber => subscriber());
             },
 
             /**
              * @param {() => void} subscriber
+             * @param {int} count @default 1
              * @returns {void}
              */
-            subscribe(subscriber) {
+            subscribe(subscriber, count = 1) {
                 if (typeof subscriber !== "function") {
                     return;
+                }
+
+                if (count === 1) {
+                    subscriber();
                 }
 
                 if (!XynHTML.subscribers.has(subscriber)) {
                     XynHTML.subscribers.set(subscriber, 0);
                 }
 
-                XynHTML.subscribers.get(subscriber)++;
+                XynHTML.subscribers.set(subscriber, XynHTML.subscribers.get(subscriber) + 1);
 
                 registeredSubscribers.set(subscriber, () => {
-                    XynHTML.subscribers.get(subscriber)--;
+                    XynHTML.subscribers.set(subscriber, XynHTML.subscribers.get(subscriber) - 1);
 
                     if (XynHTML.subscribers.get(subscriber) < 1) {
                         XynHTML.subscribers.delete(subscriber);
@@ -86,11 +91,10 @@ class XynHTML {
      * @returns {() => void} unsubscribe
      */
     static effect(fn, signals) {
+        let count = signals.length;
         for (const signal of signals) {
-            signal.subscribe(fn);
+            signal.subscribe(fn, count--);
         }
-
-        fn();
 
         return () => {
             signals?.forEach(signal => signal.unsubscribe(fn));
@@ -108,7 +112,7 @@ class XynHTML {
     static derived(fn, signals) {
         const signal = XynHTML.signal(fn());
 
-        return [signal, XynHTML.effect(() => signal.value = fn(), [...signals, signal])];
+        return [signal, XynHTML.effect(() => signal.value = fn(), signals)];
     }
 }
 

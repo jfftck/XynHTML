@@ -3,19 +3,15 @@ import { signal, effect, derived } from "./xyn_html.js"
 
 // Create output function to append to DOM
 function output(message) {
-    const div = document.createElement('div');
-    div.textContent = message;
-    div.style.marginBottom = '5px';
-    document.body.appendChild(div);
+    const p = document.createElement('p');
+    p.textContent = message;
+    document.body.appendChild(p);
 }
 
 function outputHeader(message) {
-    const h3 = document.createElement('h3');
-    h3.textContent = message;
-    h3.style.color = '#333';
-    h3.style.marginTop = '20px';
-    h3.style.marginBottom = '10px';
-    document.body.appendChild(h3);
+    const h2 = document.createElement('h2');
+    h2.textContent = message;
+    document.body.appendChild(h2);
 }
 
 // Example 1: Basic Signal Usage
@@ -55,9 +51,15 @@ unsubscribeEffect();
 
 // Example 3: Derived Values
 outputHeader("Example 3: Derived Values");
+output("Initial values:");
 const price = signal(100);
 const quantity = signal(2);
 const taxRate = signal(0.1);
+
+// Effect to log price and quantity changes
+effect(() => {
+    output(`Price: $${price.value} * ${quantity.value}`);
+}, [price, quantity]);
 
 // Derived signal for subtotal
 const [subtotal, unsubscribeSubtotal] = derived(() => {
@@ -81,12 +83,13 @@ subtotal.subscribe(subtotalSubscriber);
 total.subscribe(totalSubscriber);
 
 // Update base values to trigger derived calculations
-output("Initial values:");
-price.value = price.value; // Trigger initial calculation
+output("---");
 output("Updating price to $150:");
 price.value = 150;
+output("---");
 output("Updating quantity to 3:");
 quantity.value = 3;
+output("---");
 output("Updating tax rate to 15%:");
 taxRate.value = 0.15;
 

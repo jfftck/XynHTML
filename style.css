@@ -1,10 +1,31 @@
+:root {
+  --color-background: #f8f8f8;
+}
+
 html {
   height: 100%;
   width: 100%;
+  color-scheme: light dark;
 }
 
 body {
   font-family: Arial, sans-serif;
   margin: 20px;
   line-height: 1.6;
+  background-color: var(--color-background);
+}
+
+@media (prefers-color-scheme: dark) {
+
+  :root {
+    --color-background: #121212;
+  }
+}
+
+h1 {
+  color: color-mix(in oklab, currentColor 35%, var(--color-background));
+}
+
+h2 {
+  color: color-mix(in oklab, currentColor 50%, var(--color-background));
 }
