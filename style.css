@@ -29,3 +29,95 @@ h1 {
 h2 {
   color: color-mix(in oklab, currentColor 50%, var(--color-background));
 }
+
+pre {
+  background-color: color-mix(in oklab, currentColor 5%, var(--color-background));
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 16px 0;
+  border-left: 4px solid color-mix(in oklab, currentColor 20%, var(--color-background));
+}
+
+code {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Syntax highlighting colors */
+.keyword {
+  color: #569CD6;
+  font-weight: bold;
+}
+
+.variable {
+  color: #9CDCFE;
+}
+
+.function {
+  color: #DCDCAA;
+}
+
+.method {
+  color: #DCDCAA;
+}
+
+.property {
+  color: #9CDCFE;
+}
+
+.string {
+  color: #CE9178;
+}
+
+.template {
+  color: #CE9178;
+}
+
+.number {
+  color: #B5CEA8;
+}
+
+.comment {
+  color: #6A9955;
+  font-style: italic;
+}
+
+@media (prefers-color-scheme: light) {
+  .keyword {
+    color: #0000FF;
+  }
+  
+  .variable {
+    color: #001080;
+  }
+  
+  .function {
+    color: #795E26;
+  }
+  
+  .method {
+    color: #795E26;
+  }
+  
+  .property {
+    color: #001080;
+  }
+  
+  .string {
+    color: #A31515;
+  }
+  
+  .template {
+    color: #A31515;
+  }
+  
+  .number {
+    color: #098658;
+  }
+  
+  .comment {
+    color: #008000;
+  }
+}
