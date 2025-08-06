@@ -24,9 +24,9 @@ const counter = signal(0);
 output("Initial counter value: " + counter.value);
 
 // Subscribe to changes - returns unsubscribe function
-const unsubscribeCounter = counter.subscribe(() => {
+const unsubscribeCounter = effect(() => {
     output("Counter changed to: " + counter.value);
-});
+}, [counter]);
 
 // Update the signal value
 counter.value = 5;
@@ -50,7 +50,7 @@ firstName.value = "Jane";
 lastName.value = "Smith";
 
 // Clean up effect
-unsubscribeEffect();
+// unsubscribeEffect();
 
 // Example 3: Derived Values
 outputHeader("Example 3: Derived Values");
@@ -69,13 +69,13 @@ const [total, unsubscribeTotal] = derived(() => {
 }, [subtotal, taxRate]);
 
 // Subscribe to derived values to see changes
-const unsubscribeSubtotalSub = subtotal.subscribe(() => {
+const unsubscribeSubtotalSub = effect(() => {
     output(`Subtotal: $${subtotal.value}`);
-});
+}, [subtotal]);
 
-const unsubscribeTotalSub = total.subscribe(() => {
+const unsubscribeTotalSub = effect(() => {
     output(`Total with tax: $${total.value.toFixed(2)}`);
-});
+}, [total]);
 
 // Update base values to trigger derived calculations
 output("Initial values:");
@@ -117,14 +117,14 @@ const [todoStats, unsubscribeStats] = derived(() => {
 }, [todos]);
 
 // Subscribe to see changes
-const unsubscribeFilteredSub = filteredTodos.subscribe(() => {
+const unsubscribeFilteredSub = effect(() => {
     output("Filtered todos: " + JSON.stringify(filteredTodos.value));
-});
+}, [filteredTodos]);
 
-const unsubscribeStatsSub = todoStats.subscribe(() => {
+const unsubscribeStatsSub = effect(() => {
     const stats = todoStats.value;
     output(`Todo Stats - Total: ${stats.total}, Completed: ${stats.completed}, Pending: ${stats.pending}`);
-});
+}, [todoStats]);
 
 // Add some todos
 todos.value = [
@@ -142,7 +142,7 @@ filter.value = "completed";
 
 // Update a todo
 output("Marking 'Learn XynHTML' as completed:");
-todos.value = todos.value.map(todo => 
+todos.value = todos.value.map(todo =>
     todo.id === 1 ? { ...todo, completed: true } : todo
 );
 
@@ -157,10 +157,10 @@ outputHeader("Example 5: Performance - No Unnecessary Updates");
 const performanceSignal = signal("test");
 let updateCount = 0;
 
-const unsubscribePerf = performanceSignal.subscribe(() => {
+const unsubscribePerf = effect(() => {
     updateCount++;
     output(`Performance signal updated ${updateCount} times, value: ${performanceSignal.value}`);
-});
+}, [performanceSignal]);
 
 output("Setting same value (should not trigger update):");
 performanceSignal.value = "test";
@@ -179,10 +179,10 @@ outputHeader("Example 6: Subscription Management");
 const tempSignal = signal(0);
 let cleanupCount = 0;
 
-const unsubscribeTemp = tempSignal.subscribe(() => {
+const unsubscribeTemp = effect(() => {
     cleanupCount++;
     output(`Temp signal updated ${cleanupCount} times`);
-});
+}, [tempSignal]);
 
 tempSignal.value = 1;
 tempSignal.value = 2;
@@ -214,9 +214,9 @@ const [analysis, unsubscribeAnalysis] = derived(() => {
     };
 }, [input, uppercase, wordCount]);
 
-const unsubscribeAnalysisSub = analysis.subscribe(() => {
+const unsubscribeAnalysisSub = effect(() => {
     output("Text analysis: " + JSON.stringify(analysis.value));
-});
+}, [analysis]);
 
 input.value = "XynHTML is awesome";
 input.value = "Building reactive applications made simple";
@@ -231,17 +231,17 @@ unsubscribeUpper();
 outputHeader("Example 8: Multiple Subscribers to One Signal");
 const sharedSignal = signal("shared");
 
-const unsubscribeShared1 = sharedSignal.subscribe(() => {
+const unsubscribeShared1 = effect(() => {
     output("Subscriber 1 received: " + sharedSignal.value);
-});
+}, [sharedSignal]);
 
-const unsubscribeShared2 = sharedSignal.subscribe(() => {
+const unsubscribeShared2 = effect(() => {
     output("Subscriber 2 received: " + sharedSignal.value);
-});
+}, [sharedSignal]);
 
-const unsubscribeShared3 = sharedSignal.subscribe(() => {
+const unsubscribeShared3 = effect(() => {
     output("Subscriber 3 received: " + sharedSignal.value);
-});
+}, [sharedSignal]);
 
 output("Updating shared signal:");
 sharedSignal.value = "updated value";

@@ -6,20 +6,9 @@
 
 class XynHTML {
     /**
-     * @type {Map<string, [int, Function]>}
+     * @type {Map<Function, int>}
      */
     static subscribers = new Map();
-    /**
-     * @type {string | null}
-     */
-    static subscriberId = null;
-
-    /**
-     * @returns {string} randomId
-     */
-    static randomId() {
-        return Date.now().toString(36) + Math.random().toString(36).substring(2, 10);
-    }
 
     /**
      * @template T
@@ -28,9 +17,9 @@ class XynHTML {
      */
     static signal(value) {
         /**
-         * @type {Set<string>}
+         * @type {Map<Function, Function>}
          */
-        const registeredSubscribers = new Set();
+        const registeredSubscribers = new Map();
 
         return {
             /**
@@ -51,35 +40,43 @@ class XynHTML {
 
             /**
              * @param {() => void} subscriber
-             * @returns {() => void)} unscribe
+             * @returns {void}
              */
             subscribe(subscriber) {
                 if (typeof subscriber !== "function") {
                     return;
                 }
 
-                if (XynHTML.subscriberId === null) {
-                    XynHTML.subscriberId = XynHTML.randomId();
-                    registeredSubscribers.add(XynHTML.subscriberId);
-                    XynHTML.subscribers.set(XynHTML.subscriberId, [0, subscriber]);
+                if (!XynHTML.subscribers.has(subscriber)) {
+                    XynHTML.subscribers.set(subscriber, 0);
                 }
 
-                XynHTML.subscribers.get(XynHTML.subscriberId)[0]++;
-                const subscriberId = XynHTML.subscriberId;
+                XynHTML.subscribers.get(subscriber)++;
 
-                return () => {
-                    if (typeof subscriberId !== "string" || !registeredSubscribers.has(subscriberId)) {
-                        return;
+                registeredSubscribers.set(subscriber, () => {
+                    XynHTML.subscribers.get(subscriber)--;
+
+                    if (XynHTML.subscribers.get(subscriber) < 1) {
+                        XynHTML.subscribers.delete(subscriber);
                     }
 
-                    registeredSubscribers.delete(subscriberId);
-                    XynHTML.subscribers.get(subscriberId)[0]--;
+                    registeredSubscribers.delete(subscriber);
+                });
+            },
 
-                    if (XynHTML.subscribers.get(subscriberId)[0] < 1) {
-                        XynHTML.subscribers.delete(subscriberId);
-                    }
+            /**
+             * param {() => void} subscriber
+             * @returns {void}
+             */
+            unsubscribe: (subscriber) => {
+                if (typeof subscriber !== "function") {
+                    return;
                 }
-            }
+
+                if (registeredSubscribers.has(subscriber)) {
+                    registeredSubscribers.get(subscriber)();
+                }
+            },
         }
     }
 
@@ -89,15 +86,17 @@ class XynHTML {
      * @returns {() => void} unsubscribe
      */
     static effect(fn, signals) {
-        const unsubscribes = [];
         for (const signal of signals) {
-            unsubscribes.push(signal.subscribe(fn));
+            signal.subscribe(fn);
         }
 
         fn();
-        XynHTML.subscriberId = null;
 
-        return () => unsubscribes.forEach(unsubscribe => unsubscribe());
+        return () => {
+            signals?.forEach(signal => signal.unsubscribe(fn));
+            signals = null;
+            fn = null;
+        };
     }
 
     /**
