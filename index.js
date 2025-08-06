@@ -23,17 +23,18 @@ outputHeader("Example 1: Basic Signal Usage");
 const counter = signal(0);
 output("Initial counter value: " + counter.value);
 
-// Subscribe to changes - returns unsubscribe function
-const unsubscribeCounter = effect(() => {
+// Subscribe to changes - use signal's subscribe method
+const counterSubscriber = () => {
     output("Counter changed to: " + counter.value);
-}, [counter]);
+};
+counter.subscribe(counterSubscriber);
 
 // Update the signal value
 counter.value = 5;
 counter.value = 10;
 
-// Unsubscribe using the returned function
-unsubscribeCounter();
+// Unsubscribe using the signal's unsubscribe method
+counter.unsubscribe(counterSubscriber);
 
 // Example 2: Multiple Signals and Effects
 outputHeader("Example 2: Multiple Signals and Effects");
@@ -50,7 +51,7 @@ firstName.value = "Jane";
 lastName.value = "Smith";
 
 // Clean up effect
-// unsubscribeEffect();
+unsubscribeEffect();
 
 // Example 3: Derived Values
 outputHeader("Example 3: Derived Values");
@@ -69,13 +70,15 @@ const [total, unsubscribeTotal] = derived(() => {
 }, [subtotal, taxRate]);
 
 // Subscribe to derived values to see changes
-const unsubscribeSubtotalSub = effect(() => {
+const subtotalSubscriber = () => {
     output(`Subtotal: $${subtotal.value}`);
-}, [subtotal]);
-
-const unsubscribeTotalSub = effect(() => {
+};
+const totalSubscriber = () => {
     output(`Total with tax: $${total.value.toFixed(2)}`);
-}, [total]);
+};
+
+subtotal.subscribe(subtotalSubscriber);
+total.subscribe(totalSubscriber);
 
 // Update base values to trigger derived calculations
 output("Initial values:");
@@ -88,8 +91,8 @@ output("Updating tax rate to 15%:");
 taxRate.value = 0.15;
 
 // Clean up all subscriptions
-unsubscribeSubtotalSub();
-unsubscribeTotalSub();
+subtotal.unsubscribe(subtotalSubscriber);
+total.unsubscribe(totalSubscriber);
 unsubscribeSubtotal();
 unsubscribeTotal();
 
@@ -117,14 +120,16 @@ const [todoStats, unsubscribeStats] = derived(() => {
 }, [todos]);
 
 // Subscribe to see changes
-const unsubscribeFilteredSub = effect(() => {
+const filteredSubscriber = () => {
     output("Filtered todos: " + JSON.stringify(filteredTodos.value));
-}, [filteredTodos]);
-
-const unsubscribeStatsSub = effect(() => {
+};
+const statsSubscriber = () => {
     const stats = todoStats.value;
     output(`Todo Stats - Total: ${stats.total}, Completed: ${stats.completed}, Pending: ${stats.pending}`);
-}, [todoStats]);
+};
+
+filteredTodos.subscribe(filteredSubscriber);
+todoStats.subscribe(statsSubscriber);
 
 // Add some todos
 todos.value = [
@@ -147,8 +152,8 @@ todos.value = todos.value.map(todo =>
 );
 
 // Clean up subscriptions
-unsubscribeFilteredSub();
-unsubscribeStatsSub();
+filteredTodos.unsubscribe(filteredSubscriber);
+todoStats.unsubscribe(statsSubscriber);
 unsubscribeFiltered();
 unsubscribeStats();
 
@@ -157,10 +162,11 @@ outputHeader("Example 5: Performance - No Unnecessary Updates");
 const performanceSignal = signal("test");
 let updateCount = 0;
 
-const unsubscribePerf = effect(() => {
+const perfSubscriber = () => {
     updateCount++;
     output(`Performance signal updated ${updateCount} times, value: ${performanceSignal.value}`);
-}, [performanceSignal]);
+};
+performanceSignal.subscribe(perfSubscriber);
 
 output("Setting same value (should not trigger update):");
 performanceSignal.value = "test";
@@ -172,23 +178,24 @@ output("Setting same value again (should not trigger update):");
 performanceSignal.value = "new value";
 
 // Clean up
-unsubscribePerf();
+performanceSignal.unsubscribe(perfSubscriber);
 
 // Example 6: Subscription Management
 outputHeader("Example 6: Subscription Management");
 const tempSignal = signal(0);
 let cleanupCount = 0;
 
-const unsubscribeTemp = effect(() => {
+const tempSubscriber = () => {
     cleanupCount++;
     output(`Temp signal updated ${cleanupCount} times`);
-}, [tempSignal]);
+};
+tempSignal.subscribe(tempSubscriber);
 
 tempSignal.value = 1;
 tempSignal.value = 2;
 
 output("Unsubscribing...");
-unsubscribeTemp();
+tempSignal.unsubscribe(tempSubscriber);
 
 output("Updating after unsubscribe (should not log):");
 tempSignal.value = 3;
@@ -214,15 +221,16 @@ const [analysis, unsubscribeAnalysis] = derived(() => {
     };
 }, [input, uppercase, wordCount]);
 
-const unsubscribeAnalysisSub = effect(() => {
+const analysisSubscriber = () => {
     output("Text analysis: " + JSON.stringify(analysis.value));
-}, [analysis]);
+};
+analysis.subscribe(analysisSubscriber);
 
 input.value = "XynHTML is awesome";
 input.value = "Building reactive applications made simple";
 
 // Clean up all subscriptions
-unsubscribeAnalysisSub();
+analysis.unsubscribe(analysisSubscriber);
 unsubscribeAnalysis();
 unsubscribeWordCount();
 unsubscribeUpper();
@@ -231,29 +239,57 @@ unsubscribeUpper();
 outputHeader("Example 8: Multiple Subscribers to One Signal");
 const sharedSignal = signal("shared");
 
-const unsubscribeShared1 = effect(() => {
+const subscriber1 = () => {
     output("Subscriber 1 received: " + sharedSignal.value);
-}, [sharedSignal]);
-
-const unsubscribeShared2 = effect(() => {
+};
+const subscriber2 = () => {
     output("Subscriber 2 received: " + sharedSignal.value);
-}, [sharedSignal]);
-
-const unsubscribeShared3 = effect(() => {
+};
+const subscriber3 = () => {
     output("Subscriber 3 received: " + sharedSignal.value);
-}, [sharedSignal]);
+};
+
+sharedSignal.subscribe(subscriber1);
+sharedSignal.subscribe(subscriber2);
+sharedSignal.subscribe(subscriber3);
 
 output("Updating shared signal:");
 sharedSignal.value = "updated value";
 
 output("Removing subscriber 2:");
-unsubscribeShared2();
+sharedSignal.unsubscribe(subscriber2);
 
 output("Updating again (subscriber 2 should not receive):");
 sharedSignal.value = "final value";
 
 // Clean up remaining subscribers
-unsubscribeShared1();
-unsubscribeShared3();
+sharedSignal.unsubscribe(subscriber1);
+sharedSignal.unsubscribe(subscriber3);
+
+// Example 9: Direct Signal Subscription without Effects
+outputHeader("Example 9: Direct Signal Subscription");
+const directSignal = signal("initial");
+
+const directSubscriber1 = () => {
+    output("Direct subscriber 1: " + directSignal.value);
+};
+const directSubscriber2 = () => {
+    output("Direct subscriber 2: " + directSignal.value);
+};
+
+// Subscribe directly to the signal
+directSignal.subscribe(directSubscriber1);
+directSignal.subscribe(directSubscriber2);
+
+directSignal.value = "first update";
+directSignal.value = "second update";
+
+// Unsubscribe one subscriber
+directSignal.unsubscribe(directSubscriber1);
+output("Unsubscribed first subscriber, updating again:");
+directSignal.value = "third update";
+
+// Clean up
+directSignal.unsubscribe(directSubscriber2);
 
 outputHeader("All Examples Complete");
