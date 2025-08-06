@@ -50,8 +50,8 @@ class XynHTML {
             },
 
             /**
-             * @param {Function} subscriber
-             * @returns {string} subscriberId
+             * @param {() => void} subscriber
+             * @returns {() => void)} unscribe
              */
             subscribe(subscriber) {
                 if (typeof subscriber !== "function") {
@@ -65,23 +65,19 @@ class XynHTML {
                 }
 
                 XynHTML.subscribers.get(XynHTML.subscriberId)[0]++;
+                const subscriberId = XynHTML.subscriberId;
 
-                return XynHTML.subscriberId;
-            },
+                return () => {
+                    if (typeof subscriberId !== "string" || !registeredSubscribers.has(subscriberId)) {
+                        return;
+                    }
 
-            /**
-             * @param {string} subscriberId
-             */
-            unsubscribe(subscriberId) {
-                if (typeof subscriberId !== "string" || !registeredSubscribers.has(subscriberId)) {
-                    return;
-                }
+                    registeredSubscribers.delete(subscriberId);
+                    XynHTML.subscribers.get(subscriberId)[0]--;
 
-                registeredSubscribers.delete(subscriberId);
-                XynHTML.subscribers.get(subscriberId)[0]--;
-
-                if (XynHTML.subscribers.get(subscriberId)[0] < 1) {
-                    XynHTML.subscribers.delete(subscriberId);
+                    if (XynHTML.subscribers.get(subscriberId)[0] < 1) {
+                        XynHTML.subscribers.delete(subscriberId);
+                    }
                 }
             }
         }
@@ -93,15 +89,15 @@ class XynHTML {
      * @returns {() => void} unsubscribe
      */
     static effect(fn, signals) {
+        const unsubscribes = [];
         for (const signal of signals) {
-            signal.subscribe(fn);
+            unsubscribes.push(signal.subscribe(fn));
         }
-        const subscriberId = XynHTML.subscriberId;
 
         fn();
         XynHTML.subscriberId = null;
 
-        return () => signals.forEach(signal => signal.unsubscribe(subscriberId));
+        return () => unsubscribes.forEach(unsubscribe => unsubscribe());
     }
 
     /**
