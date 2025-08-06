@@ -109,7 +109,7 @@ class XynHTML {
     static derived(fn, signals) {
         const signal = XynHTML.signal(fn());
 
-        return [signal, XynHTML.effect(() => signal.value = fn(), signals)];
+        return [signal, XynHTML.effect(() => signal.value = fn(), [...signals, signal])];
     }
 }
 
