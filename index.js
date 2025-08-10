@@ -9,9 +9,9 @@ function output(message) {
 }
 
 function outputHeader(message) {
-    const h2 = document.createElement('h2');
-    h2.textContent = message;
-    document.body.appendChild(h2);
+    const h3 = document.createElement('h3');
+    h3.textContent = message;
+    document.body.appendChild(h3);
 }
 
 function outputCode(code) {
@@ -449,4 +449,3 @@ directSignal.value = "third update";
 // Clean up
 directSignal.unsubscribe(directSubscriber2);
 
-outputHeader("All Examples Complete");

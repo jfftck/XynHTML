@@ -27,7 +27,11 @@ h1 {
 }
 
 h2 {
-  color: color-mix(in oklab, currentColor 50%, var(--color-background));
+  color: color-mix(in oklab, currentColor 45%, var(--color-background));
+}
+
+h3 {
+  color: color-mix(in oklab, currentColor 55%, var(--color-background));
 }
 
 pre {
@@ -47,77 +51,77 @@ code {
 
 /* Syntax highlighting colors */
 .keyword {
-  color: #569CD6;
-  font-weight: bold;
+  color: #0000FF;
 }
 
 .variable {
-  color: #9CDCFE;
+  color: #001080;
 }
 
 .function {
-  color: #DCDCAA;
+  color: #795E26;
 }
 
 .method {
-  color: #DCDCAA;
+  color: #795E26;
 }
 
 .property {
-  color: #9CDCFE;
+  color: #001080;
 }
 
 .string {
-  color: #CE9178;
+  color: #A31515;
 }
 
 .template {
-  color: #CE9178;
+  color: #A31515;
 }
 
 .number {
-  color: #B5CEA8;
+  color: #098658;
 }
 
 .comment {
-  color: #6A9955;
-  font-style: italic;
+  color: #008000;
 }
 
-@media (prefers-color-scheme: light) {
+@media (prefers-color-scheme: dark) {
   .keyword {
-    color: #0000FF;
+    color: #569CD6;
+    font-weight: bold;
   }
-  
+
   .variable {
-    color: #001080;
+    color: #9CDCFE;
   }
-  
+
   .function {
-    color: #795E26;
+    color: #DCDCAA;
   }
-  
+
   .method {
-    color: #795E26;
+    color: #DCDCAA;
   }
-  
+
   .property {
-    color: #001080;
+    color: #9CDCFE;
   }
-  
+
   .string {
-    color: #A31515;
+    color: #CE9178;
   }
-  
+
   .template {
-    color: #A31515;
+    color: #CE9178;
   }
-  
+
   .number {
-    color: #098658;
+    color: #B5CEA8;
   }
-  
+
   .comment {
-    color: #008000;
+    color: #6A9955;
+    font-style: italic;
   }
 }
