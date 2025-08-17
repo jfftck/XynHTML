@@ -10,6 +10,16 @@ class XynHTML {
      */
     static subscribers = new Map();
 
+    static createRoot(XynTag, elementName) {
+        const el = document.querySelector(elementName);
+
+        if (el) {
+            return () => el.appendChild(XynTag.render());
+        }
+
+        throw new Error(`Element "${elementName}" not found`);
+    }
+
     /**
      * @template T
      * @param {T} value
@@ -116,6 +126,155 @@ class XynHTML {
     }
 }
 
+class XynTag {
+    name = "";
+    props = null;
+    children = null;
+    #classes = "";
+    #self = null;
+    #update = true;
+    /**
+     * @template T extends XynHTML.signal
+     * @param {string} name
+     * @param {Map<string, T> | null} props
+     * @param {XynTag[] | null} children
+     */
+    constructor(name, props = null, children = null) {
+        this.name = name;
+        this.props = props;
+        this.children = children;
+    }
+
+    /**
+     * @param {string[]} classes
+     * @param {XynHTML.signal[]} conditions
+     * @returns void
+     * @example
+     * XynTag().css`show ${show} alert ${alert}`
+     */
+    css(classes, ...conditions) {
+        if (conditions.length === 0) {
+            this.#classes = classes.join(" ");
+        }
+
+        this.#classes = classes.filter((c, i) => {
+            const toggledClasses = [];
+
+            if (conditions[i] != null) {
+                const conditionClasses = c.split(" ");
+                conditionClasses.forEach((cc) =>
+                    toggledClasses.push([cc, conditions[i]]));
+            }
+
+            toggledClasses.forEach(([cc, condition]) => {
+                effect(() => {
+                    if (condition.value) {
+                        this.#self.classList.add(cc);
+                    } else {
+                        this.#self.classList.remove(cc);
+                    }
+                }, [condition]);
+            });
+
+            return conditions[i] ?? true;
+        }).join(" ");
+    }
+
+    /**
+     * @returns {HTMLElement}
+     */
+    render() {
+        if (this.#self) {
+            if (!this.#update) {
+                return this.#self;
+            }
+
+            for (const child of this.children) {
+                child.render();
+            }
+        }
+
+        this.#self = document.createElement(this.name);
+
+        if (this.props) {
+            this.props.forEach((key, prop) {
+                effect(() => {
+                    el.setAttribute(key, prop.value);
+                }, [prop]);
+            });
+        }
+
+        if (this.children) {
+            for (const child of this.children) {
+                el.appendChild(child.render());
+            }
+        }
+
+        if (this.#classes) {
+            el.className = this.#classes;
+        }
+
+        this.#update = false;
+
+        return this.#self;
+    }
+}
+
+class XynText {
+    text = null;
+    signals = null;
+    el = document.createTextNode("");
+
+    /**
+     * @param {string[]} text
+     * @param {XynHTML.signal[]} signals
+     * @returns {XynText}
+     * @example
+     * XynText`Hello, ${name}!`
+     */
+    text(text, ...signals) {
+        this.text = text;
+        this.signals = signals;
+        return this;
+    }
+
+    render() {
+        effect(() => {
+            let textContent = "";
+
+            text.forEach((text, i) => {
+                textContent += text + (signals[i]?.value ?? "");
+            });
+
+            this.el.textContent = textContent;
+        }, this.signals);
+
+        return this.el;
+    }
+}
+
+/**
+ * @export @alias {XynHTML}
+ * @description XynHTML is a library for building web applications using a
+ * declarative syntax. It is inspired by React and Vue, but with a focus on
+ * simplicity and performance.
+ * @example
+ * const counter = XynHTML.signal(0);
+ * const increment = () => counter.value++;
+ * const decrement = () => counter.value--;
+ * const render = XynHTML.createRoot(() =>
+ *   XynTag("div", null,
+ *     XynTag("button", { onclick: increment }, "Increment"),
+ *     XynTag("button", { onclick: decrement }, "Decrement"),
+ *     XynTag("span", null, counter.value)
+ *   ), "#app");
+ * render();
+ */
+export default XynHTML;
+/**
+ * @export @alias {XynHTML.createRoot}
+ */
+export const createRoot = XynHTML.createRoot;
 /**
  * @export @alias {XynHTML.signal}
  */
@@ -128,3 +287,30 @@ export const effect = XynHTML.effect;
  * @export @alias {XynHTML.derived}
  */
 export const derived = XynHTML.derived;
+/**
+ * @export @alias {XynTag}
+ * @description XynTag is a class for creating HTML elements with signals.
+ * @example
+ * const show = signal(true);
+ * const alert = signal(false);
+ * const render = XynHTML.createRoot(() =>
+ *   XynTag("div", null,
+ *     XynTag("span", null, "Hello World").css`show ${show} alert ${alert}`
+ *   ), "#app");
+ * render();
+ * show.value = false;
+ * alert.value = true;
+ */
+export { XynTag }
+/**
+ * @export @alias {XynText}
+ * @description XynText is a class for creating text nodes with signals.
+ * @example
+ * const name = signal("World");
+ * const render = XynHTML.createRoot(() =>
+ *   XynTag("div", null,
+ *    text`Hello, ${name}!`
+ *   ), "#app");
+ * render();
+ */
+export const text = new XynText().text;
