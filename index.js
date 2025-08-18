@@ -1,5 +1,5 @@
 
-import { signal, effect, derived } from "./xyn_html.js"
+import { signal, effect, derived, XynTag, text } from "./xyn_html.js"
 
 // Create output function to append to DOM
 function output(message) {
@@ -300,11 +300,11 @@ tempSignal.value = 3;
 
 // Example 7: Chained Derived Values
 outputHeader("Example 7: Chained Derived Values");
-outputCode(`<span class="keyword">const</span> <span class="variable">input</span> = <span class="function">signal</span>(<span class="string">"hello world"</span>);
+outputCode(`<span class="keyword">const</span> <span class="variable">textInput</span> = <span class="function">signal</span>(<span class="string">"hello world"</span>);
 
 <span class="keyword">const</span> [<span class="variable">uppercase</span>, <span class="variable">unsubscribeUpper</span>] = <span class="function">derived</span>(() => {
-    <span class="keyword">return</span> <span class="variable">input</span>.<span class="property">value</span>.<span class="method">toUpperCase</span>();
-}, [<span class="variable">input</span>]);
+    <span class="keyword">return</span> <span class="variable">textInput</span>.<span class="property">value</span>.<span class="method">toUpperCase</span>();
+}, [<span class="variable">textInput</span>]);
 
 <span class="keyword">const</span> [<span class="variable">wordCount</span>, <span class="variable">unsubscribeWordCount</span>] = <span class="function">derived</span>(() => {
     <span class="keyword">return</span> <span class="variable">uppercase</span>.<span class="property">value</span>.<span class="method">split</span>(<span class="string">' '</span>).<span class="property">length</span>;
@@ -312,18 +312,18 @@ outputCode(`<span class="keyword">const</span> <span class="variable">input</spa
 
 <span class="keyword">const</span> [<span class="variable">analysis</span>, <span class="variable">unsubscribeAnalysis</span>] = <span class="function">derived</span>(() => {
     <span class="keyword">return</span> {
-        <span class="property">original</span>: <span class="variable">input</span>.<span class="property">value</span>,
+        <span class="property">original</span>: <span class="variable">textInput</span>.<span class="property">value</span>,
         <span class="property">uppercase</span>: <span class="variable">uppercase</span>.<span class="property">value</span>,
         <span class="property">wordCount</span>: <span class="variable">wordCount</span>.<span class="property">value</span>,
-        <span class="property">charCount</span>: <span class="variable">input</span>.<span class="property">value</span>.<span class="property">length</span>
+        <span class="property">charCount</span>: <span class="variable">textInput</span>.<span class="property">value</span>.<span class="property">length</span>
     };
-}, [<span class="variable">input</span>, <span class="variable">uppercase</span>, <span class="variable">wordCount</span>]);`);
+}, [<span class="variable">textInput</span>, <span class="variable">uppercase</span>, <span class="variable">wordCount</span>]);`);
 
-const input = signal("hello world");
+const textInput = signal("hello world");
 
 const [uppercase, unsubscribeUpper] = derived(() => {
-    return input.value.toUpperCase();
-}, [input]);
+    return textInput.value.toUpperCase();
+}, [textInput]);
 
 const [wordCount, unsubscribeWordCount] = derived(() => {
     return uppercase.value.split(' ').length;
@@ -331,20 +331,20 @@ const [wordCount, unsubscribeWordCount] = derived(() => {
 
 const [analysis, unsubscribeAnalysis] = derived(() => {
     return {
-        original: input.value,
+        original: textInput.value,
         uppercase: uppercase.value,
         wordCount: wordCount.value,
-        charCount: input.value.length
+        charCount: textInput.value.length
     };
-}, [input, uppercase, wordCount]);
+}, [textInput, uppercase, wordCount]);
 
 const analysisSubscriber = () => {
     output("Text analysis: " + JSON.stringify(analysis.value));
 };
 analysis.subscribe(analysisSubscriber);
 
-input.value = "XynHTML is awesome";
-input.value = "Building reactive applications made simple";
+textInput.value = "XynHTML is awesome";
+textInput.value = "Building reactive applications made simple";
 
 // Clean up all subscriptions
 analysis.unsubscribe(analysisSubscriber);
@@ -458,19 +458,18 @@ outputCode(`<span class="keyword">import</span> { <span class="variable">XynTag<
 
 <span class="comment">// Create a button with reactive text</span>
 <span class="keyword">const</span> <span class="variable">button</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"button"</span>);
-<span class="variable">button</span>.<span class="method">props</span> = <span class="keyword">new</span> <span class="function">Map</span>([
-    [<span class="string">"onclick"</span>, () => {
-        <span class="variable">clickCount</span>.<span class="property">value</span>++;
-        <span class="variable">buttonText</span>.<span class="property">value</span> = <span class="template">\`Clicked \${<span class="variable">clickCount</span>.<span class="property">value</span>} times\`</span>;
-    }]
-]);
-<span class="variable">button</span>.<span class="method">children</span> = [<span class="function">text</span><span class="template">\`\${<span class="variable">buttonText</span>}\`</span>];
+<span class="variable">button</span>.<span class="property">children</span> = [<span class="function">text</span><span class="template">\`\${<span class="variable">buttonText</span>}\`</span>];
+
+<span class="comment">// Add click handler</span>
+<span class="keyword">const</span> <span class="variable">buttonElement</span> = <span class="variable">button</span>.<span class="method">render</span>();
+<span class="variable">buttonElement</span>.<span class="property">onclick</span> = () => {
+    <span class="variable">clickCount</span>.<span class="property">value</span>++;
+    <span class="variable">buttonText</span>.<span class="property">value</span> = <span class="template">\`Clicked \${<span class="variable">clickCount</span>.<span class="property">value</span>} times\`</span>;
+};
 
 <span class="comment">// Create a div container</span>
-<span class="keyword">const</span> <span class="variable">container</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"div"</span>, <span class="keyword">null</span>, [<span class="variable">button</span>]);
+<span class="keyword">const</span> <span class="variable">container</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"div"</span>);
 <span class="variable">document</span>.<span class="property">body</span>.<span class="method">appendChild</span>(<span class="variable">container</span>.<span class="method">render</span>());`);
-
-import { XynTag, text } from "./xyn_html.js";
 
 const buttonText = signal("Click me!");
 const clickCount = signal(0);
@@ -483,7 +482,7 @@ button.children = [text`${buttonText}`];
 const buttonElement = button.render();
 buttonElement.onclick = () => {
     clickCount.value++;
-    buttonText.value = `Clicked ${clickCount} times`;
+    buttonText.value = `Clicked ${clickCount.value} times`;
 };
 
 // Create a div container with some styling
@@ -554,7 +553,7 @@ let listElement = itemList.render();
 const listEffect = effect(() => {
     // Clear existing list
     listElement.innerHTML = "";
-    
+
     // Add each item
     items.value.forEach(item => {
         const li = document.createElement("li");
@@ -776,4 +775,3 @@ document.body.appendChild(formElement);
 // unsubscribeEmail();
 // unsubscribePassword();
 // unsubscribeForm();
-
