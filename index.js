@@ -1,5 +1,5 @@
 
-import { signal, effect, derived, XynTag, text } from "./xyn_html.js"
+import { signal, effect, derived, XynTag, text, createRoot } from "./xyn_html.js"
 
 // Create output function to append to DOM
 function output(message) {
@@ -25,11 +25,11 @@ function outputCode(code) {
 // Example 1: Basic Signal Usage
 outputHeader("Example 1: Basic Signal Usage");
 outputCode(`<span class="keyword">const</span> <span class="variable">counter</span> = <span class="function">signal</span>(<span class="number">0</span>);
-<span class="function">console.log</span>(<span class="string">"Initial counter value:"</span>, <span class="variable">counter</span>.<span class="property">value</span>);
+<span class="function">output</span>(<span class="string">"Initial counter value: "</span> + <span class="variable">counter</span>.<span class="property">value</span>);
 
 <span class="comment">// Subscribe to changes</span>
 <span class="keyword">const</span> <span class="variable">counterSubscriber</span> = () => {
-    <span class="function">console.log</span>(<span class="string">"Counter changed to:"</span>, <span class="variable">counter</span>.<span class="property">value</span>);
+    <span class="function">output</span>(<span class="string">"Counter changed to: "</span> + <span class="variable">counter</span>.<span class="property">value</span>);
 };
 <span class="variable">counter</span>.<span class="method">subscribe</span>(<span class="variable">counterSubscriber</span>);
 
@@ -63,7 +63,7 @@ outputCode(`<span class="keyword">const</span> <span class="variable">firstName<
 
 <span class="comment">// Effect that runs when either signal changes</span>
 <span class="keyword">const</span> <span class="variable">unsubscribeEffect</span> = <span class="function">effect</span>(() => {
-    <span class="function">console.log</span>(<span class="template">\`Full name: \${<span class="variable">firstName</span>.<span class="property">value</span>} \${<span class="variable">lastName</span>.<span class="property">value</span>}\`</span>);
+    <span class="function">output</span>(<span class="template">\`Full name: \${<span class="variable">firstName</span>.<span class="property">value</span>} \${<span class="variable">lastName</span>.<span class="property">value</span>}\`</span>);
 }, [<span class="variable">firstName</span>, <span class="variable">lastName</span>]);
 
 <span class="variable">firstName</span>.<span class="property">value</span> = <span class="string">"Jane"</span>;
@@ -229,7 +229,7 @@ outputCode(`<span class="keyword">const</span> <span class="variable">performanc
 
 <span class="keyword">const</span> <span class="variable">perfSubscriber</span> = () => {
     <span class="variable">updateCount</span>++;
-    <span class="function">console.log</span>(<span class="template">\`Performance signal updated \${<span class="variable">updateCount</span>} times\`</span>);
+    <span class="function">output</span>(<span class="template">\`Performance signal updated \${<span class="variable">updateCount</span>} times, value: \${<span class="variable">performanceSignal</span>.<span class="property">value</span>}\`</span>);
 };
 <span class="variable">performanceSignal</span>.<span class="method">subscribe</span>(<span class="variable">perfSubscriber</span>);
 
@@ -267,7 +267,7 @@ outputCode(`<span class="keyword">const</span> <span class="variable">tempSignal
 
 <span class="keyword">const</span> <span class="variable">tempSubscriber</span> = () => {
     <span class="variable">cleanupCount</span>++;
-    <span class="function">console.log</span>(<span class="template">\`Temp signal updated \${<span class="variable">cleanupCount</span>} times\`</span>);
+    <span class="function">output</span>(<span class="template">\`Temp signal updated \${<span class="variable">cleanupCount</span>} times\`</span>);
 };
 <span class="variable">tempSignal</span>.<span class="method">subscribe</span>(<span class="variable">tempSubscriber</span>);
 
@@ -357,13 +357,13 @@ outputHeader("Example 8: Multiple Subscribers to One Signal");
 outputCode(`<span class="keyword">const</span> <span class="variable">sharedSignal</span> = <span class="function">signal</span>(<span class="string">"shared"</span>);
 
 <span class="keyword">const</span> <span class="variable">subscriber1</span> = () => {
-    <span class="function">console.log</span>(<span class="string">"Subscriber 1 received:"</span>, <span class="variable">sharedSignal</span>.<span class="property">value</span>);
+    <span class="function">output</span>(<span class="string">"Subscriber 1 received: "</span> + <span class="variable">sharedSignal</span>.<span class="property">value</span>);
 };
 <span class="keyword">const</span> <span class="variable">subscriber2</span> = () => {
-    <span class="function">console.log</span>(<span class="string">"Subscriber 2 received:"</span>, <span class="variable">sharedSignal</span>.<span class="property">value</span>);
+    <span class="function">output</span>(<span class="string">"Subscriber 2 received: "</span> + <span class="variable">sharedSignal</span>.<span class="property">value</span>);
 };
 <span class="keyword">const</span> <span class="variable">subscriber3</span> = () => {
-    <span class="function">console.log</span>(<span class="string">"Subscriber 3 received:"</span>, <span class="variable">sharedSignal</span>.<span class="property">value</span>);
+    <span class="function">output</span>(<span class="string">"Subscriber 3 received: "</span> + <span class="variable">sharedSignal</span>.<span class="property">value</span>);
 };
 
 <span class="variable">sharedSignal</span>.<span class="method">subscribe</span>(<span class="variable">subscriber1</span>);
@@ -409,10 +409,10 @@ outputHeader("Example 9: Direct Signal Subscription");
 outputCode(`<span class="keyword">const</span> <span class="variable">directSignal</span> = <span class="function">signal</span>(<span class="string">"initial"</span>);
 
 <span class="keyword">const</span> <span class="variable">directSubscriber1</span> = () => {
-    <span class="function">console.log</span>(<span class="string">"Direct subscriber 1:"</span>, <span class="variable">directSignal</span>.<span class="property">value</span>);
+    <span class="function">output</span>(<span class="string">"Direct subscriber 1: "</span> + <span class="variable">directSignal</span>.<span class="property">value</span>);
 };
 <span class="keyword">const</span> <span class="variable">directSubscriber2</span> = () => {
-    <span class="function">console.log</span>(<span class="string">"Direct subscriber 2:"</span>, <span class="variable">directSignal</span>.<span class="property">value</span>);
+    <span class="function">output</span>(<span class="string">"Direct subscriber 2: "</span> + <span class="variable">directSignal</span>.<span class="property">value</span>);
 };
 
 <span class="comment">// Subscribe directly to the signal</span>
@@ -449,11 +449,9 @@ directSignal.value = "third update";
 // Clean up
 directSignal.unsubscribe(directSubscriber2);
 
-// Example 10: DOM Creation with XynTag
-outputHeader("Example 10: DOM Creation with XynTag");
-outputCode(`<span class="keyword">import</span> { <span class="variable">XynTag</span>, <span class="variable">text</span> } <span class="keyword">from</span> <span class="string">"./xyn_html.js"</span>;
-
-<span class="keyword">const</span> <span class="variable">buttonText</span> = <span class="function">signal</span>(<span class="string">"Click me!"</span>);
+// Example 10: DOM Creation with XynTag and createRoot
+outputHeader("Example 10: DOM Creation with XynTag and createRoot");
+outputCode(`<span class="keyword">const</span> <span class="variable">buttonText</span> = <span class="function">signal</span>(<span class="string">"Click me!"</span>);
 <span class="keyword">const</span> <span class="variable">clickCount</span> = <span class="function">signal</span>(<span class="number">0</span>);
 
 <span class="comment">// Create a button with reactive text</span>
@@ -467,9 +465,12 @@ outputCode(`<span class="keyword">import</span> { <span class="variable">XynTag<
     <span class="variable">buttonText</span>.<span class="property">value</span> = <span class="template">\`Clicked \${<span class="variable">clickCount</span>.<span class="property">value</span>} times\`</span>;
 };
 
-<span class="comment">// Create a div container</span>
+<span class="comment">// Create a div container and mount using createRoot</span>
 <span class="keyword">const</span> <span class="variable">container</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"div"</span>);
-<span class="variable">document</span>.<span class="property">body</span>.<span class="method">appendChild</span>(<span class="variable">container</span>.<span class="method">render</span>());`);
+<span class="variable">container</span>.<span class="property">children</span> = [<span class="variable">button</span>];
+
+<span class="keyword">const</span> <span class="variable">mount</span> = <span class="function">createRoot</span>(<span class="variable">container</span>, <span class="string">"body"</span>);
+<span class="variable">mount</span>();`);
 
 const buttonText = signal("Click me!");
 const clickCount = signal(0);
@@ -492,12 +493,12 @@ const containerElement = container.render();
 containerElement.style.cssText = "margin: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;";
 
 output("Interactive button created below:");
-document.body.appendChild(containerElement);
+const mount = createRoot(container, "body");
+mount();
 
-// Example 11: Dynamic List with XynTag
-outputHeader("Example 11: Dynamic List with XynTag");
+// Example 11: Dynamic List with XynTag and createRoot
+outputHeader("Example 11: Dynamic List with XynTag and createRoot");
 outputCode(`<span class="keyword">const</span> <span class="variable">items</span> = <span class="function">signal</span>([<span class="string">"Apple"</span>, <span class="string">"Banana"</span>, <span class="string">"Cherry"</span>]);
-<span class="keyword">const</span> <span class="variable">newItem</span> = <span class="function">signal</span>(<span class="string">""</span>);
 
 <span class="comment">// Create list container</span>
 <span class="keyword">const</span> <span class="variable">listContainer</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"div"</span>);
@@ -512,10 +513,12 @@ outputCode(`<span class="keyword">const</span> <span class="variable">items</spa
         <span class="variable">li</span>.<span class="property">children</span> = [<span class="function">text</span><span class="template">\`\${<span class="variable">item</span>}\`</span>];
         <span class="keyword">return</span> <span class="variable">li</span>;
     });
-}, [<span class="variable">items</span>]);`);
+}, [<span class="variable">items</span>]);
+
+<span class="keyword">const</span> <span class="variable">mountList</span> = <span class="function">createRoot</span>(<span class="variable">listContainer</span>, <span class="string">"body"</span>);
+<span class="variable">mountList</span>();`);
 
 const items = signal(["Apple", "Banana", "Cherry"]);
-const newItem = signal("");
 
 // Create input field
 const itemInput = new XynTag("input");
@@ -574,19 +577,29 @@ listContainerElement.appendChild(clearButtonElement);
 listContainerElement.appendChild(listElement);
 
 output("Dynamic list created below:");
-document.body.appendChild(listContainerElement);
+const mountList = createRoot(listContainer, "body");
+mountList();
 
-// Example 12: Conditional Rendering with CSS Classes
+// Example 12: Conditional Rendering with CSS Classes and createRoot
 outputHeader("Example 12: Conditional Rendering and CSS Classes");
 outputCode(`<span class="keyword">const</span> <span class="variable">isVisible</span> = <span class="function">signal</span>(<span class="keyword">true</span>);
 <span class="keyword">const</span> <span class="variable">theme</span> = <span class="function">signal</span>(<span class="string">"light"</span>);
+<span class="keyword">const</span> <span class="variable">message</span> = <span class="function">signal</span>(<span class="string">"Hello from XynHTML!"</span>);
 
+<span class="comment">// Create a styled card</span>
 <span class="keyword">const</span> <span class="variable">card</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"div"</span>);
-<span class="variable">card</span>.<span class="method">css</span><span class="template">\`card \${<span class="variable">theme</span>} \${<span class="variable">isVisible</span> && <span class="string">"visible"</span>}\`</span>;
+<span class="keyword">const</span> <span class="variable">cardTitle</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"h3"</span>);
+<span class="variable">cardTitle</span>.<span class="property">children</span> = [<span class="function">text</span><span class="template">\`Interactive Card\`</span>];
+<span class="keyword">const</span> <span class="variable">cardContent</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"p"</span>);
+<span class="variable">cardContent</span>.<span class="property">children</span> = [<span class="function">text</span><span class="template">\`\${<span class="variable">message</span>}\`</span>];
 
-<span class="comment">// Toggle visibility</span>
+<span class="comment">// Create toggle buttons</span>
 <span class="keyword">const</span> <span class="variable">toggleButton</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"button"</span>);
-<span class="variable">toggleButton</span>.<span class="property">children</span> = [<span class="function">text</span><span class="template">\`\${<span class="variable">isVisible</span> ? <span class="string">"Hide"</span> : <span class="string">"Show"</span>} Card\`</span>];`);
+<span class="keyword">const</span> <span class="variable">themeButton</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"button"</span>);
+
+<span class="keyword">const</span> <span class="variable">conditionalContainer</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"div"</span>);
+<span class="keyword">const</span> <span class="variable">mountConditional</span> = <span class="function">createRoot</span>(<span class="variable">conditionalContainer</span>, <span class="string">"body"</span>);
+<span class="variable">mountConditional</span>();`);
 
 const isVisible = signal(true);
 const theme = signal("light");
@@ -661,9 +674,10 @@ conditionalContainerElement.appendChild(themeButtonElement);
 conditionalContainerElement.appendChild(cardElement);
 
 output("Conditional rendering example created below:");
-document.body.appendChild(conditionalContainerElement);
+const mountConditional = createRoot(conditionalContainer, "body");
+mountConditional();
 
-// Example 13: Form with Reactive Validation
+// Example 13: Form with Reactive Validation and createRoot
 outputHeader("Example 13: Form with Reactive Validation");
 outputCode(`<span class="keyword">const</span> <span class="variable">email</span> = <span class="function">signal</span>(<span class="string">""</span>);
 <span class="keyword">const</span> <span class="variable">password</span> = <span class="function">signal</span>(<span class="string">""</span>);
@@ -678,7 +692,11 @@ outputCode(`<span class="keyword">const</span> <span class="variable">email</spa
 
 <span class="keyword">const</span> [<span class="variable">isFormValid</span>, <span class="variable">unsubscribeForm</span>] = <span class="function">derived</span>(() => {
     <span class="keyword">return</span> <span class="variable">isValidEmail</span>.<span class="property">value</span> && <span class="variable">isValidPassword</span>.<span class="property">value</span>;
-}, [<span class="variable">isValidEmail</span>, <span class="variable">isValidPassword</span>]);`);
+}, [<span class="variable">isValidEmail</span>, <span class="variable">isValidPassword</span>]);
+
+<span class="keyword">const</span> <span class="variable">form</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"form"</span>);
+<span class="keyword">const</span> <span class="variable">mountForm</span> = <span class="function">createRoot</span>(<span class="variable">form</span>, <span class="string">"body"</span>);
+<span class="variable">mountForm</span>();`);
 
 const email = signal("");
 const password = signal("");
@@ -769,7 +787,8 @@ formElement.appendChild(document.createElement("br"));
 formElement.appendChild(submitButton);
 
 output("Reactive form with validation created below:");
-document.body.appendChild(formElement);
+const mountForm = createRoot(form, "body");
+mountForm();
 
 // Clean up derived signals when done
 // unsubscribeEmail();
