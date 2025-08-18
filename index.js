@@ -502,7 +502,7 @@ outputCode(`<span class="keyword">const</span> <span class="variable">items</spa
 
 <span class="comment">// Create list container</span>
 <span class="keyword">const</span> <span class="variable">listContainer</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"div"</span>);
-<span class="keyword">const</span> <span class="variable">input</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"input"</span>);
+<span class="keyword">const</span> <span class="variable">itemInput</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"input"</span>);
 <span class="keyword">const</span> <span class="variable">addButton</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"button"</span>);
 <span class="keyword">const</span> <span class="variable">itemList</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"ul"</span>);
 
@@ -519,8 +519,8 @@ const items = signal(["Apple", "Banana", "Cherry"]);
 const newItem = signal("");
 
 // Create input field
-const input = new XynTag("input");
-const inputElement = input.render();
+const itemInput = new XynTag("input");
+const inputElement = itemInput.render();
 inputElement.type = "text";
 inputElement.placeholder = "Enter new item";
 inputElement.style.cssText = "margin-right: 10px; padding: 5px;";
