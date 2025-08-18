@@ -319,11 +319,11 @@ outputCode(`<span class="keyword">const</span> <span class="variable">textInput<
     };
 }, [<span class="variable">textInput</span>, <span class="variable">uppercase</span>, <span class="variable">wordCount</span>]);`);
 
-const textInput = signal("hello world");
+const textInput2 = signal("hello world");
 
 const [uppercase, unsubscribeUpper] = derived(() => {
-    return textInput.value.toUpperCase();
-}, [textInput]);
+    return textInput2.value.toUpperCase();
+}, [textInput2]);
 
 const [wordCount, unsubscribeWordCount] = derived(() => {
     return uppercase.value.split(' ').length;
@@ -331,20 +331,20 @@ const [wordCount, unsubscribeWordCount] = derived(() => {
 
 const [analysis, unsubscribeAnalysis] = derived(() => {
     return {
-        original: textInput.value,
+        original: textInput2.value,
         uppercase: uppercase.value,
         wordCount: wordCount.value,
-        charCount: textInput.value.length
+        charCount: textInput2.value.length
     };
-}, [textInput, uppercase, wordCount]);
+}, [textInput2, uppercase, wordCount]);
 
 const analysisSubscriber = () => {
     output("Text analysis: " + JSON.stringify(analysis.value));
 };
 analysis.subscribe(analysisSubscriber);
 
-textInput.value = "XynHTML is awesome";
-textInput.value = "Building reactive applications made simple";
+textInput2.value = "XynHTML is awesome";
+textInput2.value = "Building reactive applications made simple";
 
 // Clean up all subscriptions
 analysis.unsubscribe(analysisSubscriber);
@@ -521,8 +521,8 @@ outputCode(`<span class="keyword">const</span> <span class="variable">items</spa
 const items = signal(["Apple", "Banana", "Cherry"]);
 
 // Create input field
-const itemInput = new XynTag("input");
-const inputElement = itemInput.render();
+const listItemInput = new XynTag("input");
+const inputElement = listItemInput.render();
 inputElement.type = "text";
 inputElement.placeholder = "Enter new item";
 inputElement.style.cssText = "margin-right: 10px; padding: 5px;";
