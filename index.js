@@ -449,3 +449,331 @@ directSignal.value = "third update";
 // Clean up
 directSignal.unsubscribe(directSubscriber2);
 
+// Example 10: DOM Creation with XynTag
+outputHeader("Example 10: DOM Creation with XynTag");
+outputCode(`<span class="keyword">import</span> { <span class="variable">XynTag</span>, <span class="variable">text</span> } <span class="keyword">from</span> <span class="string">"./xyn_html.js"</span>;
+
+<span class="keyword">const</span> <span class="variable">buttonText</span> = <span class="function">signal</span>(<span class="string">"Click me!"</span>);
+<span class="keyword">const</span> <span class="variable">clickCount</span> = <span class="function">signal</span>(<span class="number">0</span>);
+
+<span class="comment">// Create a button with reactive text</span>
+<span class="keyword">const</span> <span class="variable">button</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"button"</span>);
+<span class="variable">button</span>.<span class="method">props</span> = <span class="keyword">new</span> <span class="function">Map</span>([
+    [<span class="string">"onclick"</span>, () => {
+        <span class="variable">clickCount</span>.<span class="property">value</span>++;
+        <span class="variable">buttonText</span>.<span class="property">value</span> = <span class="template">\`Clicked \${<span class="variable">clickCount</span>.<span class="property">value</span>} times\`</span>;
+    }]
+]);
+<span class="variable">button</span>.<span class="method">children</span> = [<span class="function">text</span><span class="template">\`\${<span class="variable">buttonText</span>}\`</span>];
+
+<span class="comment">// Create a div container</span>
+<span class="keyword">const</span> <span class="variable">container</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"div"</span>, <span class="keyword">null</span>, [<span class="variable">button</span>]);
+<span class="variable">document</span>.<span class="property">body</span>.<span class="method">appendChild</span>(<span class="variable">container</span>.<span class="method">render</span>());`);
+
+import { XynTag, text } from "./xyn_html.js";
+
+const buttonText = signal("Click me!");
+const clickCount = signal(0);
+
+// Create a button with reactive text
+const button = new XynTag("button");
+button.children = [text`${buttonText}`];
+
+// Add click handler
+const buttonElement = button.render();
+buttonElement.onclick = () => {
+    clickCount.value++;
+    buttonText.value = `Clicked ${clickCount.value} times`;
+};
+
+// Create a div container with some styling
+const container = new XynTag("div");
+container.children = [button];
+const containerElement = container.render();
+containerElement.style.cssText = "margin: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;";
+
+output("Interactive button created below:");
+document.body.appendChild(containerElement);
+
+// Example 11: Dynamic List with XynTag
+outputHeader("Example 11: Dynamic List with XynTag");
+outputCode(`<span class="keyword">const</span> <span class="variable">items</span> = <span class="function">signal</span>([<span class="string">"Apple"</span>, <span class="string">"Banana"</span>, <span class="string">"Cherry"</span>]);
+<span class="keyword">const</span> <span class="variable">newItem</span> = <span class="function">signal</span>(<span class="string">""</span>);
+
+<span class="comment">// Create list container</span>
+<span class="keyword">const</span> <span class="variable">listContainer</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"div"</span>);
+<span class="keyword">const</span> <span class="variable">input</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"input"</span>);
+<span class="keyword">const</span> <span class="variable">addButton</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"button"</span>);
+<span class="keyword">const</span> <span class="variable">itemList</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"ul"</span>);
+
+<span class="comment">// Effect to update the list when items change</span>
+<span class="function">effect</span>(() => {
+    <span class="variable">itemList</span>.<span class="property">children</span> = <span class="variable">items</span>.<span class="property">value</span>.<span class="method">map</span>(<span class="variable">item</span> => {
+        <span class="keyword">const</span> <span class="variable">li</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"li"</span>);
+        <span class="variable">li</span>.<span class="property">children</span> = [<span class="function">text</span><span class="template">\`\${<span class="variable">item</span>}\`</span>];
+        <span class="keyword">return</span> <span class="variable">li</span>;
+    });
+}, [<span class="variable">items</span>]);`);
+
+const items = signal(["Apple", "Banana", "Cherry"]);
+const newItem = signal("");
+
+// Create input field
+const input = new XynTag("input");
+const inputElement = input.render();
+inputElement.type = "text";
+inputElement.placeholder = "Enter new item";
+inputElement.style.cssText = "margin-right: 10px; padding: 5px;";
+
+// Create add button
+const addButton = new XynTag("button");
+addButton.children = [text`Add Item`];
+const addButtonElement = addButton.render();
+addButtonElement.onclick = () => {
+    if (inputElement.value.trim()) {
+        items.value = [...items.value, inputElement.value.trim()];
+        inputElement.value = "";
+    }
+};
+addButtonElement.style.cssText = "padding: 5px 10px; margin-right: 10px;";
+
+// Create clear button
+const clearButton = new XynTag("button");
+clearButton.children = [text`Clear All`];
+const clearButtonElement = clearButton.render();
+clearButtonElement.onclick = () => {
+    items.value = [];
+};
+clearButtonElement.style.cssText = "padding: 5px 10px;";
+
+// Create list container
+const itemList = new XynTag("ul");
+let listElement = itemList.render();
+
+// Effect to update the list when items change
+const listEffect = effect(() => {
+    // Clear existing list
+    listElement.innerHTML = "";
+    
+    // Add each item
+    items.value.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        li.style.cssText = "margin: 5px 0; padding: 3px;";
+        listElement.appendChild(li);
+    });
+}, [items]);
+
+// Create main container
+const listContainer = new XynTag("div");
+const listContainerElement = listContainer.render();
+listContainerElement.style.cssText = "margin: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;";
+
+listContainerElement.appendChild(inputElement);
+listContainerElement.appendChild(addButtonElement);
+listContainerElement.appendChild(clearButtonElement);
+listContainerElement.appendChild(listElement);
+
+output("Dynamic list created below:");
+document.body.appendChild(listContainerElement);
+
+// Example 12: Conditional Rendering with CSS Classes
+outputHeader("Example 12: Conditional Rendering and CSS Classes");
+outputCode(`<span class="keyword">const</span> <span class="variable">isVisible</span> = <span class="function">signal</span>(<span class="keyword">true</span>);
+<span class="keyword">const</span> <span class="variable">theme</span> = <span class="function">signal</span>(<span class="string">"light"</span>);
+
+<span class="keyword">const</span> <span class="variable">card</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"div"</span>);
+<span class="variable">card</span>.<span class="method">css</span><span class="template">\`card \${<span class="variable">theme</span>} \${<span class="variable">isVisible</span> && <span class="string">"visible"</span>}\`</span>;
+
+<span class="comment">// Toggle visibility</span>
+<span class="keyword">const</span> <span class="variable">toggleButton</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"button"</span>);
+<span class="variable">toggleButton</span>.<span class="property">children</span> = [<span class="function">text</span><span class="template">\`\${<span class="variable">isVisible</span> ? <span class="string">"Hide"</span> : <span class="string">"Show"</span>} Card\`</span>];`);
+
+const isVisible = signal(true);
+const theme = signal("light");
+const message = signal("Hello from XynHTML!");
+
+// Create a styled card
+const card = new XynTag("div");
+const cardElement = card.render();
+cardElement.style.cssText = `
+    padding: 20px; 
+    margin: 10px; 
+    border-radius: 8px; 
+    transition: all 0.3s ease;
+    border: 2px solid #007acc;
+    background-color: #f0f8ff;
+`;
+
+// Add content to card
+const cardTitle = new XynTag("h3");
+cardTitle.children = [text`Interactive Card`];
+const cardContent = new XynTag("p");
+cardContent.children = [text`${message}`];
+
+cardElement.appendChild(cardTitle.render());
+cardElement.appendChild(cardContent.render());
+
+// Create toggle button
+const toggleButton = new XynTag("button");
+const toggleButtonElement = toggleButton.render();
+toggleButtonElement.style.cssText = "padding: 8px 16px; margin: 5px; cursor: pointer;";
+
+// Update button text based on visibility
+const toggleTextEffect = effect(() => {
+    toggleButtonElement.textContent = isVisible.value ? "Hide Card" : "Show Card";
+}, [isVisible]);
+
+toggleButtonElement.onclick = () => {
+    isVisible.value = !isVisible.value;
+};
+
+// Create theme toggle button
+const themeButton = new XynTag("button");
+const themeButtonElement = themeButton.render();
+themeButtonElement.style.cssText = "padding: 8px 16px; margin: 5px; cursor: pointer;";
+themeButtonElement.textContent = "Toggle Theme";
+themeButtonElement.onclick = () => {
+    theme.value = theme.value === "light" ? "dark" : "light";
+    // Update card styling based on theme
+    if (theme.value === "dark") {
+        cardElement.style.backgroundColor = "#2d2d2d";
+        cardElement.style.color = "#ffffff";
+        cardElement.style.borderColor = "#666";
+    } else {
+        cardElement.style.backgroundColor = "#f0f8ff";
+        cardElement.style.color = "#000000";
+        cardElement.style.borderColor = "#007acc";
+    }
+};
+
+// Effect to handle visibility
+const visibilityEffect = effect(() => {
+    cardElement.style.display = isVisible.value ? "block" : "none";
+}, [isVisible]);
+
+// Create container for this example
+const conditionalContainer = new XynTag("div");
+const conditionalContainerElement = conditionalContainer.render();
+conditionalContainerElement.style.cssText = "margin: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px;";
+
+conditionalContainerElement.appendChild(toggleButtonElement);
+conditionalContainerElement.appendChild(themeButtonElement);
+conditionalContainerElement.appendChild(cardElement);
+
+output("Conditional rendering example created below:");
+document.body.appendChild(conditionalContainerElement);
+
+// Example 13: Form with Reactive Validation
+outputHeader("Example 13: Form with Reactive Validation");
+outputCode(`<span class="keyword">const</span> <span class="variable">email</span> = <span class="function">signal</span>(<span class="string">""</span>);
+<span class="keyword">const</span> <span class="variable">password</span> = <span class="function">signal</span>(<span class="string">""</span>);
+
+<span class="keyword">const</span> [<span class="variable">isValidEmail</span>, <span class="variable">unsubscribeEmail</span>] = <span class="function">derived</span>(() => {
+    <span class="keyword">return</span> /<span class="regex">^[^\s@]+@[^\s@]+\.[^\s@]+$</span>/<span class="method">test</span>(<span class="variable">email</span>.<span class="property">value</span>);
+}, [<span class="variable">email</span>]);
+
+<span class="keyword">const</span> [<span class="variable">isValidPassword</span>, <span class="variable">unsubscribePassword</span>] = <span class="function">derived</span>(() => {
+    <span class="keyword">return</span> <span class="variable">password</span>.<span class="property">value</span>.<span class="property">length</span> >= <span class="number">8</span>;
+}, [<span class="variable">password</span>]);
+
+<span class="keyword">const</span> [<span class="variable">isFormValid</span>, <span class="variable">unsubscribeForm</span>] = <span class="function">derived</span>(() => {
+    <span class="keyword">return</span> <span class="variable">isValidEmail</span>.<span class="property">value</span> && <span class="variable">isValidPassword</span>.<span class="property">value</span>;
+}, [<span class="variable">isValidEmail</span>, <span class="variable">isValidPassword</span>]);`);
+
+const email = signal("");
+const password = signal("");
+
+// Derived validation signals
+const [isValidEmail, unsubscribeEmail] = derived(() => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value);
+}, [email]);
+
+const [isValidPassword, unsubscribePassword] = derived(() => {
+    return password.value.length >= 8;
+}, [password]);
+
+const [isFormValid, unsubscribeForm] = derived(() => {
+    return isValidEmail.value && isValidPassword.value;
+}, [isValidEmail, isValidPassword]);
+
+// Create form elements
+const form = new XynTag("form");
+const formElement = form.render();
+formElement.style.cssText = "padding: 20px; border: 1px solid #ddd; border-radius: 5px; margin: 20px; background-color: #fafafa;";
+
+// Email input
+const emailInput = document.createElement("input");
+emailInput.type = "email";
+emailInput.placeholder = "Enter your email";
+emailInput.style.cssText = "width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px;";
+emailInput.oninput = (e) => {
+    email.value = e.target.value;
+};
+
+// Email validation message
+const emailValidation = document.createElement("div");
+emailValidation.style.cssText = "font-size: 12px; margin: 5px 0;";
+
+// Password input
+const passwordInput = document.createElement("input");
+passwordInput.type = "password";
+passwordInput.placeholder = "Enter your password";
+passwordInput.style.cssText = "width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px;";
+passwordInput.oninput = (e) => {
+    password.value = e.target.value;
+};
+
+// Password validation message
+const passwordValidation = document.createElement("div");
+passwordValidation.style.cssText = "font-size: 12px; margin: 5px 0;";
+
+// Submit button
+const submitButton = document.createElement("button");
+submitButton.type = "button";
+submitButton.textContent = "Submit";
+submitButton.style.cssText = "padding: 10px 20px; margin: 10px 0; border: none; border-radius: 4px; cursor: pointer;";
+submitButton.onclick = () => {
+    if (isFormValid.value) {
+        output(`Form submitted! Email: ${email.value}`);
+    }
+};
+
+// Effects for validation styling
+effect(() => {
+    emailInput.style.borderColor = email.value && !isValidEmail.value ? "#ff4444" : "#ccc";
+    emailValidation.textContent = email.value && !isValidEmail.value ? "Please enter a valid email address" : "";
+    emailValidation.style.color = "#ff4444";
+}, [email, isValidEmail]);
+
+effect(() => {
+    passwordInput.style.borderColor = password.value && !isValidPassword.value ? "#ff4444" : "#ccc";
+    passwordValidation.textContent = password.value && !isValidPassword.value ? "Password must be at least 8 characters long" : "";
+    passwordValidation.style.color = "#ff4444";
+}, [password, isValidPassword]);
+
+effect(() => {
+    submitButton.disabled = !isFormValid.value;
+    submitButton.style.backgroundColor = isFormValid.value ? "#007acc" : "#cccccc";
+    submitButton.style.color = isFormValid.value ? "white" : "#666666";
+}, [isFormValid]);
+
+// Assemble form
+formElement.appendChild(document.createTextNode("Email:"));
+formElement.appendChild(emailInput);
+formElement.appendChild(emailValidation);
+formElement.appendChild(document.createElement("br"));
+formElement.appendChild(document.createTextNode("Password:"));
+formElement.appendChild(passwordInput);
+formElement.appendChild(passwordValidation);
+formElement.appendChild(document.createElement("br"));
+formElement.appendChild(submitButton);
+
+output("Reactive form with validation created below:");
+document.body.appendChild(formElement);
+
+// Clean up derived signals when done
+// unsubscribeEmail();
+// unsubscribePassword();
+// unsubscribeForm();
+
