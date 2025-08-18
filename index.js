@@ -483,7 +483,7 @@ button.children = [text`${buttonText}`];
 const buttonElement = button.render();
 buttonElement.onclick = () => {
     clickCount.value++;
-    buttonText.value = `Clicked ${clickCount.value} times`;
+    buttonText.value = `Clicked ${clickCount} times`;
 };
 
 // Create a div container with some styling
