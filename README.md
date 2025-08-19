@@ -63,9 +63,12 @@ const unsubscribe = effect(() => {
 Create computed values that update automatically:
 
 ```javascript
-const [fullName, cleanup] = derived(() => {
+const fullName = derived(() => {
     return `${firstName.value} ${lastName.value}`;
 }, [firstName, lastName]);
+
+// Clean up when done
+fullName.unsubscribeDerived();
 ```
 
 ### XynTag Components
@@ -103,7 +106,7 @@ Creates a new reactive signal.
 Runs a callback when any of the dependency signals change.
 
 ### derived(callback, dependencies)
-Creates a computed signal that updates based on other signals.
+Creates a computed signal that updates based on other signals. Returns a signal with an additional `unsubscribeDerived()` method for cleanup.
 
 ### XynTag(tagName, props, children)
 Creates a new HTML element component.
@@ -113,6 +116,9 @@ Creates reactive text content with signal interpolation.
 
 ### createRoot(component, selector)
 Mounts a component to a DOM element.
+
+#### Derived Signal Methods
+- **unsubscribeDerived()**: Cleans up the derived signal's internal effect subscription.
 
 ## Browser Support
 
