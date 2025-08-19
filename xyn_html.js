@@ -125,7 +125,7 @@ class XynHTML {
      */
     static derived(fn, signals) {
         const signal = signal(fn());
-        signal.unsubscribeDerived = effect(() => signal.value = fn(), signals);
+        signal.prototype.unsubscribeDerived = effect(() => signal.value = fn(), signals);
 
         return signal;
     }
