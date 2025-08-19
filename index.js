@@ -530,7 +530,7 @@ inputElement.style.cssText = "margin-right: 10px; padding: 5px;";
 
 // Create add button
 const addButton = new XynTag("button");
-addButton.children = [text`Add Item`];
+addButton.children = [text`+`];
 const addButtonElement = addButton.render();
 addButtonElement.onclick = () => {
     if (inputElement.value.trim()) {
@@ -542,7 +542,7 @@ addButtonElement.style.cssText = "padding: 5px 10px; margin-right: 10px;";
 
 // Create clear button
 const clearButton = new XynTag("button");
-clearButton.children = [text`Clear All`];
+clearButton.children = [text`Clear`];
 const clearButtonElement = clearButton.render();
 clearButtonElement.onclick = () => {
     items.value = [];
@@ -558,11 +558,23 @@ const listEffect = effect(() => {
     // Clear existing list
     listElement.innerHTML = "";
 
-    // Add each item
-    items.value.forEach(item => {
+    // Add each item with remove button
+    items.value.forEach((item, index) => {
         const li = document.createElement("li");
-        li.textContent = item;
-        li.style.cssText = "margin: 5px 0; padding: 3px;";
+        li.style.cssText = "margin: 5px 0; padding: 3px; display: flex; justify-content: space-between; align-items: center;";
+        
+        const itemText = document.createElement("span");
+        itemText.textContent = item;
+        
+        const removeButton = document.createElement("button");
+        removeButton.textContent = "×";
+        removeButton.style.cssText = "background: none; border: none; color: #ff4444; cursor: pointer; font-size: 16px; padding: 2px 6px; margin-left: 10px; text-decoration: underline;";
+        removeButton.onclick = () => {
+            items.value = items.value.filter((_, i) => i !== index);
+        };
+        
+        li.appendChild(itemText);
+        li.appendChild(removeButton);
         listElement.appendChild(li);
     });
 }, [items]);
