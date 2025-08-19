@@ -82,7 +82,7 @@ document.body.appendChild(container.render());
 
 ## Examples
 
-To see XynHTML in action with comprehensive examples, visit the [examples page](index.html) in this repository. The examples cover:
+To see XynHTML in action with comprehensive examples, visit the [examples page](https://jfftck.github.io/xynhtml) in this repository. The examples cover:
 
 - Basic signal usage and subscription
 - Multiple signals and effects
