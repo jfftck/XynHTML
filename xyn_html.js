@@ -197,21 +197,21 @@ class XynTag {
         this.#self = document.createElement(this.name);
 
         if (this.props) {
-            this.props.forEach((key, prop) {
+            this.props.forEach((key, prop) => {
                 effect(() => {
-                    el.setAttribute(key, prop.value);
+                    this.#self.setAttribute(key, prop.value);
                 }, [prop]);
             });
         }
 
         if (this.children) {
             for (const child of this.children) {
-                el.appendChild(child.render());
+                this.#self.appendChild(child.render());
             }
         }
 
         if (this.#classes) {
-            el.className = this.#classes;
+            this.#self.className = this.#classes;
         }
 
         this.#update = false;
@@ -232,7 +232,7 @@ class XynText {
      * @example
      * XynText`Hello, ${name}!`
      */
-    text(text, ...signals) {
+    create(text, ...signals) {
         this.text = text;
         this.signals = signals;
         return this;
@@ -242,8 +242,8 @@ class XynText {
         effect(() => {
             let textContent = "";
 
-            text.forEach((text, i) => {
-                textContent += text + (signals[i]?.value ?? "");
+            this.text.forEach((text, i) => {
+                textContent += text + (this.signals[i]?.value ?? "");
             });
 
             this.el.textContent = textContent;
@@ -313,4 +313,4 @@ export { XynTag }
  *   ), "#app");
  * render();
  */
-export const text = new XynText().text;
+export const text = (s, ...v) => new XynText().create(s, ...v);
