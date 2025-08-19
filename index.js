@@ -635,6 +635,11 @@ const globalTheme = signal(savedTheme);
 // Apply global theme
 function applyGlobalTheme(theme) {
     const isDark = theme === 'dark';
+    
+    // Set data attribute for CSS targeting
+    document.body.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+    
     document.documentElement.style.setProperty('--color-background', isDark ? '#121212' : '#f8f8f8');
     document.body.style.backgroundColor = isDark ? '#121212' : '#f8f8f8';
     document.body.style.color = isDark ? '#ffffff' : '#000000';
@@ -670,14 +675,13 @@ function applyGlobalTheme(theme) {
 
 // Create global theme switcher at top of page
 const globalThemeSwitcher = document.createElement('div');
-globalThemeSwitcher.style.cssText = 'position: fixed; top: 10px; right: 10px; z-index: 1000; background: rgba(0,0,0,0.1); padding: 10px; border-radius: 5px; backdrop-filter: blur(10px);';
+globalThemeSwitcher.className = 'theme-switcher';
 
 const globalThemeButton = document.createElement('button');
-globalThemeButton.style.cssText = 'padding: 8px 16px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px);';
 
 // Update global theme button text
 const updateGlobalThemeButton = () => {
-    globalThemeButton.textContent = `Theme: ${globalTheme.value === 'light' ? '☀️ Light' : '🌙 Dark'}`;
+    globalThemeButton.textContent = `${globalTheme.value === 'light' ? '☀️ Light Mode' : '🌙 Dark Mode'}`;
 };
 
 updateGlobalThemeButton();
@@ -689,15 +693,33 @@ globalThemeButton.onclick = () => {
     applyGlobalTheme(newTheme);
     updateGlobalThemeButton();
 
-    // Show confirmation message
+    // Show confirmation message with improved styling
     const confirmation = document.createElement('div');
-    confirmation.style.cssText = 'position: fixed; top: 60px; right: 10px; z-index: 1001; background: #4CAF50; color: white; padding: 10px; border-radius: 5px; font-size: 14px;';
-    confirmation.textContent = `Theme preference saved: ${newTheme}`;
+    confirmation.style.cssText = `
+        position: fixed; 
+        top: 60px; 
+        right: 10px; 
+        z-index: 1001; 
+        background: linear-gradient(135deg, #4CAF50, #45a049); 
+        color: white; 
+        padding: 12px 16px; 
+        border-radius: 8px; 
+        font-size: 14px; 
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        animation: slideInRight 0.3s ease-out;
+    `;
+    confirmation.textContent = `Theme switched to ${newTheme} mode`;
     document.body.appendChild(confirmation);
 
     setTimeout(() => {
-        document.body.removeChild(confirmation);
-    }, 3000);
+        confirmation.style.animation = 'slideOutRight 0.3s ease-in forwards';
+        setTimeout(() => {
+            if (document.body.contains(confirmation)) {
+                document.body.removeChild(confirmation);
+            }
+        }, 300);
+    }, 2500);
 };
 
 globalThemeSwitcher.appendChild(globalThemeButton);

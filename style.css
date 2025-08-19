@@ -138,81 +138,166 @@ code {
   font-style: italic;
 }
 
-/* Dynamic syntax highlighting for dark theme */
-[data-theme="dark"] .keyword,
-.theme-dark .keyword,
+/* Theme switcher button styling */
+.theme-switcher {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.theme-switcher button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.theme-switcher button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Dark theme overrides for syntax highlighting */
+body[data-theme="dark"] .keyword,
+.theme-dark .keyword {
+  color: #569CD6;
+  font-weight: 600;
+}
+
+body[data-theme="dark"] .variable,
+.theme-dark .variable {
+  color: #9CDCFE;
+  font-weight: 500;
+}
+
+body[data-theme="dark"] .function,
+.theme-dark .function {
+  color: #DCDCAA;
+  font-weight: 500;
+}
+
+body[data-theme="dark"] .method,
+.theme-dark .method {
+  color: #DCDCAA;
+  font-weight: 500;
+}
+
+body[data-theme="dark"] .property,
+.theme-dark .property {
+  color: #9CDCFE;
+}
+
+body[data-theme="dark"] .string,
+.theme-dark .string {
+  color: #CE9178;
+}
+
+body[data-theme="dark"] .template,
+.theme-dark .template {
+  color: #CE9178;
+}
+
+body[data-theme="dark"] .number,
+.theme-dark .number {
+  color: #B5CEA8;
+  font-weight: 500;
+}
+
+body[data-theme="dark"] .comment,
+.theme-dark .comment {
+  color: #6A9955;
+  font-style: italic;
+}
+
+/* System theme preference overrides when no explicit theme is set */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .keyword {
+  body:not([data-theme="light"]) .keyword {
     color: #569CD6;
     font-weight: 600;
   }
-}
-
-[data-theme="dark"] .variable,
-.theme-dark .variable,
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .variable {
+  
+  body:not([data-theme="light"]) .variable {
     color: #9CDCFE;
     font-weight: 500;
   }
-}
-
-[data-theme="dark"] .function,
-.theme-dark .function,
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .function {
+  
+  body:not([data-theme="light"]) .function {
     color: #DCDCAA;
     font-weight: 500;
   }
-}
-
-[data-theme="dark"] .method,
-.theme-dark .method,
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .method {
+  
+  body:not([data-theme="light"]) .method {
     color: #DCDCAA;
     font-weight: 500;
   }
-}
-
-[data-theme="dark"] .property,
-.theme-dark .property,
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .property {
+  
+  body:not([data-theme="light"]) .property {
     color: #9CDCFE;
   }
-}
-
-[data-theme="dark"] .string,
-.theme-dark .string,
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .string {
+  
+  body:not([data-theme="light"]) .string {
     color: #CE9178;
   }
-}
-
-[data-theme="dark"] .template,
-.theme-dark .template,
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .template {
+  
+  body:not([data-theme="light"]) .template {
     color: #CE9178;
   }
-}
-
-[data-theme="dark"] .number,
-.theme-dark .number,
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .number {
+  
+  body:not([data-theme="light"]) .number {
     color: #B5CEA8;
     font-weight: 500;
   }
-}
-
-[data-theme="dark"] .comment,
-.theme-dark .comment,
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .comment {
+  
+  body:not([data-theme="light"]) .comment {
     color: #6A9955;
     font-style: italic;
+  }
+
+  .theme-switcher {
+    background: rgba(45, 45, 45, 0.9);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Dark theme styling for theme switcher */
+body[data-theme="dark"] .theme-switcher {
+  background: rgba(45, 45, 45, 0.9);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Animations for theme notification */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
   }
 }
