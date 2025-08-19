@@ -62,6 +62,10 @@ class XynHTML {
                     subscriber();
                 }
 
+                if (registeredSubscribers.has(subscriber)) {
+                    return;
+                }
+
                 if (!XynHTML.subscribers.has(subscriber)) {
                     XynHTML.subscribers.set(subscriber, 0);
                 }
@@ -117,12 +121,13 @@ class XynHTML {
      * @template T
      * @param {() => T} fn
      * @param {XynHTML.signal[]} signals
-     * @returns {[XynHTML.signal, () => void)]} signal and unsubscribe
+     * @returns {{unsubscribeDerived: () => void} extends XynHTML.signal} signal extended with unsubscribeDrived method
      */
     static derived(fn, signals) {
-        const signal = XynHTML.signal(fn());
+        const signal = signal(fn());
+        signal.unsubscribeDerived = effect(() => signal.value = fn(), signals);
 
-        return [signal, XynHTML.effect(() => signal.value = fn(), signals)];
+        return signal;
     }
 }
 
