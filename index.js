@@ -1,3 +1,29 @@
+
+// XynHTML Import Documentation
+outputHeader("XynHTML Import Documentation");
+outputCode(`<span class="comment">// Import the XynHTML library functions</span>
+<span class="keyword">import</span> { 
+    <span class="variable">signal</span>, 
+    <span class="variable">effect</span>, 
+    <span class="variable">derived</span>, 
+    <span class="variable">XynTag</span>, 
+    <span class="variable">text</span>, 
+    <span class="variable">createRoot</span> 
+} <span class="keyword">from</span> <span class="string">"./xyn_html.js"</span>
+
+<span class="comment">// Alternative: Import the main class and use static methods</span>
+<span class="keyword">import</span> <span class="variable">XynHTML</span> <span class="keyword">from</span> <span class="string">"./xyn_html.js"</span>;
+<span class="keyword">const</span> <span class="variable">mySignal</span> = <span class="variable">XynHTML</span>.<span class="method">signal</span>(<span class="string">"Hello"</span>);
+
+<span class="comment">// Available exports:</span>
+<span class="comment">// - signal: Create reactive signals</span>
+<span class="comment">// - effect: Create side effects that react to signal changes</span>
+<span class="comment">// - derived: Create computed signals</span>
+<span class="comment">// - XynTag: Create HTML elements</span>
+<span class="comment">// - text: Create reactive text nodes</span>
+<span class="comment">// - createRoot: Mount components to DOM</span>`);
+
+
 import { signal, effect, derived, XynTag, text, createRoot } from "./xyn_html.js"
 
 // Create output function to append to DOM
@@ -467,9 +493,10 @@ outputCode(`<span class="keyword">const</span> <span class="variable">buttonText
 <span class="comment">// Create a div container and mount using createRoot</span>
 <span class="keyword">const</span> <span class="variable">container</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"div"</span>);
 <span class="variable">container</span>.<span class="property">children</span> = [<span class="variable">button</span>];
+<span class="variable">container</span>.<span class="method">render</span>().<span class="property">className</span> = <span class="string">"example-container"</span>;
 
-<span class="keyword">const</span> <span class="variable">mount</span> = <span class="function">createRoot</span>(<span class="variable">container</span>, <span class="string">"body"</span>);
-<span class="variable">mount</span>();`);
+<span class="comment">// Append to document body directly</span>
+<span class="function">document</span>.<span class="property">body</span>.<span class="method">appendChild</span>(<span class="variable">container</span>.<span class="method">render</span>());`);
 
 const buttonText = signal("Click me!");
 const clickCount = signal(0);
@@ -507,17 +534,25 @@ outputCode(`<span class="keyword">const</span> <span class="variable">items</spa
 <span class="keyword">const</span> <span class="variable">addButton</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"button"</span>);
 <span class="keyword">const</span> <span class="variable">itemList</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"ul"</span>);
 
-<span class="comment">// Effect to update the list when items change</span>
-<span class="function">effect</span>(() => {
-    <span class="variable">itemList</span>.<span class="property">children</span> = <span class="variable">items</span>.<span class="property">value</span>.<span class="method">map</span>(<span class="variable">item</span> => {
-        <span class="keyword">const</span> <span class="variable">li</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"li"</span>);
-        <span class="variable">li</span>.<span class="property">children</span> = [<span class="function">text</span><span class="template">\`\${<span class="variable">item</span>}\`</span>];
-        <span class="keyword">return</span> <span class="variable">li</span>;
-    });
-}, [<span class="variable">items</span>]);
+<span class="comment">// Configure components</span>
+<span class="variable">itemInput</span>.<span class="property">children</span> = [];
+<span class="variable">addButton</span>.<span class="property">children</span> = [<span class="function">text</span><span class="template">\`Add Item\`</span>];
 
-<span class="keyword">const</span> <span class="variable">mountList</span> = <span class="function">createRoot</span>(<span class="variable">listContainer</span>, <span class="string">"body"</span>);
-<span class="variable">mountList</span>();`);
+<span class="comment">// Render and configure input and button</span>
+<span class="keyword">const</span> <span class="variable">inputElement</span> = <span class="variable">itemInput</span>.<span class="method">render</span>();
+<span class="variable">inputElement</span>.<span class="property">placeholder</span> = <span class="string">"Enter new item"</span>;
+
+<span class="keyword">const</span> <span class="variable">buttonElement</span> = <span class="variable">addButton</span>.<span class="method">render</span>();
+<span class="variable">buttonElement</span>.<span class="property">onclick</span> = () => {
+    <span class="keyword">if</span> (<span class="variable">inputElement</span>.<span class="property">value</span>.<span class="method">trim</span>()) {
+        <span class="variable">items</span>.<span class="property">value</span> = [...<span class="variable">items</span>.<span class="property">value</span>, <span class="variable">inputElement</span>.<span class="property">value</span>.<span class="method">trim</span>()];
+        <span class="variable">inputElement</span>.<span class="property">value</span> = <span class="string">""</span>;
+    }
+};
+
+<span class="comment">// Build the complete list container</span>
+<span class="variable">listContainer</span>.<span class="property">children</span> = [<span class="variable">itemInput</span>, <span class="variable">addButton</span>, <span class="variable">itemList</span>];
+<span class="function">document</span>.<span class="property">body</span>.<span class="method">appendChild</span>(<span class="variable">listContainer</span>.<span class="method">render</span>());`);
 
 const items = signal(["Apple", "Banana", "Cherry"]);
 
@@ -607,9 +642,15 @@ outputCode(`<span class="keyword">const</span> <span class="variable">isVisible<
 <span class="keyword">const</span> <span class="variable">cardContent</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"p"</span>);
 <span class="variable">cardContent</span>.<span class="property">children</span> = [<span class="function">text</span><span class="template">\`\${<span class="variable">message</span>}\`</span>];
 
+<span class="comment">// Style the card</span>
+<span class="keyword">const</span> <span class="variable">cardElement</span> = <span class="variable">card</span>.<span class="method">render</span>();
+<span class="variable">cardElement</span>.<span class="property">className</span> = <span class="string">"example-container"</span>;
+<span class="variable">cardElement</span>.<span class="property">appendChild</span>(<span class="variable">cardTitle</span>.<span class="method">render</span>());
+<span class="variable">cardElement</span>.<span class="property">appendChild</span>(<span class="variable">cardContent</span>.<span class="method">render</span>());
+
 <span class="comment">// Create toggle buttons</span>
 <span class="keyword">const</span> <span class="variable">toggleButton</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"button"</span>);
-<span class="keyword">const</span> <span class="variable">themeButton</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"button"</span>);
+<span class="keyword">const</span> <span class="variable">themeButton</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"button"</span>);;
 
 <span class="keyword">const</span> <span class="variable">conditionalContainer</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"div"</span>);
 <span class="keyword">const</span> <span class="variable">mountConditional</span> = <span class="function">createRoot</span>(<span class="variable">conditionalContainer</span>, <span class="string">"body"</span>);

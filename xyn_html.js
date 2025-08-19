@@ -258,17 +258,27 @@ class XynText {
  * @description XynHTML is a library for building web applications using a
  * declarative syntax. It is inspired by React and Vue, but with a focus on
  * simplicity and performance.
- * @example
- * const counter = XynHTML.signal(0);
+ * 
+ * @example Basic usage with signals and effects:
+ * import { signal, effect, XynTag, text } from "./xyn_html.js";
+ * 
+ * const counter = signal(0);
  * const increment = () => counter.value++;
- * const decrement = () => counter.value--;
- * const render = XynHTML.createRoot(() =>
- *   XynTag("div", null,
- *     XynTag("button", { onclick: increment }, "Increment"),
- *     XynTag("button", { onclick: decrement }, "Decrement"),
- *     XynTag("span", null, counter.value)
- *   ), "#app");
- * render();
+ * 
+ * const button = new XynTag("button");
+ * button.children = [text`Count: ${counter}`];
+ * 
+ * const buttonElement = button.render();
+ * buttonElement.onclick = increment;
+ * document.body.appendChild(buttonElement);
+ * 
+ * @example Creating reactive components:
+ * const message = signal("Hello");
+ * const container = new XynTag("div");
+ * const paragraph = new XynTag("p");
+ * paragraph.children = [text`${message}`];
+ * container.children = [paragraph];
+ * document.body.appendChild(container.render());
  */
 export default XynHTML;
 /**
@@ -290,27 +300,33 @@ export const derived = XynHTML.derived;
 /**
  * @export @alias {XynTag}
  * @description XynTag is a class for creating HTML elements with signals.
- * @example
+ * @example Basic XynTag usage:
+ * import { XynTag, signal, text } from "./xyn_html.js";
+ * 
  * const show = signal(true);
- * const alert = signal(false);
- * const render = XynHTML.createRoot(() =>
- *   XynTag("div", null,
- *     XynTag("span", null, "Hello World").css`show ${show} alert ${alert}`
- *   ), "#app");
- * render();
- * show.value = false;
- * alert.value = true;
+ * const container = new XynTag("div");
+ * const span = new XynTag("span");
+ * span.children = [text`Hello World`];
+ * container.children = [span];
+ * 
+ * // Apply conditional CSS classes
+ * span.css`show ${show}`;
+ * 
+ * document.body.appendChild(container.render());
+ * show.value = false; // Removes 'show' class
  */
 export { XynTag }
 /**
  * @export @alias {XynText}
  * @description XynText is a class for creating text nodes with signals.
- * @example
+ * @example Basic XynText usage:
+ * import { signal, XynTag, text } from "./xyn_html.js";
+ * 
  * const name = signal("World");
- * const render = XynHTML.createRoot(() =>
- *   XynTag("div", null,
- *    text`Hello, ${name}!`
- *   ), "#app");
- * render();
+ * const container = new XynTag("div");
+ * container.children = [text`Hello, ${name}!`];
+ * 
+ * document.body.appendChild(container.render());
+ * name.value = "XynHTML"; // Updates text to "Hello, XynHTML!"
  */
 export const text = (s, ...v) => new XynText().create(s, ...v);
