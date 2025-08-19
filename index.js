@@ -1,4 +1,3 @@
-
 // XynHTML Import Documentation
 outputHeader("XynHTML Import Documentation");
 outputCode(`<span class="comment">// Import the XynHTML library functions</span>
@@ -689,13 +688,13 @@ globalThemeButton.onclick = () => {
     localStorage.setItem('xynhtml-theme', newTheme);
     applyGlobalTheme(newTheme);
     updateGlobalThemeButton();
-    
+
     // Show confirmation message
     const confirmation = document.createElement('div');
     confirmation.style.cssText = 'position: fixed; top: 60px; right: 10px; z-index: 1001; background: #4CAF50; color: white; padding: 10px; border-radius: 5px; font-size: 14px;';
     confirmation.textContent = `Theme preference saved: ${newTheme}`;
     document.body.appendChild(confirmation);
-    
+
     setTimeout(() => {
         document.body.removeChild(confirmation);
     }, 3000);
@@ -953,8 +952,32 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
 });
 
 // Observer to apply theme to newly created example containers
-const observer = new MutationObserver(() => {
-    applyGlobalTheme(globalTheme.value);
+const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+            mutation.addedNodes.forEach((node) => {
+                if (node.nodeType === 1) { // Element node
+                    const containers = node.classList?.contains('example-container') 
+                        ? [node] 
+                        : Array.from(node.querySelectorAll?.('.example-container') || []);
+
+                    containers.forEach(container => {
+                        const theme = globalTheme.value;
+                        container.className = `example-container theme-${theme}`;
+                        if (theme === 'dark') {
+                            container.style.backgroundColor = '#2d2d2d';
+                            container.style.borderColor = '#555';
+                            container.style.color = '#ffffff';
+                        } else {
+                            container.style.backgroundColor = '#f9f9f9';
+                            container.style.borderColor = '#ddd';
+                            container.style.color = '#000000';
+                        }
+                    });
+                }
+            });
+        }
+    });
 });
 
 observer.observe(document.body, {

@@ -41,6 +41,52 @@ pre {
   overflow-x: auto;
   margin: 16px 0;
   border-left: 4px solid color-mix(in oklab, currentColor 20%, var(--color-background));
+  transition: all 0.2s ease;
+}
+
+/* Enhanced theme classes for better control */
+.theme-light {
+  --color-background: #f8f8f8;
+  background-color: var(--color-background);
+  color: #000000;
+}
+
+.theme-dark {
+  --color-background: #121212;
+  background-color: var(--color-background);
+  color: #ffffff;
+}
+
+/* Button theming */
+button {
+  transition: all 0.2s ease;
+  border: 1px solid color-mix(in oklab, currentColor 20%, var(--color-background));
+  background-color: color-mix(in oklab, currentColor 10%, var(--color-background));
+  color: currentColor;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: color-mix(in oklab, currentColor 15%, var(--color-background));
+  border-color: color-mix(in oklab, currentColor 30%, var(--color-background));
+}
+
+/* Input theming */
+input {
+  transition: all 0.2s ease;
+  border: 1px solid color-mix(in oklab, currentColor 20%, var(--color-background));
+  background-color: var(--color-background);
+  color: currentColor;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+input:focus {
+  outline: none;
+  border-color: #007acc;
+  box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
 }
 
 code {
@@ -49,21 +95,25 @@ code {
   line-height: 1.4;
 }
 
-/* Syntax highlighting colors */
+/* Syntax highlighting colors - Light theme */
 .keyword {
   color: #0000FF;
+  font-weight: 600;
 }
 
 .variable {
   color: #001080;
+  font-weight: 500;
 }
 
 .function {
   color: #795E26;
+  font-weight: 500;
 }
 
 .method {
   color: #795E26;
+  font-weight: 500;
 }
 
 .property {
@@ -80,47 +130,88 @@ code {
 
 .number {
   color: #098658;
+  font-weight: 500;
 }
 
 .comment {
   color: #008000;
+  font-style: italic;
 }
 
+/* Dynamic syntax highlighting for dark theme */
+[data-theme="dark"] .keyword,
+.theme-dark .keyword,
 @media (prefers-color-scheme: dark) {
-  .keyword {
+  :root:not([data-theme="light"]) .keyword {
     color: #569CD6;
-    font-weight: bold;
+    font-weight: 600;
   }
+}
 
-  .variable {
+[data-theme="dark"] .variable,
+.theme-dark .variable,
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .variable {
+    color: #9CDCFE;
+    font-weight: 500;
+  }
+}
+
+[data-theme="dark"] .function,
+.theme-dark .function,
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .function {
+    color: #DCDCAA;
+    font-weight: 500;
+  }
+}
+
+[data-theme="dark"] .method,
+.theme-dark .method,
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .method {
+    color: #DCDCAA;
+    font-weight: 500;
+  }
+}
+
+[data-theme="dark"] .property,
+.theme-dark .property,
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .property {
     color: #9CDCFE;
   }
+}
 
-  .function {
-    color: #DCDCAA;
-  }
-
-  .method {
-    color: #DCDCAA;
-  }
-
-  .property {
-    color: #9CDCFE;
-  }
-
-  .string {
+[data-theme="dark"] .string,
+.theme-dark .string,
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .string {
     color: #CE9178;
   }
+}
 
-  .template {
+[data-theme="dark"] .template,
+.theme-dark .template,
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .template {
     color: #CE9178;
   }
+}
 
-  .number {
+[data-theme="dark"] .number,
+.theme-dark .number,
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .number {
     color: #B5CEA8;
+    font-weight: 500;
   }
+}
 
-  .comment {
+[data-theme="dark"] .comment,
+.theme-dark .comment,
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .comment {
     color: #6A9955;
     font-style: italic;
   }
