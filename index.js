@@ -115,12 +115,12 @@ outputCode(`<span class="keyword">const</span> <span class="variable">price</spa
 <span class="keyword">const</span> <span class="variable">taxRate</span> = <span class="function">signal</span>(<span class="number">0.1</span>);
 
 <span class="comment">// Derived signal for subtotal</span>
-<span class="keyword">const</span> [<span class="variable">subtotal</span>, <span class="variable">unsubscribeSubtotal</span>] = <span class="function">derived</span>(() => {
+<span class="keyword">const</span> <span class="variable">subtotal</span> = <span class="function">derived</span>(() => {
     <span class="keyword">return</span> <span class="variable">price</span>.<span class="property">value</span> * <span class="variable">quantity</span>.<span class="property">value</span>;
 }, [<span class="variable">price</span>, <span class="variable">quantity</span>]);
 
 <span class="comment">// Derived signal for total with tax</span>
-<span class="keyword">const</span> [<span class="variable">total</span>, <span class="variable">unsubscribeTotal</span>] = <span class="function">derived</span>(() => {
+<span class="keyword">const</span> <span class="variable">total</span> = <span class="function">derived</span>(() => {
     <span class="keyword">return</span> <span class="variable">subtotal</span>.<span class="property">value</span> * (<span class="number">1</span> + <span class="variable">taxRate</span>.<span class="property">value</span>);
 }, [<span class="variable">subtotal</span>, <span class="variable">taxRate</span>]);`);
 
@@ -135,12 +135,12 @@ effect(() => {
 }, [price, quantity]);
 
 // Derived signal for subtotal
-const [subtotal, unsubscribeSubtotal] = derived(() => {
+const subtotal = derived(() => {
     return price.value * quantity.value;
 }, [price, quantity]);
 
 // Derived signal for total with tax
-const [total, unsubscribeTotal] = derived(() => {
+const total = derived(() => {
     return subtotal.value * (1 + taxRate.value);
 }, [subtotal, taxRate]);
 
@@ -169,8 +169,8 @@ taxRate.value = 0.15;
 // Clean up all subscriptions
 subtotal.unsubscribe(subtotalSubscriber);
 total.unsubscribe(totalSubscriber);
-unsubscribeSubtotal();
-unsubscribeTotal();
+subtotal.unsubscribeDerived();
+total.unsubscribeDerived();
 
 // Example 4: Complex State Management
 outputHeader("Example 4: Complex State Management");
@@ -178,7 +178,7 @@ outputCode(`<span class="keyword">const</span> <span class="variable">todos</spa
 <span class="keyword">const</span> <span class="variable">filter</span> = <span class="function">signal</span>(<span class="string">"all"</span>); <span class="comment">// "all", "completed", "pending"</span>
 
 <span class="comment">// Derived signal for filtered todos</span>
-<span class="keyword">const</span> [<span class="variable">filteredTodos</span>, <span class="variable">unsubscribeFiltered</span>] = <span class="function">derived</span>(() => {
+<span class="keyword">const</span> <span class="variable">filteredTodos</span> = <span class="function">derived</span>(() => {
     <span class="keyword">if</span> (<span class="variable">filter</span>.<span class="property">value</span> === <span class="string">"completed"</span>) {
         <span class="keyword">return</span> <span class="variable">todos</span>.<span class="property">value</span>.<span class="method">filter</span>(<span class="variable">todo</span> => <span class="variable">todo</span>.<span class="property">completed</span>);
     } <span class="keyword">else if</span> (<span class="variable">filter</span>.<span class="property">value</span> === <span class="string">"pending"</span>) {
@@ -191,7 +191,7 @@ const todos = signal([]);
 const filter = signal("all"); // "all", "completed", "pending"
 
 // Derived signal for filtered todos
-const [filteredTodos, unsubscribeFiltered] = derived(() => {
+const filteredTodos = derived(() => {
     if (filter.value === "completed") {
         return todos.value.filter(todo => todo.completed);
     } else if (filter.value === "pending") {
@@ -201,7 +201,7 @@ const [filteredTodos, unsubscribeFiltered] = derived(() => {
 }, [todos, filter]);
 
 // Derived signal for todo stats
-const [todoStats, unsubscribeStats] = derived(() => {
+const todoStats = derived(() => {
     const total = todos.value.length;
     const completed = todos.value.filter(todo => todo.completed).length;
     const pending = total - completed;
@@ -243,8 +243,8 @@ todos.value = todos.value.map(todo =>
 // Clean up subscriptions
 filteredTodos.unsubscribe(filteredSubscriber);
 todoStats.unsubscribe(statsSubscriber);
-unsubscribeFiltered();
-unsubscribeStats();
+filteredTodos.unsubscribeDerived();
+todoStats.unsubscribeDerived();
 
 // Example 5: Performance - No Unnecessary Updates
 outputHeader("Example 5: Performance - No Unnecessary Updates");
@@ -326,15 +326,15 @@ tempSignal.value = 3;
 outputHeader("Example 7: Chained Derived Values");
 outputCode(`<span class="keyword">const</span> <span class="variable">textInput</span> = <span class="function">signal</span>(<span class="string">"hello world"</span>);
 
-<span class="keyword">const</span> [<span class="variable">uppercase</span>, <span class="variable">unsubscribeUpper</span>] = <span class="function">derived</span>(() => {
+<span class="keyword">const</span> <span class="variable">uppercase</span> = <span class="function">derived</span>(() => {
     <span class="keyword">return</span> <span class="variable">textInput</span>.<span class="property">value</span>.<span class="method">toUpperCase</span>();
 }, [<span class="variable">textInput</span>]);
 
-<span class="keyword">const</span> [<span class="variable">wordCount</span>, <span class="variable">unsubscribeWordCount</span>] = <span class="function">derived</span>(() => {
+<span class="keyword">const</span> <span class="variable">wordCount</span> = <span class="function">derived</span>(() => {
     <span class="keyword">return</span> <span class="variable">uppercase</span>.<span class="property">value</span>.<span class="method">split</span>(<span class="string">' '</span>).<span class="property">length</span>;
 }, [<span class="variable">uppercase</span>]);
 
-<span class="keyword">const</span> [<span class="variable">analysis</span>, <span class="variable">unsubscribeAnalysis</span>] = <span class="function">derived</span>(() => {
+<span class="keyword">const</span> <span class="variable">analysis</span> = <span class="function">derived</span>(() => {
     <span class="keyword">return</span> {
         <span class="property">original</span>: <span class="variable">textInput</span>.<span class="property">value</span>,
         <span class="property">uppercase</span>: <span class="variable">uppercase</span>.<span class="property">value</span>,
@@ -345,15 +345,15 @@ outputCode(`<span class="keyword">const</span> <span class="variable">textInput<
 
 const textInput2 = signal("hello world");
 
-const [uppercase, unsubscribeUpper] = derived(() => {
+const uppercase = derived(() => {
     return textInput2.value.toUpperCase();
 }, [textInput2]);
 
-const [wordCount, unsubscribeWordCount] = derived(() => {
+const wordCount = derived(() => {
     return uppercase.value.split(' ').length;
 }, [uppercase]);
 
-const [analysis, unsubscribeAnalysis] = derived(() => {
+const analysis = derived(() => {
     return {
         original: textInput2.value,
         uppercase: uppercase.value,
@@ -372,9 +372,9 @@ textInput2.value = "Building reactive applications made simple";
 
 // Clean up all subscriptions
 analysis.unsubscribe(analysisSubscriber);
-unsubscribeAnalysis();
-unsubscribeWordCount();
-unsubscribeUpper();
+analysis.unsubscribeDerived();
+wordCount.unsubscribeDerived();
+uppercase.unsubscribeDerived();
 
 // Example 8: Multiple Subscribers to One Signal
 outputHeader("Example 8: Multiple Subscribers to One Signal");
@@ -844,15 +844,15 @@ outputHeader("Example 13: Form with Reactive Validation");
 outputCode(`<span class="keyword">const</span> <span class="variable">email</span> = <span class="function">signal</span>(<span class="string">""</span>);
 <span class="keyword">const</span> <span class="variable">password</span> = <span class="function">signal</span>(<span class="string">""</span>);
 
-<span class="keyword">const</span> [<span class="variable">isValidEmail</span>, <span class="variable">unsubscribeEmail</span>] = <span class="function">derived</span>(() => {
+<span class="keyword">const</span> <span class="variable">isValidEmail</span> = <span class="function">derived</span>(() => {
     <span class="keyword">return</span> /<span class="regex">^[^\s@]+@[^\s@]+\.[^\s@]+$</span>/<span class="method">test</span>(<span class="variable">email</span>.<span class="property">value</span>);
 }, [<span class="variable">email</span>]);
 
-<span class="keyword">const</span> [<span class="variable">isValidPassword</span>, <span class="variable">unsubscribePassword</span>] = <span class="function">derived</span>(() => {
+<span class="keyword">const</span> <span class="variable">isValidPassword</span> = <span class="function">derived</span>(() => {
     <span class="keyword">return</span> <span class="variable">password</span>.<span class="property">value</span>.<span class="property">length</span> >= <span class="number">8</span>;
 }, [<span class="variable">password</span>]);
 
-<span class="keyword">const</span> [<span class="variable">isFormValid</span>, <span class="variable">unsubscribeForm</span>] = <span class="function">derived</span>(() => {
+<span class="keyword">const</span> <span class="variable">isFormValid</span> = <span class="function">derived</span>(() => {
     <span class="keyword">return</span> <span class="variable">isValidEmail</span>.<span class="property">value</span> && <span class="variable">isValidPassword</span>.<span class="property">value</span>;
 }, [<span class="variable">isValidEmail</span>, <span class="variable">isValidPassword</span>]);
 
@@ -864,15 +864,15 @@ const email = signal("");
 const password = signal("");
 
 // Derived validation signals
-const [isValidEmail, unsubscribeEmail] = derived(() => {
+const isValidEmail = derived(() => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value);
 }, [email]);
 
-const [isValidPassword, unsubscribePassword] = derived(() => {
+const isValidPassword = derived(() => {
     return password.value.length >= 8;
 }, [password]);
 
-const [isFormValid, unsubscribeForm] = derived(() => {
+const isFormValid = derived(() => {
     return isValidEmail.value && isValidPassword.value;
 }, [isValidEmail, isValidPassword]);
 
