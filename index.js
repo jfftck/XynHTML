@@ -629,36 +629,118 @@ output("Dynamic list created below:");
 const mountList = createRoot(listContainer, "body");
 mountList();
 
+// Global theme management
+const savedTheme = localStorage.getItem('xynhtml-theme') || getSystemTheme();
+const globalTheme = signal(savedTheme);
+
+// Apply global theme
+function applyGlobalTheme(theme) {
+    const isDark = theme === 'dark';
+    document.documentElement.style.setProperty('--color-background', isDark ? '#121212' : '#f8f8f8');
+    document.body.style.backgroundColor = isDark ? '#121212' : '#f8f8f8';
+    document.body.style.color = isDark ? '#ffffff' : '#000000';
+
+    // Update all example containers
+    document.querySelectorAll('.example-container').forEach(container => {
+        if (isDark) {
+            container.style.backgroundColor = '#2d2d2d';
+            container.style.borderColor = '#666';
+            container.style.color = '#ffffff';
+        } else {
+            container.style.backgroundColor = '#f9f9f9';
+            container.style.borderColor = '#ddd';
+            container.style.color = '#000000';
+        }
+    });
+
+    // Update form elements
+    document.querySelectorAll('input, button').forEach(element => {
+        if (element.type !== 'button' && element.tagName !== 'BUTTON') {
+            if (isDark) {
+                element.style.backgroundColor = '#3d3d3d';
+                element.style.color = '#ffffff';
+                element.style.borderColor = '#666';
+            } else {
+                element.style.backgroundColor = '#ffffff';
+                element.style.color = '#000000';
+                element.style.borderColor = '#ccc';
+            }
+        }
+    });
+}
+
+// Create global theme switcher at top of page
+const globalThemeSwitcher = document.createElement('div');
+globalThemeSwitcher.style.cssText = 'position: fixed; top: 10px; right: 10px; z-index: 1000; background: rgba(0,0,0,0.1); padding: 10px; border-radius: 5px; backdrop-filter: blur(10px);';
+
+const globalThemeButton = document.createElement('button');
+globalThemeButton.style.cssText = 'padding: 8px 16px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px);';
+
+// Update global theme button text
+const updateGlobalThemeButton = () => {
+    globalThemeButton.textContent = `Theme: ${globalTheme.value === 'light' ? '☀️ Light' : '🌙 Dark'}`;
+};
+
+updateGlobalThemeButton();
+
+globalThemeButton.onclick = () => {
+    const newTheme = globalTheme.value === 'light' ? 'dark' : 'light';
+    globalTheme.value = newTheme;
+    localStorage.setItem('xynhtml-theme', newTheme);
+    applyGlobalTheme(newTheme);
+    updateGlobalThemeButton();
+    
+    // Show confirmation message
+    const confirmation = document.createElement('div');
+    confirmation.style.cssText = 'position: fixed; top: 60px; right: 10px; z-index: 1001; background: #4CAF50; color: white; padding: 10px; border-radius: 5px; font-size: 14px;';
+    confirmation.textContent = `Theme preference saved: ${newTheme}`;
+    document.body.appendChild(confirmation);
+    
+    setTimeout(() => {
+        document.body.removeChild(confirmation);
+    }, 3000);
+};
+
+globalThemeSwitcher.appendChild(globalThemeButton);
+document.body.appendChild(globalThemeSwitcher);
+
+// Apply initial theme
+applyGlobalTheme(globalTheme.value);
+
 // Example 12: Conditional Rendering with CSS Classes and createRoot
 outputHeader("Example 12: Conditional Rendering and CSS Classes");
 outputCode(`<span class="keyword">const</span> <span class="variable">isVisible</span> = <span class="function">signal</span>(<span class="keyword">true</span>);
-<span class="keyword">const</span> <span class="variable">theme</span> = <span class="function">signal</span>(<span class="string">"light"</span>);
+<span class="keyword">const</span> <span class="variable">localTheme</span> = <span class="function">signal</span>(<span class="variable">globalTheme</span>.<span class="property">value</span>);
 <span class="keyword">const</span> <span class="variable">message</span> = <span class="function">signal</span>(<span class="string">"Hello from XynHTML!"</span>);
 
-<span class="comment">// Create a styled card</span>
+<span class="comment">// Create a styled card that responds to both global and local theme</span>
 <span class="keyword">const</span> <span class="variable">card</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"div"</span>);
 <span class="keyword">const</span> <span class="variable">cardTitle</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"h3"</span>);
 <span class="variable">cardTitle</span>.<span class="property">children</span> = [<span class="function">text</span><span class="template">\`Interactive Card\`</span>];
 <span class="keyword">const</span> <span class="variable">cardContent</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"p"</span>);
 <span class="variable">cardContent</span>.<span class="property">children</span> = [<span class="function">text</span><span class="template">\`\${<span class="variable">message</span>}\`</span>];
 
-<span class="comment">// Style the card</span>
-<span class="keyword">const</span> <span class="variable">cardElement</span> = <span class="variable">card</span>.<span class="method">render</span>();
-<span class="variable">cardElement</span>.<span class="property">className</span> = <span class="string">"example-container"</span>;
-<span class="variable">cardElement</span>.<span class="property">appendChild</span>(<span class="variable">cardTitle</span>.<span class="method">render</span>());
-<span class="variable">cardElement</span>.<span class="property">appendChild</span>(<span class="variable">cardContent</span>.<span class="method">render</span>());
+<span class="comment">// Effect to sync local theme with global theme changes</span>
+<span class="function">effect</span>(() => {
+    <span class="variable">localTheme</span>.<span class="property">value</span> = <span class="variable">globalTheme</span>.<span class="property">value</span>;
+}, [<span class="variable">globalTheme</span>]);
 
 <span class="comment">// Create toggle buttons</span>
 <span class="keyword">const</span> <span class="variable">toggleButton</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"button"</span>);
-<span class="keyword">const</span> <span class="variable">themeButton</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"button"</span>);;
+<span class="keyword">const</span> <span class="variable">themeButton</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"button"</span>);
 
 <span class="keyword">const</span> <span class="variable">conditionalContainer</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"div"</span>);
 <span class="keyword">const</span> <span class="variable">mountConditional</span> = <span class="function">createRoot</span>(<span class="variable">conditionalContainer</span>, <span class="string">"body"</span>);
 <span class="variable">mountConditional</span>();`);
 
 const isVisible = signal(true);
-const theme = signal("light");
+const localTheme = signal(globalTheme.value);
 const message = signal("Hello from XynHTML!");
+
+// Effect to sync local theme with global theme changes
+effect(() => {
+    localTheme.value = globalTheme.value;
+}, [globalTheme]);
 
 // Create a styled card
 const card = new XynTag("div");
@@ -670,7 +752,6 @@ cardElement.style.cssText = `
     border-radius: 8px;
     transition: all 0.3s ease;
     border: 2px solid #007acc;
-    background-color: #f0f8ff;
 `;
 
 // Add content to card
@@ -696,15 +777,18 @@ toggleButtonElement.onclick = () => {
     isVisible.value = !isVisible.value;
 };
 
-// Create theme toggle button
+// Create local theme toggle button
 const themeButton = new XynTag("button");
 const themeButtonElement = themeButton.render();
 themeButtonElement.style.cssText = "padding: 8px 16px; margin: 5px; cursor: pointer;";
-themeButtonElement.textContent = "Toggle Theme";
+themeButtonElement.textContent = "Toggle Local Theme";
 themeButtonElement.onclick = () => {
-    theme.value = theme.value === "light" ? "dark" : "light";
-    // Update card styling based on theme
-    if (theme.value === "dark") {
+    localTheme.value = localTheme.value === "light" ? "dark" : "light";
+};
+
+// Effect to handle card theme styling
+const cardThemeEffect = effect(() => {
+    if (localTheme.value === "dark") {
         cardElement.style.backgroundColor = "#2d2d2d";
         cardElement.style.color = "#ffffff";
         cardElement.style.borderColor = "#666";
@@ -713,7 +797,7 @@ themeButtonElement.onclick = () => {
         cardElement.style.color = "#000000";
         cardElement.style.borderColor = "#007acc";
     }
-};
+}, [localTheme]);
 
 // Effect to handle visibility
 const visibilityEffect = effect(() => {
@@ -858,48 +942,19 @@ function getSystemTheme() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
-// Apply theme to document and example containers
-function applySystemTheme() {
-    const isDark = getSystemTheme() === 'dark';
-    document.documentElement.style.setProperty('--color-background', isDark ? '#121212' : '#f8f8f8');
-    document.body.style.color = isDark ? '#ffffff' : '#000000';
-
-    // Update all example containers to match system theme
-    document.querySelectorAll('.example-container').forEach(container => {
-        if (isDark) {
-            container.style.backgroundColor = '#2d2d2d';
-            container.style.borderColor = '#666';
-            container.style.color = '#ffffff';
-        } else {
-            container.style.backgroundColor = '#f9f9f9';
-            container.style.borderColor = '#ddd';
-            container.style.color = '#000000';
-        }
-    });
-
-    // Update form elements to match theme
-    document.querySelectorAll('input, button').forEach(element => {
-        if (isDark) {
-            element.style.backgroundColor = '#3d3d3d';
-            element.style.color = '#ffffff';
-            element.style.borderColor = '#666';
-        } else {
-            element.style.backgroundColor = '#ffffff';
-            element.style.color = '#000000';
-            element.style.borderColor = '#ccc';
-        }
-    });
-}
-
-// Listen for system theme changes
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applySystemTheme);
-
-// Apply initial theme
-applySystemTheme();
+// Listen for system theme changes and update global theme if no preference is stored
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (!localStorage.getItem('xynhtml-theme')) {
+        const systemTheme = getSystemTheme();
+        globalTheme.value = systemTheme;
+        applyGlobalTheme(systemTheme);
+        updateGlobalThemeButton();
+    }
+});
 
 // Observer to apply theme to newly created example containers
 const observer = new MutationObserver(() => {
-    applySystemTheme();
+    applyGlobalTheme(globalTheme.value);
 });
 
 observer.observe(document.body, {
