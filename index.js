@@ -1,4 +1,3 @@
-
 import { signal, effect, derived, XynTag, text, createRoot } from "./xyn_html.js"
 
 // Create output function to append to DOM
@@ -222,7 +221,7 @@ todoStats.unsubscribe(statsSubscriber);
 unsubscribeFiltered();
 unsubscribeStats();
 
-// Example 5: Performance - No unnecessary updates
+// Example 5: Performance - No Unnecessary Updates
 outputHeader("Example 5: Performance - No Unnecessary Updates");
 outputCode(`<span class="keyword">const</span> <span class="variable">performanceSignal</span> = <span class="function">signal</span>(<span class="string">"test"</span>);
 <span class="keyword">let</span> <span class="variable">updateCount</span> = <span class="number">0</span>;
@@ -486,11 +485,13 @@ buttonElement.onclick = () => {
     buttonText.value = `Clicked ${clickCount.value} times`;
 };
 
-// Create a div container with some styling
+// Create a div container and mount using createRoot
 const container = new XynTag("div");
-container.children = [button];
 const containerElement = container.render();
+containerElement.className = "example-container";
 containerElement.style.cssText = "margin: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;";
+
+containerElement.appendChild(buttonElement);
 
 output("Interactive button created below:");
 const mount = createRoot(container, "body");
@@ -569,6 +570,7 @@ const listEffect = effect(() => {
 // Create main container
 const listContainer = new XynTag("div");
 const listContainerElement = listContainer.render();
+listContainerElement.className = "example-container";
 listContainerElement.style.cssText = "margin: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;";
 
 listContainerElement.appendChild(inputElement);
@@ -608,10 +610,11 @@ const message = signal("Hello from XynHTML!");
 // Create a styled card
 const card = new XynTag("div");
 const cardElement = card.render();
+cardElement.className = "example-container";
 cardElement.style.cssText = `
-    padding: 20px; 
-    margin: 10px; 
-    border-radius: 8px; 
+    padding: 20px;
+    margin: 10px;
+    border-radius: 8px;
     transition: all 0.3s ease;
     border: 2px solid #007acc;
     background-color: #f0f8ff;
@@ -667,6 +670,7 @@ const visibilityEffect = effect(() => {
 // Create container for this example
 const conditionalContainer = new XynTag("div");
 const conditionalContainerElement = conditionalContainer.render();
+conditionalContainerElement.className = "example-container";
 conditionalContainerElement.style.cssText = "margin: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px;";
 
 conditionalContainerElement.appendChild(toggleButtonElement);
@@ -717,6 +721,7 @@ const [isFormValid, unsubscribeForm] = derived(() => {
 // Create form elements
 const form = new XynTag("form");
 const formElement = form.render();
+formElement.className = "example-container";
 formElement.style.cssText = "padding: 20px; border: 1px solid #ddd; border-radius: 5px; margin: 20px; background-color: #fafafa;";
 
 // Email input
@@ -794,3 +799,57 @@ mountForm();
 // unsubscribeEmail();
 // unsubscribePassword();
 // unsubscribeForm();
+
+// Detect system theme preference
+function getSystemTheme() {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+// Apply theme to document and example containers
+function applySystemTheme() {
+    const isDark = getSystemTheme() === 'dark';
+    document.documentElement.style.setProperty('--color-background', isDark ? '#121212' : '#f8f8f8');
+    document.body.style.color = isDark ? '#ffffff' : '#000000';
+
+    // Update all example containers to match system theme
+    document.querySelectorAll('.example-container').forEach(container => {
+        if (isDark) {
+            container.style.backgroundColor = '#2d2d2d';
+            container.style.borderColor = '#666';
+            container.style.color = '#ffffff';
+        } else {
+            container.style.backgroundColor = '#f9f9f9';
+            container.style.borderColor = '#ddd';
+            container.style.color = '#000000';
+        }
+    });
+
+    // Update form elements to match theme
+    document.querySelectorAll('input, button').forEach(element => {
+        if (isDark) {
+            element.style.backgroundColor = '#3d3d3d';
+            element.style.color = '#ffffff';
+            element.style.borderColor = '#666';
+        } else {
+            element.style.backgroundColor = '#ffffff';
+            element.style.color = '#000000';
+            element.style.borderColor = '#ccc';
+        }
+    });
+}
+
+// Listen for system theme changes
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applySystemTheme);
+
+// Apply initial theme
+applySystemTheme();
+
+// Observer to apply theme to newly created example containers
+const observer = new MutationObserver(() => {
+    applySystemTheme();
+});
+
+observer.observe(document.body, {
+    childList: true,
+    subtree: true
+});
