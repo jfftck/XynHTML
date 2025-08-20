@@ -1,27 +1,3 @@
-// XynHTML Import Documentation
-outputHeader("XynHTML Import Documentation");
-outputCode(`<span class="comment">// Import the XynHTML library functions</span>
-<span class="keyword">import</span> { 
-    <span class="variable">signal</span>, 
-    <span class="variable">effect</span>, 
-    <span class="variable">derived</span>, 
-    <span class="variable">XynTag</span>, 
-    <span class="variable">text</span>, 
-    <span class="variable">createRoot</span> 
-} <span class="keyword">from</span> <span class="string">"./xyn_html.js"</span>
-
-<span class="comment">// Alternative: Import the main class and use static methods</span>
-<span class="keyword">import</span> <span class="variable">XynHTML</span> <span class="keyword">from</span> <span class="string">"./xyn_html.js"</span>;
-<span class="keyword">const</span> <span class="variable">mySignal</span> = <span class="variable">XynHTML</span>.<span class="method">signal</span>(<span class="string">"Hello"</span>);
-
-<span class="comment">// Available exports:</span>
-<span class="comment">// - signal: Create reactive signals</span>
-<span class="comment">// - effect: Create side effects that react to signal changes</span>
-<span class="comment">// - derived: Create computed signals</span>
-<span class="comment">// - XynTag: Create HTML elements</span>
-<span class="comment">// - text: Create reactive text nodes</span>
-<span class="comment">// - createRoot: Mount components to DOM</span>`);
-
 
 import { signal, effect, derived, XynTag, text, createRoot } from "./xyn_html.js"
 
@@ -45,6 +21,30 @@ function outputCode(code) {
     pre.appendChild(codeElement);
     document.body.appendChild(pre);
 }
+
+// XynHTML Import Documentation
+outputHeader("XynHTML Import Documentation");
+outputCode(`<span class="comment">// Import the XynHTML library functions</span>
+<span class="keyword">import</span> { 
+    <span class="variable">signal</span>, 
+    <span class="variable">effect</span>, 
+    <span class="variable">derived</span>, 
+    <span class="variable">XynTag</span>, 
+    <span class="variable">text</span>, 
+    <span class="variable">createRoot</span> 
+} <span class="keyword">from</span> <span class="string">"./xyn_html.js"</span>
+
+<span class="comment">// Alternative: Import the main class and use static methods</span>
+<span class="keyword">import</span> <span class="variable">XynHTML</span> <span class="keyword">from</span> <span class="string">"./xyn_html.js"</span>;
+<span class="keyword">const</span> <span class="variable">mySignal</span> = <span class="variable">XynHTML</span>.<span class="method">signal</span>(<span class="string">"Hello"</span>);
+
+<span class="comment">// Available exports:</span>
+<span class="comment">// - signal: Create reactive signals</span>
+<span class="comment">// - effect: Create side effects that react to signal changes</span>
+<span class="comment">// - derived: Create computed signals</span>
+<span class="comment">// - XynTag: Create HTML elements</span>
+<span class="comment">// - text: Create reactive text nodes</span>
+<span class="comment">// - createRoot: Mount components to DOM</span>`);
 
 // Example 1: Basic Signal Usage
 outputHeader("Example 1: Basic Signal Usage");
@@ -725,9 +725,6 @@ globalThemeButton.onclick = () => {
 globalThemeSwitcher.appendChild(globalThemeButton);
 document.body.appendChild(globalThemeSwitcher);
 
-// Apply initial theme
-applyGlobalTheme(globalTheme.value);
-
 // Example 12: Conditional Rendering with CSS Classes and createRoot
 outputHeader("Example 12: Conditional Rendering and CSS Classes");
 outputCode(`<span class="keyword">const</span> <span class="variable">isVisible</span> = <span class="function">signal</span>(<span class="keyword">true</span>);
@@ -1006,3 +1003,6 @@ observer.observe(document.body, {
     childList: true,
     subtree: true
 });
+
+// Apply initial theme
+applyGlobalTheme(globalTheme.value);

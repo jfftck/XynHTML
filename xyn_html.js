@@ -124,10 +124,9 @@ class XynHTML {
      * @returns {{unsubscribeDerived: () => void} extends XynHTML.signal} signal extended with unsubscribeDrived method
      */
     static derived(fn, signals) {
-        const signal = signal(fn());
-        signal.prototype.unsubscribeDerived = effect(() => signal.value = fn(), signals);
+        const derivedSignal = XynHTML.signal(fn());
 
-        return signal;
+        return Object.assign(derivedSignal, { unsubscribeDerived: XynHTML.effect(() => derivedSignal.value = fn(), signals) });
     }
 }
 
