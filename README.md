@@ -15,6 +15,30 @@ A lightweight, reactive library for building web applications using a declarativ
 - **Form Validation**: Build reactive forms with real-time validation
 - **No Build Step**: Works directly in the browser with ES modules
 
+## Implementation Status
+
+Below is the current implementation status of XynHTML's planned features:
+
+### Core Reactivity
+- ✅ **Signal System** - Basic reactive state management with subscription/notification
+- ✅ **Effect System** - Automatic side effect execution when signals change
+- ✅ **Derived Values** - Computed signals that update based on dependencies
+
+### Component System
+- ✅ **DOM Element Components** - XynTag class for creating reactive HTML elements
+- ✅ **Dynamic Text Rendering** - Template literal text nodes with signal interpolation
+- ❌ **HTML String Parser** - Parse HTML strings into XynTag components
+- ❌ **Emmet Parser** - CSS selector-like syntax for rapid component creation
+
+### Advanced Data Structures
+- ❌ **List-like Signal** - Reactive arrays with built-in list operations
+- ❌ **Map-like Signal** - Reactive key-value stores with object-like interface
+- ❌ **HTML Fragments** - Document fragment support for efficient DOM updates
+
+### Legend
+- ✅ **Implemented** - Feature is complete and functional
+- ❌ **Planned** - Feature is planned but not yet implemented
+
 ## Quick Start
 
 1. Import XynHTML in your project:
