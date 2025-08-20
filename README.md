@@ -1,6 +1,8 @@
 
 # XynHTML
 
+> ⚠️ **Warning**: This library is unstable and still under active development. APIs may change without notice. Use at your own risk in production environments.
+
 A lightweight, reactive library for building web applications using a declarative syntax. XynHTML is inspired by React and Vue, but focuses on simplicity and performance with built-in reactive signals.
 
 ## Features
