@@ -1,4 +1,3 @@
-
 import { signal, effect, derived, XynTag, text, createRoot } from "./xyn_html.js"
 
 // Create output function to append to DOM
@@ -635,11 +634,11 @@ const globalTheme = signal(savedTheme);
 // Apply global theme
 function applyGlobalTheme(theme) {
     const isDark = theme === 'dark';
-    
+
     // Set data attribute for CSS targeting
     document.body.setAttribute('data-theme', theme);
     document.documentElement.setAttribute('data-theme', theme);
-    
+
     document.documentElement.style.setProperty('--color-background', isDark ? '#121212' : '#f8f8f8');
     document.body.style.backgroundColor = isDark ? '#121212' : '#f8f8f8';
     document.body.style.color = isDark ? '#ffffff' : '#000000';
@@ -731,17 +730,17 @@ outputCode(`<span class="keyword">const</span> <span class="variable">isVisible<
 <span class="keyword">const</span> <span class="variable">localTheme</span> = <span class="function">signal</span>(<span class="variable">globalTheme</span>.<span class="property">value</span>);
 <span class="keyword">const</span> <span class="variable">message</span> = <span class="function">signal</span>(<span class="string">"Hello from XynHTML!"</span>);
 
+<span class="comment">// Effect to sync local theme with global theme changes</span>
+<span class="function">effect</span>(() => {
+    <span class="variable">localTheme</span>.<span class="property">value</span> = <span class="variable">globalTheme</span>.<span class="property">value</span>;
+}, [<span class="variable">globalTheme</span>]);
+
 <span class="comment">// Create a styled card that responds to both global and local theme</span>
 <span class="keyword">const</span> <span class="variable">card</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"div"</span>);
 <span class="keyword">const</span> <span class="variable">cardTitle</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"h3"</span>);
 <span class="variable">cardTitle</span>.<span class="property">children</span> = [<span class="function">text</span><span class="template">\`Interactive Card\`</span>];
 <span class="keyword">const</span> <span class="variable">cardContent</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"p"</span>);
 <span class="variable">cardContent</span>.<span class="property">children</span> = [<span class="function">text</span><span class="template">\`\${<span class="variable">message</span>}\`</span>];
-
-<span class="comment">// Effect to sync local theme with global theme changes</span>
-<span class="function">effect</span>(() => {
-    <span class="variable">localTheme</span>.<span class="property">value</span> = <span class="variable">globalTheme</span>.<span class="property">value</span>;
-}, [<span class="variable">globalTheme</span>]);
 
 <span class="comment">// Create toggle buttons</span>
 <span class="keyword">const</span> <span class="variable">toggleButton</span> = <span class="keyword">new</span> <span class="function">XynTag</span>(<span class="string">"button"</span>);
@@ -756,7 +755,7 @@ const localTheme = signal(globalTheme.value);
 const message = signal("Hello from XynHTML!");
 
 // Effect to sync local theme with global theme changes
-effect(() => {
+const localThemeSyncEffect = effect(() => {
     localTheme.value = globalTheme.value;
 }, [globalTheme]);
 
