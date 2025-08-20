@@ -35,6 +35,10 @@ Below is the current implementation status of XynHTML's planned features:
 - ❌ **Map-like Signal** - Reactive key-value stores with object-like interface
 - ❌ **HTML Fragments** - Document fragment support for efficient DOM updates
 
+### Developer Experience & Tooling
+- ❌ **Code Parser with Syntax Highlighting** - Parse and highlight JavaScript, HTML, CSS, and other languages within XynTag components
+- ❌ **Widget System** - Pre-built reactive components (buttons, forms, modals, tooltips, etc.) for rapid development
+
 ### Legend
 - ✅ **Implemented** - Feature is complete and functional
 - ❌ **Planned** - Feature is planned but not yet implemented
