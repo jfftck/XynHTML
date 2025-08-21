@@ -29,6 +29,7 @@ Below is the current implementation status of XynHTML's planned features:
 - ✅ **Dynamic Text Rendering** - Template literal text nodes with signal interpolation
 - 🟥 **HTML String Parser** - Parse HTML strings into XynTag components
 - 🟥 **Emmet Parser** - CSS selector-like syntax for rapid component creation
+- 🟥 **Markdown Parser** - Convert Markdown syntax to XynTag components with reactive content
 
 ### Advanced Data Structures
 - 🟥 **List-like Signal** - Reactive arrays with built-in list operations
