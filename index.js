@@ -1,4 +1,4 @@
-import { signal, effect, derived, XynTag, text, createRoot } from "./xyn_html.js"
+import { signal, effect, derived, XynTag, text, createRoot } from "./src/xyn_html.js"
 
 // Create output function to append to DOM
 function output(message) {
