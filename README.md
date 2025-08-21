@@ -39,6 +39,13 @@ Below is the current implementation status of XynHTML's planned features:
 - ❌ **Code Parser with Syntax Highlighting** - Parse and highlight JavaScript, HTML, CSS, and other languages within XynTag components
 - ❌ **Widget System** - Pre-built reactive components (buttons, forms, modals, tooltips, etc.) for rapid development
 
+### Routing & Navigation
+- ❌ **Client-Side Routing** - Hash-based and history API routing for single-page applications
+- ❌ **Route Parameters** - Dynamic route segments with parameter extraction
+- ❌ **Route Guards** - Authentication and authorization checks before route activation
+- ❌ **Nested Routing** - Hierarchical route structures for complex applications
+- ❌ **Route Transitions** - Animated transitions between routes with lifecycle hooks
+
 ### Legend
 - ✅ **Implemented** - Feature is complete and functional
 - ❌ **Planned** - Feature is planned but not yet implemented
