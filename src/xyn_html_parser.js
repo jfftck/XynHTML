@@ -5,7 +5,7 @@ import { XynTag, text } from "./xyn_html.js";
  * Parses a single HTML string into XynHTML elements.
  * @param {string} html_string - The HTML string to parse.
  * @param {XynHTML.signal[]} values - The values to interpolate into the HTML string.
- * @returns {HTMLColletion} - The parsed XynHTML elements.
+ * @returns {HTMLCollection} - The parsed XynHTML elements.
  */
 function parseHTMLString(html) {
     const parser = new DOMParser();
@@ -84,8 +84,11 @@ class XynHTMLParser {
     /**
      * Parses the body of a request into XynHTML elements.
      * @param {XynHTML.signal[]} values - The values to interpolate into the body.
-     * 
-    static parseBody(values) {
+     */
+    static parseBody(...values) {
         return parseHTML()
     }
 }
+
+/** @type {typeof XynHTMLParser.parse} */
+export const html = XynHTMLParser.parse;
