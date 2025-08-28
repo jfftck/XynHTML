@@ -27,18 +27,42 @@
 
 class XynHTML {
     /**
-     * @type {Map<Function, int>}
+     * @template T
+     * @type {Map<() => void | (oldValue: T) => void, int>}
      */
     static subscribers = new Map();
 
-    static createRoot(XynTag, elementName) {
+    /**
+     * @param {XynElement} XynElement
+     * @param {string} elementName
+     * @returns {() => HTMLElement}
+     * @description Creates a mount function for a given XynElement and element name.
+     */
+    static createMount(XynElement, elementName) {
         const el = document.querySelector(elementName);
 
         if (el) {
-            return () => el.appendChild(XynTag.render());
+            return () => el.appendChild(XynElement.render(el));
         }
 
         throw new Error(`Element "${elementName}" not found`);
+    }
+
+    /**
+     * @param {XynElement} XynElement
+     * @param {string} elementName
+     * @returns {() => HTMLElement}
+     * @description Creates a root mount function for a given XynTag and element name.
+     * This will clear the element before mounting the XynTag.
+     */
+    static createRoot(XynElement, elementName) {
+        const el = document.querySelector(elementName);
+
+        if (el) {
+            el.innerHTML = "";
+        }
+
+        return XynHTML.createMount(XynElement, elementName);
     }
 
     /**
@@ -65,12 +89,14 @@ class XynHTML {
                     return;
                 }
 
+
+                const oldValue = value;
                 value = newValue;
-                registeredSubscribers.keys().forEach(subscriber => subscriber());
+                registeredSubscribers.keys().forEach(subscriber => subscriber(oldValue));
             },
 
             /**
-             * @param {() => void} subscriber
+             * @param {() => void | (prevValue: T) => void} subscriber
              * @param {int} count @default 1
              * @returns {void}
              */
@@ -151,9 +177,21 @@ class XynHTML {
     }
 }
 
+/**
+ * @typedef {object} XynElement
+ * @property {() => HTMLElement | (parent: HTMLElement) => HTMLElement} render
+ */
+
+/**
+ * @class XynTag
+ * @implements {XynElement}
+ * @description XynTag is a class for creating HTML elements with signals.
+ */
 class XynTag {
-    name = "";
+    #name = "";
+    /** @type {Map<string, XynHTML.signal> | null} */
     props = null;
+    /** @type {XynElement[] | null} */
     children = null;
     #classes = "";
     #self = null;
@@ -162,10 +200,10 @@ class XynTag {
      * @template T extends XynHTML.signal
      * @param {string} name
      * @param {Map<string, T> | null} props
-     * @param {XynTag[] | null} children
+     * @param {XynElement[] | null} children
      */
     constructor(name, props = null, children = null) {
-        this.name = name;
+        this.#name = name;
         this.props = props;
         this.children = children;
     }
@@ -219,7 +257,7 @@ class XynTag {
             }
         }
 
-        this.#self = document.createElement(this.name);
+        this.#self = document.createElement(this.#name);
 
         if (this.props) {
             this.props.forEach((key, prop) => {
@@ -231,7 +269,7 @@ class XynTag {
 
         if (this.children) {
             for (const child of this.children) {
-                this.#self.appendChild(child.render());
+                this.#self.appendChild(child.render(this.#self));
             }
         }
 
@@ -245,14 +283,19 @@ class XynTag {
     }
 }
 
+/**
+ * @class XynText
+ * @implements {XynElement}
+ * @description XynText is a class for creating text nodes with signals.
+ */
 class XynText {
     text = null;
     signals = null;
     el = document.createTextNode("");
 
     /**
-     * @param {string[]} text
-     * @param {XynHTML.signal[]} signals
+     * @param {TemplateStringArray} text
+     * @param {...XynHTML.signal} signals
      * @returns {XynText}
      * @example
      * XynText`Hello, ${name}!`
@@ -263,6 +306,15 @@ class XynText {
         return this;
     }
 
+    /**
+     * @returns {Text}
+     * @example
+     * XynText`Hello, ${name}!`.render(document.body)
+     * @description
+     * Renders the text node to the DOM. If the text node already exists, it will
+     * be updated with the new text. If the text node does not exist, it will be
+     * created and appended to the parent element.
+     */
     render() {
         effect(() => {
             let textContent = "";
@@ -275,6 +327,43 @@ class XynText {
         }, this.signals);
 
         return this.el;
+    }
+}
+
+/**
+ * @class XynSwitch
+ * @implements {XynElement}
+ * @description XynSwitch is a class for creating switch cases with signals.
+ */
+class XynSwitch {
+    /**
+     * @type {XynHTML.signal}
+     */
+    switchValue = null;
+    /**
+     * @type {Map<unknown, XynTag>}
+     */
+    valueMap = null;
+    /**
+     * @type {XynTag}
+     */
+    defaultValue = null;
+
+    /**
+     * @param {XynHTML.signal} caseValue
+     * @param {Map<unknown, XynTag>} valueMap
+     * @param {XynTag} defaultValue
+     */
+    constructor(caseValue, valueMap, defaultValue = { render() { return document.createComment("Placeholder") } }) {
+        this.switchValue = derived(() => { return valueMap.get(caseValue.value) ?? defaultValue }, [caseValue]);
+        this.valueMap = valueMap;
+        this.defaultValue = defaultValue;
+    }
+
+    render(parent) {
+        effect((prevValue) => { parent.replaceChild(this.switchValue.value.render(), prevValue) });
+
+        return this.switchValue.value.render();
     }
 }
 
@@ -309,7 +398,7 @@ export default XynHTML;
 /**
  * @export @alias {XynHTML.createRoot}
  */
-export const createRoot = XynHTML.createRoot;
+export const createRoot = XynHTML.createMount;
 /**
  * @export @alias {XynHTML.signal}
  */
@@ -342,7 +431,7 @@ export const derived = XynHTML.derived;
  */
 export { XynTag }
 /**
- * @export @alias {XynText}
+ * @export @type {(s: TemplateStringArray, ...v: XynHTML.signal[]) => XynText})}
  * @description XynText is a class for creating text nodes with signals.
  * @example Basic XynText usage:
  * import { signal, XynTag, text } from "./xyn_html.js";
@@ -355,3 +444,17 @@ export { XynTag }
  * name.value = "XynHTML"; // Updates text to "Hello, XynHTML!"
  */
 export const text = (s, ...v) => new XynText().create(s, ...v);
+/**
+ * @export @alias {XynSwitch}
+ * @description XynSwitch is a class for creating switch cases with signals.
+ * @example Basic XynSwitch usage:
+ * import { signal, XynTag, XynSwitch } from "./xyn_html.js";
+ * const value = signal(1);
+ * const container = new XynTag("div");
+ * const switchCase = new XynSwitch(value, new Map[[1, new XynTag("span", null, [text`Case 1`])], [2, new XynTag("span", null, [text`Case 2`])]]);
+ * container.children = [switchCase];
+ * document.body.appendChild(container.render());
+ * value.value = 2; // Updates text to "Case 2"
+ * value.value = 3; // Updates text to default case
+ */
+export { XynSwitch }

@@ -1,5 +1,4 @@
-import { XynHTML } from "./xyn_html.js";
-import { XynTag, text } from "./xyn_html.js";
+import { XynTag, signal, text } from "./xyn_html.js";
 
 /**
  * Parses a single HTML string into XynHTML elements.
@@ -16,7 +15,7 @@ function parseHTMLString(html) {
 
 /**
  * @param {HTMLCollection} elements
- * @param {XynHTML.signal[]} values
+ * @param {signal[]} values
  * @returns {XynTag[]}
  */
 function parseHTML(elements, values) {
@@ -43,7 +42,7 @@ function parseHTML(elements, values) {
                 return acc;
             }
             const value = element.getAttribute(name);
-            acc.set(name, {get value() { return value; }});
+            acc.set(name, { get value() { return value; } });
 
             return acc;
         }, new Map());
@@ -76,7 +75,7 @@ class XynHTMLParser {
         });
 
         return parseHTML(
-            parseHTMLString(html_fragments.join('')), 
+            parseHTMLString(html_fragments.join('')),
             values
         );
     }
