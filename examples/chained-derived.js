@@ -1,4 +1,4 @@
-import { signal, derived } from "../src/xyn_html.js";
+import { effect, signal, derived } from "../src/xyn_html.js";
 import { createOutput } from "./index.js";
 
 export async function example7() {

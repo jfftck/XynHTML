@@ -12,17 +12,6 @@ export function createOutput(containerId) {
     };
 }
 
-function createOutputFunction(containerId) {
-    return function(message) {
-        const container = document.getElementById(containerId);
-        if (container) {
-            const p = document.createElement('p');
-            p.textContent = message;
-            container.appendChild(p);
-        }
-    };
-}
-
 // Global theme management
 function getSystemTheme() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -177,62 +166,62 @@ async function loadExamples() {
         // Example 1: Basic Signal Usage
         const { example1 } = await import('./basic-signal.js');
         await example1();
-        
+
         setTimeout(async () => {
             // Example 2: Multiple Signals and Effects
             const { example2 } = await import('./multiple-signals.js');
             await example2();
-            
+
             setTimeout(async () => {
                 // Example 3: Derived Values
                 const { example3 } = await import('./derived-values.js');
                 await example3();
-                
+
                 setTimeout(async () => {
                     // Example 4: Complex State Management
                     const { example4 } = await import('./state-management.js');
                     await example4();
-                    
+
                     setTimeout(async () => {
                         // Example 5: Performance
                         const { example5 } = await import('./performance.js');
                         await example5();
-                        
+
                         setTimeout(async () => {
                             // Example 6: Subscription Management
                             const { example6 } = await import('./subscription-management.js');
                             await example6();
-                            
+
                             setTimeout(async () => {
                                 // Example 7: Chained Derived Values
                                 const { example7 } = await import('./chained-derived.js');
                                 await example7();
-                                
+
                                 setTimeout(async () => {
                                     // Example 8: Multiple Subscribers
                                     const { example8 } = await import('./multiple-subscribers.js');
                                     await example8();
-                                    
+
                                     setTimeout(async () => {
                                         // Example 9: Direct Signal Subscription
                                         const { example9 } = await import('./direct-subscription.js');
                                         await example9();
-                                        
+
                                         setTimeout(async () => {
                                             // Example 10: DOM Creation
                                             const { example10 } = await import('./dom-creation.js');
                                             await example10();
-                                            
+
                                             setTimeout(async () => {
                                                 // Example 11: Dynamic List
                                                 const { example11 } = await import('./dynamic-list.js');
                                                 await example11();
-                                                
+
                                                 setTimeout(async () => {
                                                     // Example 12: Conditional Rendering
                                                     const { example12 } = await import('./conditional-rendering.js');
                                                     await example12();
-                                                    
+
                                                     setTimeout(async () => {
                                                         // Example 13: Form Validation
                                                         const { example13 } = await import('./form-validation.js');
@@ -249,7 +238,7 @@ async function loadExamples() {
                 }, 100);
             }, 100);
         }, 100);
-        
+
     } catch (error) {
         console.error('Error loading examples:', error);
     }

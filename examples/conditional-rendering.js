@@ -82,7 +82,7 @@ export async function example12() {
             };
         }
     }, [localTheme]);
-    
+
     effect(() => {
         cardElement.style.backgroundColor = cardTheme.value.backgroundColor;
         cardElement.style.color = cardTheme.value.color;
@@ -100,7 +100,7 @@ export async function example12() {
 
     // Render the switch and append it to the container
     const switchContainer = document.createElement("div");
-    const switchElement = cardSwitch.render();
+    const switchElement = cardSwitch.render(switchContainer);
     switchContainer.appendChild(switchElement);
     conditionalContainerElement.appendChild(switchContainer);
 
