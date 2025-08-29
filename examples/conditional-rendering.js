@@ -1,5 +1,5 @@
 
-import { signal, XynTag, text, XynSwitch } from "../src/xyn_html.js";
+import { signal, XynTag, text, XynSwitch, effect } from "../src/xyn_html.js";
 
 export async function example12() {
     const output = function(message) {

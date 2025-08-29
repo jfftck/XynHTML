@@ -1,5 +1,4 @@
-
-import { signal, effect, derived, XynTag, text, createMount, XynSwitch } from "../src/xyn_html.js";
+import { signal, effect } from "../src/xyn_html.js";
 
 // Utility function to create output in specific containers
 function createOutputFunction(containerId) {
