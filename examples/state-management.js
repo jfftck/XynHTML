@@ -1,15 +1,8 @@
-
-import { signal, derived, effect } from "../src/xyn_html.js";
+import { signal, derived } from "../src/xyn_html.js";
+import { createOutput } from "./index.js";
 
 export async function example4() {
-    const output = function(message) {
-        const container = document.getElementById('example4-output');
-        if (container) {
-            const p = document.createElement('p');
-            p.textContent = message;
-            container.appendChild(p);
-        }
-    };
+    const output = createOutput('example4-output');
 
     const todos = signal([]);
     const filter = signal("all"); // "all", "completed", "pending"

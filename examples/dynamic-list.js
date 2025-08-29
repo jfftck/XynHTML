@@ -1,16 +1,10 @@
 
 
 import { signal, XynTag, text, effect } from "../src/xyn_html.js";
+import { createOutput } from "./index.js";
 
 export async function example11() {
-    const output = function(message) {
-        const container = document.getElementById('example11-output');
-        if (container) {
-            const p = document.createElement('p');
-            p.textContent = message;
-            container.appendChild(p);
-        }
-    };
+    const output = createOutput('example11-output');
 
     const items = signal(["Apple", "Banana", "Cherry"]);
 

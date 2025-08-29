@@ -1,15 +1,9 @@
 
 import { signal } from "../src/xyn_html.js";
+import { createOutput } from "./index.js";
 
 export async function example5() {
-    const output = function(message) {
-        const container = document.getElementById('example5-output');
-        if (container) {
-            const p = document.createElement('p');
-            p.textContent = message;
-            container.appendChild(p);
-        }
-    };
+    const output = createOutput('example5-output');
 
     const performanceSignal = signal("test");
     let updateCount = 0;

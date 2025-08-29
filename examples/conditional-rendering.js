@@ -1,16 +1,10 @@
 
 
 import { signal, XynTag, text, XynSwitch, effect, derived } from "../src/xyn_html.js";
+import { createOutput } from "./index.js";
 
 export async function example12() {
-    const output = function(message) {
-        const container = document.getElementById('example12-output');
-        if (container) {
-            const p = document.createElement('p');
-            p.textContent = message;
-            container.appendChild(p);
-        }
-    };
+    const output = createOutput('example12-output');
 
     // Get global theme from examples/index.js or create fallback
     const globalTheme = signal("light");

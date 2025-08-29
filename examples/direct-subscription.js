@@ -1,15 +1,9 @@
 
 import { signal } from "../src/xyn_html.js";
+import { createOutput } from "./index.js";
 
 export async function example9() {
-    const output = function(message) {
-        const container = document.getElementById('example9-output');
-        if (container) {
-            const p = document.createElement('p');
-            p.textContent = message;
-            container.appendChild(p);
-        }
-    };
+    const output = createOutput('example9-output');
 
     const directSignal = signal("initial");
 

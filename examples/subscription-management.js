@@ -1,15 +1,9 @@
 
 import { signal } from "../src/xyn_html.js";
+import { createOutput } from "./index.js";
 
 export async function example6() {
-    const output = function(message) {
-        const container = document.getElementById('example6-output');
-        if (container) {
-            const p = document.createElement('p');
-            p.textContent = message;
-            container.appendChild(p);
-        }
-    };
+    const output = createOutput('example6-output');
 
     const tempSignal = signal(0);
     let cleanupCount = 0;

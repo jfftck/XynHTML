@@ -1,15 +1,9 @@
 
 import { signal, XynTag, text } from "../src/xyn_html.js";
+import { createOutput } from "./index.js";
 
 export async function example10() {
-    const output = function(message) {
-        const container = document.getElementById('example10-output');
-        if (container) {
-            const p = document.createElement('p');
-            p.textContent = message;
-            container.appendChild(p);
-        }
-    };
+    const output = createOutput('example10-output');
 
     const buttonText = signal("Click me!");
     const clickCount = signal(0);

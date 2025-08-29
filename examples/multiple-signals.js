@@ -1,15 +1,9 @@
 
 import { signal, effect } from "../src/xyn_html.js";
+import { createOutput } from "./index.js";
 
 export async function example2() {
-    const output = function(message) {
-        const container = document.getElementById('example2-output');
-        if (container) {
-            const p = document.createElement('p');
-            p.textContent = message;
-            container.appendChild(p);
-        }
-    };
+    const output = createOutput('example2-output');
 
     const firstName = signal("John");
     const lastName = signal("Doe");

@@ -1,15 +1,8 @@
-
-import { signal, derived, effect } from "../src/xyn_html.js";
+import { signal, derived } from "../src/xyn_html.js";
+import { createOutput } from "./index.js";
 
 export async function example3() {
-    const output = function(message) {
-        const container = document.getElementById('example3-output');
-        if (container) {
-            const p = document.createElement('p');
-            p.textContent = message;
-            container.appendChild(p);
-        }
-    };
+    const output = createOutput('example3-output');
 
     const price = signal(100);
     const quantity = signal(2);

@@ -1,6 +1,17 @@
 import { signal, effect } from "../src/xyn_html.js";
 
 // Utility function to create output in specific containers
+export function createOutput(containerId) {
+    return function(message) {
+        const container = document.getElementById(containerId);
+        if (container) {
+            const p = document.createElement('p');
+            p.textContent = message;
+            container.appendChild(p);
+        }
+    };
+}
+
 function createOutputFunction(containerId) {
     return function(message) {
         const container = document.getElementById(containerId);

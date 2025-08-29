@@ -1,15 +1,8 @@
-
-import { signal, derived, effect } from "../src/xyn_html.js";
+import { signal, derived } from "../src/xyn_html.js";
+import { createOutput } from "./index.js";
 
 export async function example7() {
-    const output = function(message) {
-        const container = document.getElementById('example7-output');
-        if (container) {
-            const p = document.createElement('p');
-            p.textContent = message;
-            container.appendChild(p);
-        }
-    };
+    const output = createOutput('example7-output');
 
     const textInput = signal("hello world");
 

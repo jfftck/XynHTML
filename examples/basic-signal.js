@@ -1,15 +1,9 @@
 
 import { signal } from "../src/xyn_html.js";
+import { createOutput } from "./index.js";
 
 export async function example1() {
-    const output = function(message) {
-        const container = document.getElementById('example1-output');
-        if (container) {
-            const p = document.createElement('p');
-            p.textContent = message;
-            container.appendChild(p);
-        }
-    };
+    const output = createOutput('example1-output');
 
     const counter = signal(0);
     output("Initial counter value: " + counter.value);

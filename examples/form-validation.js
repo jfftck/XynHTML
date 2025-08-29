@@ -1,16 +1,10 @@
 
 
 import { signal, derived, XynTag, text, effect } from "../src/xyn_html.js";
+import { createOutput } from "./index.js";
 
 export async function example13() {
-    const output = function(message) {
-        const container = document.getElementById('example13-output');
-        if (container) {
-            const p = document.createElement('p');
-            p.textContent = message;
-            container.appendChild(p);
-        }
-    };
+    const output = createOutput('example13-output');
 
     const email = signal("");
     const password = signal("");

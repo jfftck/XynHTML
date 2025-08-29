@@ -1,15 +1,9 @@
 
 import { signal } from "../src/xyn_html.js";
+import { createOutput } from "./index.js";
 
 export async function example8() {
-    const output = function(message) {
-        const container = document.getElementById('example8-output');
-        if (container) {
-            const p = document.createElement('p');
-            p.textContent = message;
-            container.appendChild(p);
-        }
-    };
+    const output = createOutput('example8-output');
 
     const sharedSignal = signal("shared");
 
