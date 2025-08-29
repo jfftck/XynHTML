@@ -37,20 +37,20 @@ export async function example13() {
     const emailElement = emailInput.render();
     emailElement.type = "email";
     emailElement.placeholder = "Enter your email";
-    emailElement.style.cssText = "margin: 5px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; display: block; width: 200px;";
+    emailElement.className = "form-input";
 
     const passwordElement = passwordInput.render();
     passwordElement.type = "password";
     passwordElement.placeholder = "Enter your password";
-    passwordElement.style.cssText = "margin: 5px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; display: block; width: 200px;";
+    passwordElement.className = "form-input";
 
     const submitElement = submitButton.render();
     submitElement.type = "submit";
     submitElement.textContent = "Submit";
-    submitElement.style.cssText = "margin: 5px; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;";
+    submitElement.className = "form-button";
 
     const statusElement = validationStatus.render();
-    statusElement.style.cssText = "margin: 10px 0; padding: 10px; border-radius: 4px;";
+    statusElement.className = "validation-status";
 
     // Add event listeners
     emailElement.addEventListener('input', (e) => {
@@ -67,31 +67,29 @@ export async function example13() {
         const passwordValid = isValidPassword.value || password.value === "";
         const formValid = isFormValid.value;
 
-        // Update input styles
-        emailElement.style.borderColor = email.value === "" ? "#ccc" : (emailValid ? "#28a745" : "#dc3545");
-        passwordElement.style.borderColor = password.value === "" ? "#ccc" : (passwordValid ? "#28a745" : "#dc3545");
+        // Update input validation classes
+        emailElement.className = email.value === "" ? "form-input" : 
+            (emailValid ? "form-input valid" : "form-input invalid");
+        passwordElement.className = password.value === "" ? "form-input" : 
+            (passwordValid ? "form-input valid" : "form-input invalid");
 
         // Update submit button
         submitElement.disabled = !formValid;
-        submitElement.style.backgroundColor = formValid ? "#28a745" : "#6c757d";
-        submitElement.style.color = "white";
+        submitElement.className = formValid ? "form-button" : "form-button disabled";
 
         // Update status message
         if (email.value === "" && password.value === "") {
             statusElement.textContent = "Please fill out the form";
-            statusElement.style.backgroundColor = "#e9ecef";
-            statusElement.style.color = "#495057";
+            statusElement.className = "validation-status neutral";
         } else if (formValid) {
             statusElement.textContent = "Form is valid!";
-            statusElement.style.backgroundColor = "#d4edda";
-            statusElement.style.color = "#155724";
+            statusElement.className = "validation-status valid";
         } else {
             const errors = [];
             if (email.value && !emailValid) errors.push("Invalid email format");
             if (password.value && !passwordValid) errors.push("Password must be at least 8 characters");
             statusElement.textContent = `Validation errors: ${errors.join(", ")}`;
-            statusElement.style.backgroundColor = "#f8d7da";
-            statusElement.style.color = "#721c24";
+            statusElement.className = "validation-status invalid";
         }
     }, [isValidEmail, isValidPassword, isFormValid]);
 
@@ -105,10 +103,8 @@ export async function example13() {
     };
 
     // Build form
-    formElement.appendChild(emailElement);
-    formElement.appendChild(passwordElement);
-    formElement.appendChild(submitElement);
-    formElement.appendChild(statusElement);
+    form.children = [emailInput, passwordInput, submitButton, validationStatus];
+    const formElement = form.render();
     formElement.className = "example-container";
 
     const outputContainer = document.getElementById('example13-output');

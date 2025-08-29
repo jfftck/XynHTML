@@ -23,30 +23,36 @@ export async function example12() {
 
     card.children = [cardTitle, cardContent];
     const cardElement = card.render();
-    cardElement.style.cssText = "padding: 20px; border: 2px solid #007bff; border-radius: 8px; background: #f8f9fa; margin: 10px 0;";
+    cardElement.className = "interactive-card";
 
-    // Create placeholder for hidden state
-    const hiddenPlaceholder = new XynTag("div");
-    hiddenPlaceholder.children = [text`Card is hidden`];
-    const hiddenElement = hiddenPlaceholder.render();
-    hiddenElement.style.cssText = "padding: 20px; border: 2px dashed #ccc; border-radius: 8px; color: #666; margin: 10px 0;";
-
-    // Create XynSwitch for conditional rendering
+    // Create XynSwitch for conditional rendering (only show card when visible)
     const cardSwitch = new XynSwitch(isVisible, new Map([
-        [true, card],
-        [false, hiddenPlaceholder]
+        [true, card]
     ]));
 
     // Create toggle button
     const toggleButton = new XynTag("button");
     toggleButton.children = [text`Toggle Visibility`];
     const toggleElement = toggleButton.render();
+    toggleElement.className = "form-button";
     toggleElement.onclick = () => {
         isVisible.value = !isVisible.value;
     };
 
+    // Create status display
+    const statusDiv = new XynTag("div");
+    const statusElement = statusDiv.render();
+    statusElement.className = "status-display";
+    
+    // Effect to update toggle button text and status
+    effect(() => {
+        toggleElement.textContent = isVisible.value ? "Hide Card" : "Show Card";
+        statusElement.textContent = isVisible.value ? "Card is visible" : "Card is hidden";
+        statusElement.style.color = isVisible.value ? "#28a745" : "#6c757d";
+    }, [isVisible]);
+
     const container = new XynTag("div");
-    container.children = [toggleButton, cardSwitch];
+    container.children = [toggleButton, statusDiv, cardSwitch];
     const containerElement = container.render();
     containerElement.className = "example-container";
 

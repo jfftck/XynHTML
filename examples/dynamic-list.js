@@ -1,4 +1,3 @@
-
 import { signal, XynTag, text, effect } from "../src/xyn_html.js";
 
 export async function example11() {
@@ -19,20 +18,26 @@ export async function example11() {
     const addButton = new XynTag("button");
     const itemList = new XynTag("ul");
 
-    // Configure components
-    itemInput.children = [];
-    addButton.children = [text`Add Item`];
-
-    // Render and configure input and button
+    // Render and configure input and button with proper styling
     const inputElement = itemInput.render();
     inputElement.placeholder = "Enter new item";
+    inputElement.className = "form-input";
 
     const buttonElement = addButton.render();
+    buttonElement.className = "form-button";
     buttonElement.onclick = () => {
         if (inputElement.value.trim()) {
             items.value = [...items.value, inputElement.value.trim()];
             inputElement.value = "";
         }
+    };
+
+    const clearButton = new XynTag("button");
+    const clearElement = clearButton.render();
+    clearElement.textContent = "Clear All";
+    clearElement.className = "form-button secondary";
+    clearElement.onclick = () => {
+        items.value = [];
     };
 
     // Effect to update the list when items change
@@ -47,7 +52,7 @@ export async function example11() {
     }, [items]);
 
     // Build the complete list container
-    listContainer.children = [itemInput, addButton, itemList];
+    listContainer.children = [inputElement, buttonElement, clearElement, listElement];
     const containerElement = listContainer.render();
     containerElement.className = "example-container";
 
