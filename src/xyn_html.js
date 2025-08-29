@@ -33,36 +33,36 @@ class XynHTML {
     static subscribers = new Map();
 
     /**
-     * @param {XynElement} XynElement
-     * @param {string} elementName
+     * @param {XynElement} xynElement
+     * @param {string | HTMLElement} element
      * @returns {() => HTMLElement}
      * @description Creates a mount function for a given XynElement and element name.
      */
-    static createMount(XynElement, elementName) {
-        const el = document.querySelector(elementName);
+    static createMount(xynElement, element) {
+        const el = element instanceof HTMLElement ? element : document.querySelector(element);
 
         if (el) {
-            return () => el.appendChild(XynElement.render(el));
+            return () => el.appendChild(xynElement.render(el));
         }
 
-        throw new Error(`Element "${elementName}" not found`);
+        throw new Error(`Element "${el.tagName}" not found`);
     }
 
     /**
      * @param {XynElement} XynElement
-     * @param {string} elementName
+     * @param {string | HTMLElement} element
      * @returns {() => HTMLElement}
      * @description Creates a root mount function for a given XynTag and element name.
      * This will clear the element before mounting the XynTag.
      */
-    static createRoot(XynElement, elementName) {
-        const el = document.querySelector(elementName);
+    static createRoot(XynElement, element) {
+        const el = element instanceof HTMLElement ? element : document.querySelector(element);
 
         if (el) {
             el.innerHTML = "";
         }
 
-        return XynHTML.createMount(XynElement, elementName);
+        return XynHTML.createMount(XynElement, el);
     }
 
     /**
@@ -88,7 +88,6 @@ class XynHTML {
                 if (newValue === value) {
                     return;
                 }
-
 
                 const oldValue = value;
                 value = newValue;
@@ -189,7 +188,7 @@ class XynHTML {
  */
 class XynTag {
     #name = "";
-    /** @type {Map<string, XynHTML.signal> | null} */
+    /** @type {Map<string, XynHTML.signal<unknown>> | null} */
     props = null;
     /** @type {XynElement[] | null} */
     children = null;
@@ -216,10 +215,6 @@ class XynTag {
      * XynTag().css`show ${show} alert ${alert}`
      */
     css(classes, ...conditions) {
-        if (conditions.length === 0) {
-            this.#classes = classes.join(" ");
-        }
-
         this.#classes = classes.filter((c, i) => {
             const toggledClasses = [];
 
@@ -241,6 +236,10 @@ class XynTag {
 
             return conditions[i] ?? true;
         }).join(" ");
+
+        if (!this.#update) {
+            this.#self.className = this.#classes;
+        }
     }
 
     /**
@@ -337,33 +336,43 @@ class XynText {
  */
 class XynSwitch {
     /**
-     * @type {XynHTML.signal}
+     * @type {XynHTML.signal<XynElement> | null}
      */
-    switchValue = null;
+    #switchValue = null;
     /**
-     * @type {Map<unknown, XynTag>}
+     * @type {Map<unknown, XynElement> | null}
      */
     valueMap = null;
     /**
-     * @type {XynTag}
+     * @type {XynElement | null}
      */
-    defaultValue = null;
+    #defaultValue = null;
 
     /**
      * @param {XynHTML.signal} caseValue
-     * @param {Map<unknown, XynTag>} valueMap
-     * @param {XynTag} defaultValue
+     * @param {Map<unknown, XynElement>} valueMap
+     * @param {XynElement} defaultValue
      */
     constructor(caseValue, valueMap, defaultValue = { render() { return document.createComment("Placeholder") } }) {
-        this.switchValue = derived(() => { return valueMap.get(caseValue.value) ?? defaultValue }, [caseValue]);
+        this.#switchValue = derived(() => {
+            return valueMap.get(caseValue.value)?.render() ?? this.#defaultValue.render();
+        }, [caseValue]);
         this.valueMap = valueMap;
-        this.defaultValue = defaultValue;
+        this.#defaultValue = defaultValue;
     }
 
+    /**
+     * @param {HTMLElement} parent
+     * @returns {HTMLElement}
+     */
     render(parent) {
-        effect((prevValue) => { parent.replaceChild(this.switchValue.value.render(), prevValue) });
+        effect((prevValue) => {
+            if (prevValue != null) {
+                parent.replaceChild(this.#switchValue.value, prevValue);
+            }
+        }, [this.#switchValue]);
 
-        return this.switchValue.value.render();
+        return this.#switchValue.value;
     }
 }
 
@@ -398,7 +407,7 @@ export default XynHTML;
 /**
  * @export @alias {XynHTML.createRoot}
  */
-export const createRoot = XynHTML.createMount;
+export const createMount = XynHTML.createMount;
 /**
  * @export @alias {XynHTML.signal}
  */

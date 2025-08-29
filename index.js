@@ -1,4 +1,4 @@
-import { signal, effect, derived, XynTag, text, createRoot, XynSwitch } from "./src/xyn_html.js"
+import { signal, effect, derived, XynTag, text, createMount, XynSwitch } from "./src/xyn_html.js"
 
 // Create output function to append to DOM
 function output(message) {
@@ -519,7 +519,7 @@ containerElement.style.cssText = "margin: 20px; padding: 10px; border: 1px solid
 containerElement.appendChild(buttonElement);
 
 output("Interactive button created below:");
-const mount = createRoot(container, "body");
+const mount = createMount(container, "body");
 mount();
 
 // Example 11: Dynamic List with XynTag and createRoot
@@ -624,7 +624,7 @@ listContainerElement.appendChild(clearButtonElement);
 listContainerElement.appendChild(listElement);
 
 output("Dynamic list created below:");
-const mountList = createRoot(listContainer, "body");
+const mountList = createMount(listContainer, "body");
 mountList();
 
 // Global theme management
@@ -785,13 +785,9 @@ const hiddenPlaceholderElement = hiddenPlaceholder.render();
 hiddenPlaceholderElement.style.cssText = "padding: 20px; margin: 10px; color: #666; font-style: italic;";
 hiddenPlaceholderElement.textContent = "Card is hidden";
 
-// Import XynSwitch (note: this would normally be imported at the top)
-import { XynSwitch } from "./src/xyn_html.js";
-
 // Create XynSwitch for conditional rendering
 const cardSwitch = new XynSwitch(isVisible, new Map([
-    [true, card],
-    [false, hiddenPlaceholder]
+    [true, card]
 ]));
 
 // Create toggle button
@@ -818,22 +814,31 @@ themeButtonElement.onclick = () => {
 };
 
 // Effect to handle card theme styling
-const cardThemeEffect = effect(() => {
+const cardTheme = derived(() => {
     if (localTheme.value === "dark") {
-        cardElement.style.backgroundColor = "#2d2d2d";
-        cardElement.style.color = "#ffffff";
-        cardElement.style.borderColor = "#666";
+        return {
+            backgroundColor: "#2d2d2d",
+            color: "#ffffff",
+            borderColor: "#666"
+        };
     } else {
-        cardElement.style.backgroundColor = "#f0f8ff";
-        cardElement.style.color = "#000000";
-        cardElement.style.borderColor = "#007acc";
+        return {
+            backgroundColor: "#f0f8ff",
+            color: "#000000",
+            borderColor: "#007acc"
+        };
     }
 }, [localTheme]);
+effect(() => {
+    cardElement.style.backgroundColor = cardTheme.value.backgroundColor;
+    cardElement.style.color = cardTheme.value.color;
+    cardElement.style.borderColor = cardTheme.value.borderColor;
+}, [cardTheme]);
 
 // Create container for this example
 const conditionalContainer = new XynTag("div");
 const conditionalContainerElement = conditionalContainer.render();
-conditionalContainerElement.className = "example-container";
+conditionalContainer.css`example-container`;
 conditionalContainerElement.style.cssText = "margin: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px;";
 
 conditionalContainerElement.appendChild(toggleButtonElement);
@@ -841,11 +846,11 @@ conditionalContainerElement.appendChild(themeButtonElement);
 
 // Render the switch and append it to the container
 const switchContainer = document.createElement("div");
-switchContainer.appendChild(cardSwitch.render(switchContainer));
+createMount(cardSwitch, switchContainer)();
 conditionalContainerElement.appendChild(switchContainer);
 
 output("Conditional rendering with XynSwitch created below:");
-const mountConditional = createRoot(conditionalContainer, "body");
+const mountConditional = createMount(conditionalContainer, "body");
 mountConditional();
 
 // Example 13: Form with Reactive Validation and createRoot
@@ -959,7 +964,7 @@ formElement.appendChild(document.createElement("br"));
 formElement.appendChild(submitButton);
 
 output("Reactive form with validation created below:");
-const mountForm = createRoot(form, "body");
+const mountForm = createMount(form, "body");
 mountForm();
 
 // Clean up derived signals when done
@@ -988,8 +993,8 @@ const observer = new MutationObserver((mutations) => {
         if (mutation.type === 'childList') {
             mutation.addedNodes.forEach((node) => {
                 if (node.nodeType === 1) { // Element node
-                    const containers = node.classList?.contains('example-container') 
-                        ? [node] 
+                    const containers = node.classList?.contains('example-container')
+                        ? [node]
                         : Array.from(node.querySelectorAll?.('.example-container') || []);
 
                     containers.forEach(container => {
