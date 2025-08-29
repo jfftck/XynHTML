@@ -23,6 +23,7 @@ export async function example11() {
     inputElement.placeholder = "Enter new item";
     inputElement.className = "form-input";
 
+    addButton.children = [text`Add Item`];
     const buttonElement = addButton.render();
     buttonElement.className = "form-button";
     buttonElement.onclick = () => {
@@ -52,7 +53,7 @@ export async function example11() {
     }, [items]);
 
     // Build the complete list container
-    listContainer.children = [inputElement, buttonElement, clearElement, listElement];
+    listContainer.children = [itemInput, addButton, clearButton, itemList];
     const containerElement = listContainer.render();
     containerElement.className = "example-container";
 

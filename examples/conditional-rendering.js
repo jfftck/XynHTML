@@ -27,7 +27,8 @@ export async function example12() {
 
     // Create XynSwitch for conditional rendering (only show card when visible)
     const cardSwitch = new XynSwitch(isVisible, new Map([
-        [true, card]
+        [true, card],
+        [false, new XynTag("div")] // Empty div when hidden
     ]));
 
     // Create toggle button
@@ -52,9 +53,13 @@ export async function example12() {
     }, [isVisible]);
 
     const container = new XynTag("div");
-    container.children = [toggleButton, statusDiv, cardSwitch];
+    container.children = [toggleButton, statusDiv];
     const containerElement = container.render();
     containerElement.className = "example-container";
+    
+    // Append the switch element separately since it's not a standard XynTag child
+    const switchElement = cardSwitch.render();
+    containerElement.appendChild(switchElement);
 
     const outputContainer = document.getElementById('example12-output');
     if (outputContainer) {
