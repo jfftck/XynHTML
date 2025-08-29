@@ -1,5 +1,6 @@
 
-import { signal, XynTag, text, XynSwitch, effect } from "../src/xyn_html.js";
+
+import { signal, XynTag, text, XynSwitch, effect, derived } from "../src/xyn_html.js";
 
 export async function example12() {
     const output = function(message) {
@@ -11,59 +12,108 @@ export async function example12() {
         }
     };
 
+    // Get global theme from examples/index.js or create fallback
+    const globalTheme = signal("light");
     const isVisible = signal(true);
+    const localTheme = signal(globalTheme.value);
     const message = signal("Hello from XynHTML!");
+
+    // Effect to sync local theme with global theme changes
+    const localThemeSyncEffect = effect(() => {
+        localTheme.value = globalTheme.value;
+    }, [globalTheme]);
 
     // Create a styled card
     const card = new XynTag("div");
+    const cardElement = card.render();
+    cardElement.className = "example-container";
+    cardElement.style.cssText = `
+        padding: 20px;
+        margin: 10px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        border: 2px solid #007acc;
+    `;
+
+    // Add content to card
     const cardTitle = new XynTag("h3");
     cardTitle.children = [text`Interactive Card`];
     const cardContent = new XynTag("p");
     cardContent.children = [text`${message}`];
 
-    card.children = [cardTitle, cardContent];
-    const cardElement = card.render();
-    cardElement.className = "interactive-card";
+    cardElement.appendChild(cardTitle.render());
+    cardElement.appendChild(cardContent.render());
 
-    // Create XynSwitch for conditional rendering (only show card when visible)
+    // Create XynSwitch for conditional rendering
     const cardSwitch = new XynSwitch(isVisible, new Map([
-        [true, card],
-        [false, new XynTag("div")] // Empty div when hidden
+        [true, card]
     ]));
 
     // Create toggle button
     const toggleButton = new XynTag("button");
-    toggleButton.children = [text`Toggle Visibility`];
-    const toggleElement = toggleButton.render();
-    toggleElement.className = "form-button";
-    toggleElement.onclick = () => {
+    const toggleButtonElement = toggleButton.render();
+    toggleButtonElement.style.cssText = "padding: 8px 16px; margin: 5px; cursor: pointer;";
+
+    // Update button text based on visibility
+    const toggleTextEffect = effect(() => {
+        toggleButtonElement.textContent = isVisible.value ? "Hide Card" : "Show Card";
+    }, [isVisible]);
+
+    toggleButtonElement.onclick = () => {
         isVisible.value = !isVisible.value;
     };
 
-    // Create status display
-    const statusDiv = new XynTag("div");
-    const statusElement = statusDiv.render();
-    statusElement.className = "status-display";
-    
-    // Effect to update toggle button text and status
-    effect(() => {
-        toggleElement.textContent = isVisible.value ? "Hide Card" : "Show Card";
-        statusElement.textContent = isVisible.value ? "Card is visible" : "Card is hidden";
-        statusElement.style.color = isVisible.value ? "#28a745" : "#6c757d";
-    }, [isVisible]);
+    // Create local theme toggle button
+    const themeButton = new XynTag("button");
+    const themeButtonElement = themeButton.render();
+    themeButtonElement.style.cssText = "padding: 8px 16px; margin: 5px; cursor: pointer;";
+    themeButtonElement.textContent = "Toggle Local Theme";
+    themeButtonElement.onclick = () => {
+        localTheme.value = localTheme.value === "light" ? "dark" : "light";
+    };
 
-    const container = new XynTag("div");
-    container.children = [toggleButton, statusDiv];
-    const containerElement = container.render();
-    containerElement.className = "example-container";
+    // Effect to handle card theme styling
+    const cardTheme = derived(() => {
+        if (localTheme.value === "dark") {
+            return {
+                backgroundColor: "#2d2d2d",
+                color: "#ffffff",
+                borderColor: "#666"
+            };
+        } else {
+            return {
+                backgroundColor: "#f0f8ff",
+                color: "#000000",
+                borderColor: "#007acc"
+            };
+        }
+    }, [localTheme]);
     
-    // Append the switch element separately since it's not a standard XynTag child
+    effect(() => {
+        cardElement.style.backgroundColor = cardTheme.value.backgroundColor;
+        cardElement.style.color = cardTheme.value.color;
+        cardElement.style.borderColor = cardTheme.value.borderColor;
+    }, [cardTheme]);
+
+    // Create container for this example
+    const conditionalContainer = new XynTag("div");
+    const conditionalContainerElement = conditionalContainer.render();
+    conditionalContainerElement.className = "example-container";
+    conditionalContainerElement.style.cssText = "margin: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px;";
+
+    conditionalContainerElement.appendChild(toggleButtonElement);
+    conditionalContainerElement.appendChild(themeButtonElement);
+
+    // Render the switch and append it to the container
+    const switchContainer = document.createElement("div");
     const switchElement = cardSwitch.render();
-    containerElement.appendChild(switchElement);
+    switchContainer.appendChild(switchElement);
+    conditionalContainerElement.appendChild(switchContainer);
 
     const outputContainer = document.getElementById('example12-output');
     if (outputContainer) {
-        output("Conditional rendering with XynSwitch:");
-        outputContainer.appendChild(containerElement);
+        output("Conditional rendering with XynSwitch created below:");
+        outputContainer.appendChild(conditionalContainerElement);
     }
 }
+

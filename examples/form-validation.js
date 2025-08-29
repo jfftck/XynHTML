@@ -1,4 +1,5 @@
 
+
 import { signal, derived, XynTag, text, effect } from "../src/xyn_html.js";
 
 export async function example13() {
@@ -14,6 +15,7 @@ export async function example13() {
     const email = signal("");
     const password = signal("");
 
+    // Derived validation signals
     const isValidEmail = derived(() => {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value);
     }, [email]);
@@ -28,88 +30,81 @@ export async function example13() {
 
     // Create form elements
     const form = new XynTag("form");
-    const emailInput = new XynTag("input");
-    const passwordInput = new XynTag("input");
-    const submitButton = new XynTag("button");
-    const validationStatus = new XynTag("div");
-
-    // Configure form elements
-    const emailElement = emailInput.render();
-    emailElement.type = "email";
-    emailElement.placeholder = "Enter your email";
-    emailElement.className = "form-input";
-
-    const passwordElement = passwordInput.render();
-    passwordElement.type = "password";
-    passwordElement.placeholder = "Enter your password";
-    passwordElement.className = "form-input";
-
-    const submitElement = submitButton.render();
-    submitElement.type = "submit";
-    submitElement.textContent = "Submit";
-    submitElement.className = "form-button";
-
-    const statusElement = validationStatus.render();
-    statusElement.className = "validation-status";
-
-    // Add event listeners
-    emailElement.addEventListener('input', (e) => {
-        email.value = e.target.value;
-    });
-
-    passwordElement.addEventListener('input', (e) => {
-        password.value = e.target.value;
-    });
-
-    // Effect to update validation status and button state
-    effect(() => {
-        const emailValid = isValidEmail.value || email.value === "";
-        const passwordValid = isValidPassword.value || password.value === "";
-        const formValid = isFormValid.value;
-
-        // Update input validation classes
-        emailElement.className = email.value === "" ? "form-input" : 
-            (emailValid ? "form-input valid" : "form-input invalid");
-        passwordElement.className = password.value === "" ? "form-input" : 
-            (passwordValid ? "form-input valid" : "form-input invalid");
-
-        // Update submit button
-        submitElement.disabled = !formValid;
-        submitElement.className = formValid ? "form-button" : "form-button disabled";
-
-        // Update status message
-        if (email.value === "" && password.value === "") {
-            statusElement.textContent = "Please fill out the form";
-            statusElement.className = "validation-status neutral";
-        } else if (formValid) {
-            statusElement.textContent = "Form is valid!";
-            statusElement.className = "validation-status valid";
-        } else {
-            const errors = [];
-            if (email.value && !emailValid) errors.push("Invalid email format");
-            if (password.value && !passwordValid) errors.push("Password must be at least 8 characters");
-            statusElement.textContent = `Validation errors: ${errors.join(", ")}`;
-            statusElement.className = "validation-status invalid";
-        }
-    }, [isValidEmail, isValidPassword, isFormValid]);
-
-    // Prevent form submission
     const formElement = form.render();
-    formElement.onsubmit = (e) => {
-        e.preventDefault();
+    formElement.className = "example-container";
+    formElement.style.cssText = "padding: 20px; border: 1px solid #ddd; border-radius: 5px; margin: 20px; background-color: #fafafa;";
+
+    // Email input
+    const emailInput = document.createElement("input");
+    emailInput.type = "email";
+    emailInput.placeholder = "Enter your email";
+    emailInput.style.cssText = "width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px;";
+    emailInput.oninput = (e) => {
+        email.value = e.target.value;
+    };
+
+    // Email validation message
+    const emailValidation = document.createElement("div");
+    emailValidation.style.cssText = "font-size: 12px; margin: 5px 0;";
+
+    // Password input
+    const passwordInput = document.createElement("input");
+    passwordInput.type = "password";
+    passwordInput.placeholder = "Enter your password";
+    passwordInput.style.cssText = "width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px;";
+    passwordInput.oninput = (e) => {
+        password.value = e.target.value;
+    };
+
+    // Password validation message
+    const passwordValidation = document.createElement("div");
+    passwordValidation.style.cssText = "font-size: 12px; margin: 5px 0;";
+
+    // Submit button
+    const submitButton = document.createElement("button");
+    submitButton.type = "button";
+    submitButton.textContent = "Submit";
+    submitButton.style.cssText = "padding: 10px 20px; margin: 10px 0; border: none; border-radius: 4px; cursor: pointer;";
+    submitButton.onclick = () => {
         if (isFormValid.value) {
             output(`Form submitted! Email: ${email.value}`);
         }
     };
 
-    // Build form
-    form.children = [emailInput, passwordInput, submitButton, validationStatus];
-    const formElement = form.render();
-    formElement.className = "example-container";
+    // Effects for validation styling
+    effect(() => {
+        emailInput.style.borderColor = email.value && !isValidEmail.value ? "#ff4444" : "#ccc";
+        emailValidation.textContent = email.value && !isValidEmail.value ? "Please enter a valid email address" : "";
+        emailValidation.style.color = "#ff4444";
+    }, [email, isValidEmail]);
+
+    effect(() => {
+        passwordInput.style.borderColor = password.value && !isValidPassword.value ? "#ff4444" : "#ccc";
+        passwordValidation.textContent = password.value && !isValidPassword.value ? "Password must be at least 8 characters long" : "";
+        passwordValidation.style.color = "#ff4444";
+    }, [password, isValidPassword]);
+
+    effect(() => {
+        submitButton.disabled = !isFormValid.value;
+        submitButton.style.backgroundColor = isFormValid.value ? "#007acc" : "#cccccc";
+        submitButton.style.color = isFormValid.value ? "white" : "#666666";
+    }, [isFormValid]);
+
+    // Assemble form
+    formElement.appendChild(document.createTextNode("Email:"));
+    formElement.appendChild(emailInput);
+    formElement.appendChild(emailValidation);
+    formElement.appendChild(document.createElement("br"));
+    formElement.appendChild(document.createTextNode("Password:"));
+    formElement.appendChild(passwordInput);
+    formElement.appendChild(passwordValidation);
+    formElement.appendChild(document.createElement("br"));
+    formElement.appendChild(submitButton);
 
     const outputContainer = document.getElementById('example13-output');
     if (outputContainer) {
-        output("Reactive form with validation:");
+        output("Reactive form with validation created below:");
         outputContainer.appendChild(formElement);
     }
 }
+
