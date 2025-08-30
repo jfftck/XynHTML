@@ -315,15 +315,14 @@ class XynText {
      * created and appended to the parent element.
      */
     render() {
-        effect(() => {
-            let textContent = "";
+        const renderedText = () => this.el.textContent = this.text.map(
+            (text, i) => text + (this.signals[i]?.value ?? "")
+        ).join("");
+        effect(renderedText, this.signals);
 
-            this.text.forEach((text, i) => {
-                textContent += text + (this.signals[i]?.value ?? "");
-            });
-
-            this.el.textContent = textContent;
-        }, this.signals);
+        if (this.signals.length < 1) {
+            renderedText();
+        }
 
         return this.el;
     }
