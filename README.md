@@ -27,7 +27,7 @@ Below is the current implementation status of XynHTML's planned features:
 ### Component System
 - ✅ **DOM Element Components** - XynTag class for creating reactive HTML elements
 - ✅ **Dynamic Text Rendering** - Template literal text nodes with signal interpolation
-- 🟥 **HTML String Parser** - Parse HTML strings into XynTag components
+- ✅ **DOM Switch Elements** - XynSwitch class for creating reactive switcher of multiple HTML elements
 - 🟥 **Emmet Parser** - CSS selector-like syntax for rapid component creation
 - 🟥 **Markdown Parser** - Convert Markdown syntax to XynTag components with reactive content
 
