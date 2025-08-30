@@ -20,6 +20,45 @@ function getSystemTheme() {
 const savedTheme = localStorage.getItem('xynhtml-theme') || getSystemTheme();
 const globalTheme = signal(savedTheme);
 
+// Highlight.js theme configurations
+const highlightThemes = {
+    light: [
+        { name: 'Default', value: 'default' },
+        { name: 'GitHub', value: 'github' },
+        { name: 'IntelliJ IDEA', value: 'intellij-light' },
+        { name: 'Atom One Light', value: 'atom-one-light' },
+        { name: 'VS Code Light', value: 'vs' },
+        { name: 'Lightfair', value: 'lightfair' },
+        { name: 'Grayscale', value: 'grayscale' },
+        { name: 'Brown Paper', value: 'brown-paper' },
+        { name: 'School Book', value: 'school-book' },
+        { name: 'Foundation', value: 'foundation' }
+    ],
+    dark: [
+        { name: 'Dark', value: 'dark' },
+        { name: 'Dracula', value: 'dracula' },
+        { name: 'Monokai', value: 'monokai' },
+        { name: 'Nord', value: 'nord' },
+        { name: 'Atom One Dark', value: 'atom-one-dark' },
+        { name: 'VS Code Dark', value: 'vs2015' },
+        { name: 'Solarized Dark', value: 'solarized-dark' },
+        { name: 'Tokyo Night', value: 'tokyo-night-dark' },
+        { name: 'Material', value: 'material' },
+        { name: 'Obsidian', value: 'obsidian' }
+    ]
+};
+
+// Syntax highlighting theme management
+const savedSyntaxTheme = localStorage.getItem('xynhtml-syntax-theme');
+const syntaxTheme = signal(savedSyntaxTheme || (getSystemTheme() === 'dark' ? 'dracula' : 'github'));
+
+function applySyntaxTheme(themeName) {
+    const themeLink = document.getElementById('highlight-theme');
+    if (themeLink) {
+        themeLink.href = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${themeName}.min.css`;
+    }
+}
+
 // Apply global theme
 function applyGlobalTheme(theme) {
     const isDark = theme === 'dark';
@@ -59,6 +98,9 @@ function applyGlobalTheme(theme) {
             }
         }
     });
+
+    // Update syntax highlighting theme dropdown
+    updateSyntaxThemeDropdown();
 }
 
 // Create global theme switcher at top of page
@@ -101,6 +143,33 @@ globalThemeButton.onclick = () => {
     globalTheme.value = globalTheme.value === 'light' ? 'dark' : 'light';
 };
 
+// Create syntax highlighting theme selector
+const syntaxThemeSelector = document.createElement('select');
+syntaxThemeSelector.className = 'syntax-theme-selector';
+syntaxThemeSelector.title = 'Select syntax highlighting theme';
+
+function updateSyntaxThemeDropdown() {
+    const currentTheme = globalTheme.value;
+    const themes = highlightThemes[currentTheme];
+    
+    syntaxThemeSelector.innerHTML = '';
+    themes.forEach(theme => {
+        const option = document.createElement('option');
+        option.value = theme.value;
+        option.textContent = theme.name;
+        if (theme.value === syntaxTheme.value) {
+            option.selected = true;
+        }
+        syntaxThemeSelector.appendChild(option);
+    });
+}
+
+syntaxThemeSelector.onchange = (e) => {
+    syntaxTheme.value = e.target.value;
+    localStorage.setItem('xynhtml-syntax-theme', syntaxTheme.value);
+    applySyntaxTheme(syntaxTheme.value);
+};
+
 effect(() => {
     localStorage.setItem('xynhtml-theme', globalTheme.value);
     applyGlobalTheme(globalTheme.value);
@@ -109,7 +178,12 @@ effect(() => {
         globalThemeButton.classList.remove("theme-toggle--toggled");
 }, [globalTheme]);
 
+effect(() => {
+    applySyntaxTheme(syntaxTheme.value);
+}, [syntaxTheme]);
+
 globalThemeSwitcher.appendChild(globalThemeButton);
+globalThemeSwitcher.appendChild(syntaxThemeSelector);
 document.body.appendChild(globalThemeSwitcher);
 
 // // Observer to apply theme to newly created example containers
@@ -219,6 +293,8 @@ async function loadExamples() {
 const loadExamplesOnReady = async () => {
     await loadExamples();
     applyGlobalTheme(globalTheme.value);
+    applySyntaxTheme(syntaxTheme.value);
+    updateSyntaxThemeDropdown();
     document.removeEventListener('DOMContentLoaded', loadExamplesOnReady);
 }
 document.addEventListener('DOMContentLoaded', loadExamplesOnReady);

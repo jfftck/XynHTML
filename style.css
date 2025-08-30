@@ -165,6 +165,9 @@ code {
   box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
   border: 1px solid rgb(0 0 0 / 0.1);
   transition: all 0.2s ease;
+  display: flex;
+  gap: 8px;
+  align-items: center;
 
   @supports(backdrop-filter: blur(10px)) {
     & {
@@ -193,6 +196,31 @@ code {
 .theme-switcher button:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Syntax theme selector styling */
+.syntax-theme-selector {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.syntax-theme-selector:hover {
+  background-color: rgba(255, 255, 255, 1);
+  border-color: rgba(0, 0, 0, 0.3);
+}
+
+.syntax-theme-selector:focus {
+  outline: none;
+  border-color: #007acc;
+  box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
 }
 
 /* Dark theme overrides for syntax highlighting */
@@ -307,6 +335,22 @@ body[data-theme="dark"] .comment,
       }
     }
   }
+
+  body:not([data-theme="light"]) .syntax-theme-selector {
+    background-color: rgba(45, 45, 45, 0.9);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+  }
+
+  body:not([data-theme="light"]) .syntax-theme-selector:hover {
+    background-color: rgba(45, 45, 45, 1);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  body:not([data-theme="light"]) .syntax-theme-selector:focus {
+    border-color: #4a9eff;
+    box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+  }
 }
 
 /* Dark theme styling for theme switcher */
@@ -325,6 +369,22 @@ body[data-theme="dark"] .theme-switcher {
       backdrop-filter: blur(10px);
     }
   }
+}
+
+body[data-theme="dark"] .syntax-theme-selector {
+  background-color: rgba(45, 45, 45, 0.9);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+body[data-theme="dark"] .syntax-theme-selector:hover {
+  background-color: rgba(45, 45, 45, 1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+body[data-theme="dark"] .syntax-theme-selector:focus {
+  border-color: #4a9eff;
+  box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
 }
 
 /* Example container styling */
