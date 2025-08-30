@@ -308,7 +308,7 @@ class XynText {
     /**
      * @returns {Text}
      * @example
-     * XynText`Hello, ${name}!`.render(document.body)
+     * XynText`Hello, ${name}!`.render()
      * @description
      * Renders the text node to the DOM. If the text node already exists, it will
      * be updated with the new text. If the text node does not exist, it will be
