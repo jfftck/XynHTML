@@ -9,6 +9,11 @@
   --color-text: #000;
 }
 
+svg.theme-toggle__within {
+  transition: transform 1.5s, color 0.5s;
+  vertical-align: middle;
+}
+
 html {
   height: 100%;
   width: 100%;
@@ -287,8 +292,8 @@ body[data-theme="dark"] .comment,
   }
 
   body:not([data-theme="light"]) .theme-switcher {
-    background: rgba(45, 45, 45, 0.9);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: rgb(45 45 45 / 0.9);
+    border-color: rgb(255 255 255 / 0.2);
 
     & button {
       background-color: #764ba2;
@@ -298,7 +303,6 @@ body[data-theme="dark"] .comment,
     @supports(backdrop-filter: blur(10px)) {
       & {
         background: rgb(45 45 45 / 0.2);
-        border-color: rgb(0 0 0 / 0.5);
         backdrop-filter: blur(10px);
       }
     }
@@ -307,8 +311,8 @@ body[data-theme="dark"] .comment,
 
 /* Dark theme styling for theme switcher */
 body[data-theme="dark"] .theme-switcher {
-  background: rgba(45, 45, 45, 0.9);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: rgb(45 45 45 / 0.9);
+  border-color: rgb(255 255 255 / 0.2);
 
   & button {
     background-color: #764ba2;
@@ -318,7 +322,6 @@ body[data-theme="dark"] .theme-switcher {
   @supports(backdrop-filter: blur(10px)) {
     & {
       background: rgb(45 45 45 / 0.2);
-      border-color: rgb(0 0 0 / 0.5);
       backdrop-filter: blur(10px);
     }
   }
