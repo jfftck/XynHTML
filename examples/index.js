@@ -57,6 +57,13 @@ function applySyntaxTheme(themeName) {
     if (themeLink) {
         themeLink.href = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${themeName}.min.css`;
     }
+    
+    // Re-highlight all code blocks to apply the new theme
+    setTimeout(() => {
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightElement(block);
+        });
+    }, 100);
 }
 
 // Apply global theme
@@ -149,19 +156,38 @@ syntaxThemeSelector.className = 'syntax-theme-selector';
 syntaxThemeSelector.title = 'Select syntax highlighting theme';
 
 function updateSyntaxThemeDropdown() {
-    const currentTheme = globalTheme.value;
-    const themes = highlightThemes[currentTheme];
+    const allThemes = [...highlightThemes.light, ...highlightThemes.dark];
     
     syntaxThemeSelector.innerHTML = '';
-    themes.forEach(theme => {
+    
+    // Add light themes group
+    const lightGroup = document.createElement('optgroup');
+    lightGroup.label = 'Light Themes';
+    highlightThemes.light.forEach(theme => {
         const option = document.createElement('option');
         option.value = theme.value;
         option.textContent = theme.name;
         if (theme.value === syntaxTheme.value) {
             option.selected = true;
         }
-        syntaxThemeSelector.appendChild(option);
+        lightGroup.appendChild(option);
     });
+    
+    // Add dark themes group
+    const darkGroup = document.createElement('optgroup');
+    darkGroup.label = 'Dark Themes';
+    highlightThemes.dark.forEach(theme => {
+        const option = document.createElement('option');
+        option.value = theme.value;
+        option.textContent = theme.name;
+        if (theme.value === syntaxTheme.value) {
+            option.selected = true;
+        }
+        darkGroup.appendChild(option);
+    });
+    
+    syntaxThemeSelector.appendChild(lightGroup);
+    syntaxThemeSelector.appendChild(darkGroup);
 }
 
 syntaxThemeSelector.onchange = (e) => {
@@ -173,9 +199,11 @@ syntaxThemeSelector.onchange = (e) => {
 effect(() => {
     localStorage.setItem('xynhtml-theme', globalTheme.value);
     applyGlobalTheme(globalTheme.value);
-    globalTheme.value === "light" ?
-        globalThemeButton.classList.add("theme-toggle--toggled") :
+    if (globalTheme.value === "light") {
+        globalThemeButton.classList.add("theme-toggle--toggled");
+    } else {
         globalThemeButton.classList.remove("theme-toggle--toggled");
+    }
 }, [globalTheme]);
 
 effect(() => {

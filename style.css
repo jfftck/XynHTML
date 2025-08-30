@@ -109,6 +109,12 @@ code {
   line-height: 1.4;
 }
 
+/* Ensure pre elements inherit highlight.js themes */
+pre code {
+  background: inherit !important;
+  color: inherit !important;
+}
+
 /* Syntax highlighting colors - Light theme */
 .keyword {
   color: #0000FF;
