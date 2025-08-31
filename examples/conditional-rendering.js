@@ -82,6 +82,15 @@ export async function example12() {
         cardElement.style.borderColor = cardTheme.value.borderColor;
     }, [cardTheme]);
 
+    // Apply conditional styling based on local theme using CSS classes
+    effect(() => {
+        const cardEl = card.render();
+        // Remove existing theme classes
+        cardEl.classList.remove('local-theme-light', 'local-theme-dark');
+        // Add new theme class
+        cardEl.classList.add(`local-theme-${localTheme.value}`);
+    }, [localTheme]);
+
     // Create container for this example
     const conditionalContainer = new XynTag("div");
     const conditionalContainerElement = conditionalContainer.render();

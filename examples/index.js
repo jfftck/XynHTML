@@ -154,43 +154,15 @@ function applySyntaxTheme(themeName, skipTransition = false) {
 
 // Apply global theme
 function applyGlobalTheme(theme) {
-    const isDark = theme === 'dark';
-
-    // Set data attribute for CSS targeting
+    // Remove existing theme classes
+    document.body.classList.remove('theme-light', 'theme-dark');
+    
+    // Add new theme class
+    document.body.classList.add(`theme-${theme}`);
+    
+    // Set data attribute for CSS targeting (keep for compatibility)
     document.body.setAttribute('data-theme', theme);
     document.documentElement.setAttribute('data-theme', theme);
-
-    document.documentElement.style.setProperty('--color-background', isDark ? '#121212' : '#f8f8f8');
-    document.body.style.backgroundColor = isDark ? '#121212' : '#f8f8f8';
-    document.body.style.color = isDark ? '#ffffff' : '#000000';
-
-    // Update all example containers
-    document.querySelectorAll('.example-container').forEach(container => {
-        if (isDark) {
-            container.style.backgroundColor = '#2d2d2d';
-            container.style.borderColor = '#666';
-            container.style.color = '#ffffff';
-        } else {
-            container.style.backgroundColor = '#f9f9f9';
-            container.style.borderColor = '#ddd';
-            container.style.color = '#000000';
-        }
-    });
-
-    // Update form elements
-    document.querySelectorAll('input, button').forEach(element => {
-        if (element.type !== 'button' && element.tagName !== 'BUTTON') {
-            if (isDark) {
-                element.style.backgroundColor = '#3d3d3d';
-                element.style.color = '#ffffff';
-                element.style.borderColor = '#666';
-            } else {
-                element.style.backgroundColor = '#ffffff';
-                element.style.color = '#000000';
-                element.style.borderColor = '#ccc';
-            }
-        }
-    });
 }
 
 // Create global theme switcher at top of page
