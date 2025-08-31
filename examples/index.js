@@ -55,7 +55,10 @@ const highlightThemes = {
 const savedSyntaxTheme = localStorage.getItem('xynhtml-syntax-theme');
 const syntaxTheme = signal(savedSyntaxTheme || (getSystemTheme() === 'dark' ? 'monokai' : 'github'));
 
-function applySyntaxTheme(themeName) {
+// Track if this is the initial load to prevent fade effects
+const isInitialLoad = signal(true);
+
+function applySyntaxTheme(themeName, skipTransition = false) {
     const themeLink = document.getElementById('highlight-theme');
     if (!themeLink) return;
 
@@ -75,12 +78,14 @@ function applySyntaxTheme(themeName) {
             hljs.highlightElement(block);
         });
         
-        // Fade back in after re-highlighting
-        setTimeout(() => {
-            codeBlocks.forEach(block => {
-                block.style.opacity = '1';
-            });
-        }, 50);
+        // Only fade back in if not skipping transitions
+        if (!skipTransition) {
+            setTimeout(() => {
+                codeBlocks.forEach(block => {
+                    block.style.opacity = '1';
+                });
+            }, 50);
+        }
     };
 
     // Count how many blocks have completed their fade out animation
@@ -111,6 +116,12 @@ function applySyntaxTheme(themeName) {
             }
         }, 200);
     };
+
+    // Skip transitions if this is initial load or explicitly requested
+    if (skipTransition) {
+        onAllFadeOutsComplete();
+        return;
+    }
 
     // Fade out all code blocks and wait for animation to complete
     codeBlocks.forEach(block => {
@@ -180,9 +191,6 @@ function applyGlobalTheme(theme) {
             }
         }
     });
-
-    // Update syntax highlighting theme dropdown
-    updateSyntaxThemeDropdown();
 }
 
 // Create global theme switcher at top of page
@@ -268,9 +276,9 @@ function updateSyntaxThemeDropdown() {
 syntaxThemeSelector.onchange = (e) => {
     syntaxTheme.value = e.target.value;
     localStorage.setItem('xynhtml-syntax-theme', syntaxTheme.value);
-    applySyntaxTheme(syntaxTheme.value);
 };
 
+// Global theme effect - only triggers on actual changes
 effect(() => {
     localStorage.setItem('xynhtml-theme', globalTheme.value);
     applyGlobalTheme(globalTheme.value);
@@ -281,8 +289,11 @@ effect(() => {
     }
 }, [globalTheme]);
 
+// Syntax theme effect - skip transitions on initial load
 effect(() => {
-    applySyntaxTheme(syntaxTheme.value);
+    localStorage.setItem('xynhtml-syntax-theme', syntaxTheme.value);
+    applySyntaxTheme(syntaxTheme.value, isInitialLoad.value);
+    updateSyntaxThemeDropdown();
 }, [syntaxTheme]);
 
 globalThemeSwitcher.appendChild(globalThemeButton);
@@ -328,7 +339,6 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
     if (!localStorage.getItem('xynhtml-theme')) {
         const systemTheme = getSystemTheme();
         globalTheme.value = systemTheme;
-        applyGlobalTheme(systemTheme);
     }
 });
 
@@ -394,9 +404,10 @@ async function loadExamples() {
 // Start loading examples when DOM is ready and then clean up the event listener
 const loadExamplesOnReady = async () => {
     await loadExamples();
-    applyGlobalTheme(globalTheme.value);
-    applySyntaxTheme(syntaxTheme.value);
-    updateSyntaxThemeDropdown();
+    // Mark initial load as complete to enable transitions for future changes
+    setTimeout(() => {
+        isInitialLoad.value = false;
+    }, 100);
     document.removeEventListener('DOMContentLoaded', loadExamplesOnReady);
 }
 document.addEventListener('DOMContentLoaded', loadExamplesOnReady);

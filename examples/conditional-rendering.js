@@ -1,5 +1,3 @@
-
-
 import { signal, derived, XynTag, text, XynSwitch, effect } from "../src/xyn_html.js";
 import { createOutput } from "./index.js";
 
@@ -105,4 +103,3 @@ export async function example12() {
         outputContainer.appendChild(conditionalContainerElement);
     }
 }
-
