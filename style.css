@@ -48,7 +48,6 @@ h3 {
 
 pre {
   background-color: color-mix(in oklab, currentColor 5%, var(--color-background));
-  padding: 16px;
   border-radius: 8px;
   overflow-x: auto;
   margin: 16px 0;
@@ -111,13 +110,13 @@ code {
 
 /* Remove any default padding/margin from code elements to prevent flashing */
 code {
-  padding: 0;
+  padding: 1em;
   margin: 0;
 }
 
 /* Let highlight.js handle all syntax highlighting colors */
 pre code {
-  padding: 0;
+  padding: 1em;
   margin: 0;
 }
 
