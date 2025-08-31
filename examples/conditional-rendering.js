@@ -1,21 +1,16 @@
 
 
-import { signal, XynTag, text, XynSwitch, effect } from "../src/xyn_html.js";
+import { signal, derived, XynTag, text, XynSwitch, effect } from "../src/xyn_html.js";
 import { createOutput } from "./index.js";
 
 export async function example12() {
     const output = createOutput('example12-output');
 
     // Get global theme from examples/index.js or create fallback
-    const globalTheme = signal("light");
+    const globalTheme = window.globalTheme || signal("light");
     const isVisible = signal(true);
     const localTheme = signal(globalTheme.value);
     const message = signal("Hello from XynHTML!");
-
-    // Effect to sync local theme with global theme changes
-    const localThemeSyncEffect = effect(() => {
-        localTheme.value = globalTheme.value;
-    }, [globalTheme]);
 
     // Create a styled card
     const card = new XynTag("div");

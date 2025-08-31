@@ -404,9 +404,13 @@ class XynSwitch {
  */
 export default XynHTML;
 /**
- * @export @alias {XynHTML.createRoot}
+ * @export @alias {XynHTML.createMount}
  */
 export const createMount = XynHTML.createMount;
+/**
+ * @export @alias {XynHTML.createRoot}
+ */
+export const createRoot = XynHTML.createRoot;
 /**
  * @export @alias {XynHTML.signal}
  */

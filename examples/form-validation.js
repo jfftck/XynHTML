@@ -1,6 +1,6 @@
 
 
-import { signal, derived, XynTag, text, effect } from "../src/xyn_html.js";
+import { signal, derived, XynTag, text, effect, createRoot } from "../src/xyn_html.js";
 import { createOutput } from "./index.js";
 
 export async function example13() {

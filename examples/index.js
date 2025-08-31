@@ -20,6 +20,9 @@ function getSystemTheme() {
 const savedTheme = localStorage.getItem('xynhtml-theme') || getSystemTheme();
 const globalTheme = signal(savedTheme);
 
+// Make globalTheme available to other modules
+window.globalTheme = globalTheme;
+
 // Highlight.js theme configurations
 const highlightThemes = {
     light: [
@@ -65,9 +68,10 @@ function applySyntaxTheme(themeName) {
     // Function to re-highlight and fade back in
     const reHighlightAndFadeIn = () => {
         codeBlocks.forEach(block => {
-            // Clear existing highlighting classes
+            // Clear existing highlighting classes and data-highlighted attribute
             block.className = block.className.replace(/hljs-\S+/g, '');
             block.removeAttribute('data-highlighted');
+            delete block.dataset.highlighted;
             hljs.highlightElement(block);
         });
         
