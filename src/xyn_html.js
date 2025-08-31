@@ -25,156 +25,12 @@
  * SOFTWARE.
  */
 
-class XynHTML {
-    /**
-     * @template T
-     * @type {Map<() => void | (oldValue: T) => void, int>}
-     */
-    static subscribers = new Map();
-
-    /**
-     * @param {XynElement} xynElement
-     * @param {string | HTMLElement} element
-     * @returns {() => HTMLElement}
-     * @description Creates a mount function for a given XynElement and element name.
-     */
-    static createMount(xynElement, element) {
-        const el = element instanceof HTMLElement ? element : document.querySelector(element);
-
-        if (el) {
-            return () => el.appendChild(xynElement.render(el));
-        }
-
-        throw new Error(`Element "${el.tagName}" not found`);
-    }
-
-    /**
-     * @param {XynElement} XynElement
-     * @param {string | HTMLElement} element
-     * @returns {() => HTMLElement}
-     * @description Creates a root mount function for a given XynTag and element name.
-     * This will clear the element before mounting the XynTag.
-     */
-    static createRoot(XynElement, element) {
-        const el = element instanceof HTMLElement ? element : document.querySelector(element);
-
-        if (el) {
-            el.innerHTML = "";
-        }
-
-        return XynHTML.createMount(XynElement, el);
-    }
-
-    /**
-     * @template T
-     * @param {T} value
-     * @returns {{ value: T, subscribe: (subscriber: Function) => string, unsubscribe: (subscriberId: string) => void }}
-     */
-    static signal(value) {
-        /**
-         * @type {Map<Function, Function>}
-         */
-        const registeredSubscribers = new Map();
-
-        return {
-            /**
-             * @type {T}
-             */
-            get value() {
-                return value;
-            },
-
-            set value(newValue) {
-                if (newValue === value) {
-                    return;
-                }
-
-                const oldValue = value;
-                value = newValue;
-                registeredSubscribers.keys().forEach(subscriber => subscriber(oldValue));
-            },
-
-            /**
-             * @param {() => void | (prevValue: T) => void} subscriber
-             * @param {int} count @default 1
-             * @returns {void}
-             */
-            subscribe(subscriber, count = 1) {
-                if (typeof subscriber !== "function") {
-                    return;
-                }
-
-                if (count === 1) {
-                    subscriber();
-                }
-
-                if (registeredSubscribers.has(subscriber)) {
-                    return;
-                }
-
-                if (!XynHTML.subscribers.has(subscriber)) {
-                    XynHTML.subscribers.set(subscriber, 0);
-                }
-
-                XynHTML.subscribers.set(subscriber, XynHTML.subscribers.get(subscriber) + 1);
-
-                registeredSubscribers.set(subscriber, () => {
-                    XynHTML.subscribers.set(subscriber, XynHTML.subscribers.get(subscriber) - 1);
-
-                    if (XynHTML.subscribers.get(subscriber) < 1) {
-                        XynHTML.subscribers.delete(subscriber);
-                    }
-
-                    registeredSubscribers.delete(subscriber);
-                });
-            },
-
-            /**
-             * param {() => void} subscriber
-             * @returns {void}
-             */
-            unsubscribe: (subscriber) => {
-                if (typeof subscriber !== "function") {
-                    return;
-                }
-
-                if (registeredSubscribers.has(subscriber)) {
-                    registeredSubscribers.get(subscriber)();
-                }
-            },
-        }
-    }
-
-    /**
-     * @param {() => void} fn
-     * @param {XynHTML.signal[]} signals
-     * @returns {() => void} unsubscribe
-     */
-    static effect(fn, signals) {
-        let count = signals.length;
-        for (const signal of signals) {
-            signal.subscribe(fn, count--);
-        }
-
-        return () => {
-            signals?.forEach(signal => signal.unsubscribe(fn));
-            signals = null;
-            fn = null;
-        };
-    }
-
-    /**
-     * @template T
-     * @param {() => T} fn
-     * @param {XynHTML.signal[]} signals
-     * @returns {{unsubscribeDerived: () => void} extends XynHTML.signal} signal extended with unsubscribeDrived method
-     */
-    static derived(fn, signals) {
-        const derivedSignal = XynHTML.signal(fn());
-
-        return Object.assign(derivedSignal, { unsubscribeDerived: XynHTML.effect(() => derivedSignal.value = fn(), signals) });
-    }
-}
+/**
+ * @type {() => void}
+ * @description A no-op function.
+ * @returns {void}
+ */
+const NoOp = () => { };
 
 /**
  * @typedef {object} XynElement
@@ -320,10 +176,6 @@ class XynText {
         ).join("");
         effect(renderedText, this.signals);
 
-        if (this.signals.length < 1) {
-            renderedText();
-        }
-
         return this.el;
     }
 }
@@ -373,6 +225,193 @@ class XynSwitch {
 
         return this.#switchValue.value;
     }
+}
+
+/**
+ * @class XynHTML
+ * @description XynHTML is a library for building web applications using a
+ * declarative syntax. It is inspired by React and Vue, but with a focus on
+ * simplicity and performance.
+ * @example
+ * import { XynHTML, XynTag, text } from "./xyn_html.js";
+ *  const counter = XynHTML.signal(0);
+ *  const increment = () => counter.value++;
+ *  const button = new XynTag("button");
+ *  button.children = [text`Count: ${counter}`];
+ *  const buttonElement = button.render();
+ *  buttonElement.onclick = increment;
+ *  document.body.appendChild(buttonElement);
+ */
+class XynHTML {
+    /**
+     * @template T
+     * @type {Map<() => void | (oldValue: T) => void, int>}
+     */
+    static subscribers = new Map();
+
+    /**
+     * @param {XynElement} xynElement
+     * @param {string | HTMLElement} element
+     * @returns {() => HTMLElement}
+     * @description Creates a mount function for a given XynElement and element name.
+     */
+    static createMount(xynElement, element) {
+        const el = element instanceof HTMLElement ? element : document.querySelector(element);
+
+        if (el) {
+            return () => el.appendChild(xynElement.render(el));
+        }
+
+        throw new Error(`Element "${el.tagName}" not found`);
+    }
+
+    /**
+     * @param {XynElement} XynElement
+     * @param {string | HTMLElement} element
+     * @returns {() => HTMLElement}
+     * @description Creates a root mount function for a given XynTag and element name.
+     * This will clear the element before mounting the XynTag.
+     */
+    static createRoot(XynElement, element) {
+        const el = element instanceof HTMLElement ? element : document.querySelector(element);
+
+        if (el) {
+            el.innerHTML = "";
+        }
+
+        return XynHTML.createMount(XynElement, el);
+    }
+
+    /**
+     * @template T
+     * @param {T} value
+     * @returns {{ value: T, subscribe: (subscriber: Function) => string, unsubscribe: (subscriberId: string) => void }}
+     */
+    static signal(value) {
+        /**
+         * @type {Map<Function, Function>}
+         */
+        const registeredSubscribers = new Map();
+
+        return {
+            /**
+             * @type {T}
+             */
+            get value() {
+                return value;
+            },
+
+            set value(newValue) {
+                if (newValue === value) {
+                    return;
+                }
+
+                const oldValue = value;
+                value = newValue;
+                registeredSubscribers.keys().forEach(subscriber => subscriber(oldValue));
+            },
+
+            /**
+             * @param {() => void | (prevValue: T) => void} subscriber
+             * @param {int} count @default 1
+             * @returns {void}
+             */
+            subscribe(subscriber, count = 1) {
+                if (typeof subscriber !== "function") {
+                    return;
+                }
+
+                if (count === 1) {
+                    subscriber();
+                }
+
+                if (registeredSubscribers.has(subscriber)) {
+                    return;
+                }
+
+                if (!XynHTML.subscribers.has(subscriber)) {
+                    XynHTML.subscribers.set(subscriber, 0);
+                }
+
+                XynHTML.subscribers.set(subscriber, XynHTML.subscribers.get(subscriber) + 1);
+
+                registeredSubscribers.set(subscriber, () => {
+                    XynHTML.subscribers.set(subscriber, XynHTML.subscribers.get(subscriber) - 1);
+
+                    if (XynHTML.subscribers.get(subscriber) < 1) {
+                        XynHTML.subscribers.delete(subscriber);
+                    }
+
+                    registeredSubscribers.delete(subscriber);
+                });
+            },
+
+            /**
+             * param {() => void} subscriber
+             * @returns {void}
+             */
+            unsubscribe: (subscriber) => {
+                if (typeof subscriber !== "function") {
+                    return;
+                }
+
+                if (registeredSubscribers.has(subscriber)) {
+                    registeredSubscribers.get(subscriber)();
+                }
+            },
+        }
+    }
+
+    /**
+     * @param {() => void} fn
+     * @param {XynHTML.signal[]} signals
+     * @returns {() => void} unsubscribe
+     */
+    static effect(fn, signals) {
+        let count = signals.length;
+
+        if (count < 1) {
+            fn();
+            return NoOp;
+        }
+
+        for (const signal of signals) {
+            signal.subscribe(fn, count--);
+        }
+
+        return () => {
+            signals?.forEach(signal => signal.unsubscribe(fn));
+            signals = null;
+            fn = null;
+        };
+    }
+
+    /**
+     * @template T
+     * @param {() => T} fn
+     * @param {XynHTML.signal[]} signals
+     * @returns {{unsubscribeDerived: () => void} extends XynHTML.signal} signal extended with unsubscribeDrived method
+     */
+    static derived(fn, signals) {
+        const derivedSignal = XynHTML.signal(fn());
+
+        return Object.assign(derivedSignal, { unsubscribeDerived: XynHTML.effect(() => derivedSignal.value = fn(), signals) });
+    }
+
+    /**
+     * @alias XynTag
+     */
+    static XynTag = XynTag;
+    /**
+     * @alias XynText
+     * @param {TemplateStringArray} s
+     * @param {...XynHTML.signal} v
+     * @returns {XynText}
+     * @description XynText is a class for creating text nodes with signals.
+     * @example
+     * XynText`Hello, ${name}!`
+     */
+    static text = (s, ...v) => new XynText().create(s, ...v);
 }
 
 /**
@@ -455,7 +494,7 @@ export { XynTag }
  * document.body.appendChild(container.render());
  * name.value = "XynHTML"; // Updates text to "Hello, XynHTML!"
  */
-export const text = (s, ...v) => new XynText().create(s, ...v);
+export const text = XynHTML.text;
 /**
  * @export @alias {XynSwitch}
  * @description XynSwitch is a class for creating switch cases with signals.
