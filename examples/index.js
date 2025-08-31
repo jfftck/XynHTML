@@ -36,42 +36,31 @@ const highlightThemes = {
     ],
     dark: [
         { name: 'Dark', value: 'dark' },
-        { name: 'Dracula', value: 'dracula' },
         { name: 'Monokai', value: 'monokai' },
         { name: 'Nord', value: 'nord' },
         { name: 'Atom One Dark', value: 'atom-one-dark' },
         { name: 'VS Code Dark', value: 'vs2015' },
-        { name: 'Solarized Dark', value: 'solarized-dark' },
         { name: 'Obsidian', value: 'obsidian' },
         { name: 'Tokyo Night Dark', value: 'tokyo-night-dark' },
-        { name: 'Monokai Sublime', value: 'monokai-sublime' }
+        { name: 'Monokai Sublime', value: 'monokai-sublime' },
+        { name: 'Arta', value: 'arta' },
+        { name: 'Codepen Embed', value: 'codepen-embed' }
     ]
 };
 
 // Syntax highlighting theme management
 const savedSyntaxTheme = localStorage.getItem('xynhtml-syntax-theme');
-const syntaxTheme = signal(savedSyntaxTheme || (getSystemTheme() === 'dark' ? 'dracula' : 'github'));
+const syntaxTheme = signal(savedSyntaxTheme || (getSystemTheme() === 'dark' ? 'monokai' : 'github'));
 
 function applySyntaxTheme(themeName) {
     const themeLink = document.getElementById('highlight-theme');
     if (!themeLink) return;
 
-    // Fade out all code blocks
     const codeBlocks = document.querySelectorAll('pre code');
-    codeBlocks.forEach(block => {
-        block.style.transition = 'opacity 0.2s ease-in-out';
-        block.style.opacity = '0';
-    });
+    if (codeBlocks.length === 0) return;
 
-    // Try different URL formats for problematic themes
-    let newThemeUrl;
-    if (themeName === 'solarized-dark') {
-        newThemeUrl = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/solarized-dark.min.css';
-    } else if (themeName === 'dracula') {
-        newThemeUrl = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/dracula.min.css';
-    } else {
-        newThemeUrl = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${themeName}.min.css`;
-    }
+    // Set up the new theme URL
+    const newThemeUrl = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${themeName}.min.css`;
     
     // Function to re-highlight and fade back in
     const reHighlightAndFadeIn = () => {
@@ -80,44 +69,72 @@ function applySyntaxTheme(themeName) {
             block.className = block.className.replace(/hljs-\S+/g, '');
             block.removeAttribute('data-highlighted');
             hljs.highlightElement(block);
-            
-            // Fade back in
-            setTimeout(() => {
-                block.style.opacity = '1';
-            }, 50);
         });
+        
+        // Fade back in after re-highlighting
+        setTimeout(() => {
+            codeBlocks.forEach(block => {
+                block.style.opacity = '1';
+            });
+        }, 50);
     };
 
-    // Apply new theme with error handling
-    const originalHref = themeLink.href;
-    themeLink.href = newThemeUrl;
-    
-    // Wait for the CSS to load before re-highlighting
-    themeLink.onload = () => {
-        setTimeout(reHighlightAndFadeIn, 100);
-    };
-    
-    // Error handling for failed theme loads
-    themeLink.onerror = () => {
-        console.warn(`Failed to load theme: ${themeName}, trying alternative URL`);
-        // Try with different naming convention
-        const fallbackUrl = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${themeName.replace('-', '')}.min.css`;
-        themeLink.href = fallbackUrl;
+    // Count how many blocks have completed their fade out animation
+    let fadeOutCount = 0;
+    const totalBlocks = codeBlocks.length;
+
+    // Function to handle when all fade outs are complete
+    const onAllFadeOutsComplete = () => {
+        // Apply new theme
+        themeLink.href = newThemeUrl;
         
-        themeLink.onerror = () => {
-            console.warn(`Alternative URL also failed for theme: ${themeName}, using default`);
-            themeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css';
-            setTimeout(reHighlightAndFadeIn, 100);
+        // Wait for the CSS to load before re-highlighting
+        themeLink.onload = () => {
+            setTimeout(reHighlightAndFadeIn, 50);
         };
+        
+        // Error handling for failed theme loads
+        themeLink.onerror = () => {
+            console.warn(`Failed to load theme: ${themeName}, using default`);
+            themeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css';
+            setTimeout(reHighlightAndFadeIn, 50);
+        };
+        
+        // Fallback for browsers that don't support onload for link elements
+        setTimeout(() => {
+            if (fadeOutCount === totalBlocks) {
+                reHighlightAndFadeIn();
+            }
+        }, 200);
     };
-    
-    // Wait for the CSS to load before re-highlighting
-    themeLink.onload = () => {
-        setTimeout(reHighlightAndFadeIn, 100);
-    };
-    
-    // Fallback for browsers that don't support onload for link elements
-    setTimeout(reHighlightAndFadeIn, 300);
+
+    // Fade out all code blocks and wait for animation to complete
+    codeBlocks.forEach(block => {
+        block.style.transition = 'opacity 0.2s ease-in-out';
+        
+        const handleTransitionEnd = (event) => {
+            if (event.propertyName === 'opacity' && event.target === block) {
+                fadeOutCount++;
+                block.removeEventListener('transitionend', handleTransitionEnd);
+                
+                // If all blocks have faded out, apply the theme change
+                if (fadeOutCount === totalBlocks) {
+                    onAllFadeOutsComplete();
+                }
+            }
+        };
+        
+        block.addEventListener('transitionend', handleTransitionEnd);
+        block.style.opacity = '0';
+    });
+
+    // Fallback timeout in case transition events don't fire
+    setTimeout(() => {
+        if (fadeOutCount < totalBlocks) {
+            console.warn('Fade animation timeout, applying theme change');
+            onAllFadeOutsComplete();
+        }
+    }, 500);
 }
 
 // Apply global theme
