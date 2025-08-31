@@ -25,14 +25,14 @@ const highlightThemes = {
     light: [
         { name: 'Default', value: 'default' },
         { name: 'GitHub', value: 'github' },
-        { name: 'IntelliJ IDEA', value: 'intellij-light' },
         { name: 'Atom One Light', value: 'atom-one-light' },
         { name: 'VS Code Light', value: 'vs' },
         { name: 'Lightfair', value: 'lightfair' },
         { name: 'Grayscale', value: 'grayscale' },
         { name: 'Brown Paper', value: 'brown-paper' },
         { name: 'School Book', value: 'school-book' },
-        { name: 'Foundation', value: 'foundation' }
+        { name: 'Foundation', value: 'foundation' },
+        { name: 'Googlecode', value: 'googlecode' }
     ],
     dark: [
         { name: 'Dark', value: 'dark' },
@@ -42,9 +42,9 @@ const highlightThemes = {
         { name: 'Atom One Dark', value: 'atom-one-dark' },
         { name: 'VS Code Dark', value: 'vs2015' },
         { name: 'Solarized Dark', value: 'solarized-dark' },
-        { name: 'Tokyo Night', value: 'tokyo-night-dark' },
-        { name: 'Material', value: 'material' },
-        { name: 'Obsidian', value: 'obsidian' }
+        { name: 'Obsidian', value: 'obsidian' },
+        { name: 'Tokyo Night Dark', value: 'tokyo-night-dark' },
+        { name: 'Monokai Sublime', value: 'monokai-sublime' }
     ]
 };
 
@@ -56,14 +56,26 @@ function applySyntaxTheme(themeName) {
     const themeLink = document.getElementById('highlight-theme');
     if (themeLink) {
         themeLink.href = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${themeName}.min.css`;
+        
+        // Wait for the CSS to load before re-highlighting
+        themeLink.onload = () => {
+            document.querySelectorAll('pre code').forEach(block => {
+                // Clear existing highlighting classes
+                block.className = block.className.replace(/hljs-\S+/g, '');
+                block.removeAttribute('data-highlighted');
+                hljs.highlightElement(block);
+            });
+        };
+        
+        // Fallback for browsers that don't support onload for link elements
+        setTimeout(() => {
+            document.querySelectorAll('pre code').forEach(block => {
+                block.className = block.className.replace(/hljs-\S+/g, '');
+                block.removeAttribute('data-highlighted');
+                hljs.highlightElement(block);
+            });
+        }, 200);
     }
-    
-    // Re-highlight all code blocks to apply the new theme
-    setTimeout(() => {
-        document.querySelectorAll('pre code').forEach(block => {
-            hljs.highlightElement(block);
-        });
-    }, 100);
 }
 
 // Apply global theme

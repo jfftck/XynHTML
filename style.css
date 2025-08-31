@@ -109,10 +109,16 @@ code {
   line-height: 1.4;
 }
 
-/* Ensure pre elements inherit highlight.js themes */
+/* Remove any default padding/margin from code elements to prevent flashing */
+code {
+  padding: 0;
+  margin: 0;
+}
+
+/* Let highlight.js handle all syntax highlighting colors */
 pre code {
-  background: inherit !important;
-  color: inherit !important;
+  padding: 0;
+  margin: 0;
 }
 
 /* Syntax highlighting colors - Light theme */
