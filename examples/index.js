@@ -54,28 +54,70 @@ const syntaxTheme = signal(savedSyntaxTheme || (getSystemTheme() === 'dark' ? 'd
 
 function applySyntaxTheme(themeName) {
     const themeLink = document.getElementById('highlight-theme');
-    if (themeLink) {
-        themeLink.href = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${themeName}.min.css`;
-        
-        // Wait for the CSS to load before re-highlighting
-        themeLink.onload = () => {
-            document.querySelectorAll('pre code').forEach(block => {
-                // Clear existing highlighting classes
-                block.className = block.className.replace(/hljs-\S+/g, '');
-                block.removeAttribute('data-highlighted');
-                hljs.highlightElement(block);
-            });
-        };
-        
-        // Fallback for browsers that don't support onload for link elements
-        setTimeout(() => {
-            document.querySelectorAll('pre code').forEach(block => {
-                block.className = block.className.replace(/hljs-\S+/g, '');
-                block.removeAttribute('data-highlighted');
-                hljs.highlightElement(block);
-            });
-        }, 200);
+    if (!themeLink) return;
+
+    // Fade out all code blocks
+    const codeBlocks = document.querySelectorAll('pre code');
+    codeBlocks.forEach(block => {
+        block.style.transition = 'opacity 0.2s ease-in-out';
+        block.style.opacity = '0';
+    });
+
+    // Try different URL formats for problematic themes
+    let newThemeUrl;
+    if (themeName === 'solarized-dark') {
+        newThemeUrl = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/solarized-dark.min.css';
+    } else if (themeName === 'dracula') {
+        newThemeUrl = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/dracula.min.css';
+    } else {
+        newThemeUrl = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${themeName}.min.css`;
     }
+    
+    // Function to re-highlight and fade back in
+    const reHighlightAndFadeIn = () => {
+        codeBlocks.forEach(block => {
+            // Clear existing highlighting classes
+            block.className = block.className.replace(/hljs-\S+/g, '');
+            block.removeAttribute('data-highlighted');
+            hljs.highlightElement(block);
+            
+            // Fade back in
+            setTimeout(() => {
+                block.style.opacity = '1';
+            }, 50);
+        });
+    };
+
+    // Apply new theme with error handling
+    const originalHref = themeLink.href;
+    themeLink.href = newThemeUrl;
+    
+    // Wait for the CSS to load before re-highlighting
+    themeLink.onload = () => {
+        setTimeout(reHighlightAndFadeIn, 100);
+    };
+    
+    // Error handling for failed theme loads
+    themeLink.onerror = () => {
+        console.warn(`Failed to load theme: ${themeName}, trying alternative URL`);
+        // Try with different naming convention
+        const fallbackUrl = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${themeName.replace('-', '')}.min.css`;
+        themeLink.href = fallbackUrl;
+        
+        themeLink.onerror = () => {
+            console.warn(`Alternative URL also failed for theme: ${themeName}, using default`);
+            themeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css';
+            setTimeout(reHighlightAndFadeIn, 100);
+        };
+    };
+    
+    // Wait for the CSS to load before re-highlighting
+    themeLink.onload = () => {
+        setTimeout(reHighlightAndFadeIn, 100);
+    };
+    
+    // Fallback for browsers that don't support onload for link elements
+    setTimeout(reHighlightAndFadeIn, 300);
 }
 
 // Apply global theme
@@ -266,7 +308,6 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
         const systemTheme = getSystemTheme();
         globalTheme.value = systemTheme;
         applyGlobalTheme(systemTheme);
-        updateGlobalThemeButton();
     }
 });
 

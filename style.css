@@ -118,6 +118,7 @@ code {
 pre code {
   padding: 1em;
   margin: 0;
+  transition: opacity 0.2s ease-in-out;
 }
 
 /* Syntax highlighting colors - Light theme */
