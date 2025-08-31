@@ -565,6 +565,66 @@ form {
   margin: 16px 0;
 }
 
+/* Input styling */
+input[type="text"], input[type="email"], input[type="password"] {
+  width: 100%;
+  padding: 8px;
+  margin: 5px 0;
+  border: 1px solid color-mix(in oklab, currentColor 20%, var(--color-background));
+  border-radius: 4px;
+  background-color: var(--color-background);
+  color: currentColor;
+  box-sizing: border-box;
+}
+
+/* Button styling */
+button {
+  padding: 8px 12px;
+  margin: 5px;
+  border: 1px solid color-mix(in oklab, currentColor 20%, var(--color-background));
+  border-radius: 4px;
+  background-color: color-mix(in oklab, currentColor 10%, var(--color-background));
+  color: currentColor;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  background-color: color-mix(in oklab, currentColor 15%, var(--color-background));
+}
+
+button:disabled {
+  background-color: color-mix(in oklab, currentColor 5%, var(--color-background));
+  color: color-mix(in oklab, currentColor 50%, var(--color-background));
+  cursor: not-allowed;
+}
+
+/* Dynamic list specific styling */
+.list-item {
+  margin: 5px 0;
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: color-mix(in oklab, currentColor 3%, var(--color-background));
+  border-radius: 4px;
+}
+
+.remove-button {
+  background: none;
+  border: none;
+  color: #ff4444;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px 6px;
+  margin-left: 10px;
+  border-radius: 50%;
+}
+
+.remove-button:hover {
+  background-color: rgba(255, 68, 68, 0.1);
+}
+
 form input {
   display: block;
   width: 100%;

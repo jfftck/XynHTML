@@ -153,7 +153,7 @@ function applySyntaxTheme(themeName, skipTransition = false) {
 }
 
 // Apply global theme
-function applyGlobalTheme(theme) {
+const applyGlobalTheme = (theme) => {
     // Remove existing theme classes
     document.body.classList.remove('theme-light', 'theme-dark');
     
@@ -163,7 +163,7 @@ function applyGlobalTheme(theme) {
     // Set data attribute for CSS targeting (keep for compatibility)
     document.body.setAttribute('data-theme', theme);
     document.documentElement.setAttribute('data-theme', theme);
-}
+};
 
 // Create global theme switcher at top of page
 const globalThemeSwitcher = document.createElement('div');

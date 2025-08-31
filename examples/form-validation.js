@@ -1,6 +1,6 @@
 
 
-import { signal, derived, XynTag, text, effect, createRoot } from "../src/xyn_html.js";
+import { signal, derived, XynTag, text, effect } from "../src/xyn_html.js";
 import { createOutput } from "./index.js";
 
 export async function example13() {
@@ -26,13 +26,11 @@ export async function example13() {
     const form = new XynTag("form");
     const formElement = form.render();
     formElement.className = "example-container";
-    formElement.style.cssText = "padding: 20px; border: 1px solid #ddd; border-radius: 5px; margin: 20px; background-color: #fafafa;";
 
     // Email input
     const emailInput = document.createElement("input");
     emailInput.type = "email";
     emailInput.placeholder = "Enter your email";
-    emailInput.style.cssText = "width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px;";
     emailInput.oninput = (e) => {
         email.value = e.target.value;
     };
@@ -45,7 +43,6 @@ export async function example13() {
     const passwordInput = document.createElement("input");
     passwordInput.type = "password";
     passwordInput.placeholder = "Enter your password";
-    passwordInput.style.cssText = "width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px;";
     passwordInput.oninput = (e) => {
         password.value = e.target.value;
     };
@@ -58,7 +55,6 @@ export async function example13() {
     const submitButton = document.createElement("button");
     submitButton.type = "button";
     submitButton.textContent = "Submit";
-    submitButton.style.cssText = "padding: 10px 20px; margin: 10px 0; border: none; border-radius: 4px; cursor: pointer;";
     submitButton.onclick = () => {
         if (isFormValid.value) {
             output(`Form submitted! Email: ${email.value}`);

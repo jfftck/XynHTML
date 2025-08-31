@@ -13,7 +13,6 @@ export async function example11() {
     const inputElement = listItemInput.render();
     inputElement.type = "text";
     inputElement.placeholder = "Enter new item";
-    inputElement.style.cssText = "margin-right: 10px; padding: 5px;";
 
     // Create add button
     const addButton = new XynTag("button");
@@ -25,7 +24,6 @@ export async function example11() {
             inputElement.value = "";
         }
     };
-    addButtonElement.style.cssText = "padding: 5px 10px; margin-right: 10px;";
 
     // Create clear button
     const clearButton = new XynTag("button");
@@ -34,7 +32,6 @@ export async function example11() {
     clearButtonElement.onclick = () => {
         items.value = [];
     };
-    clearButtonElement.style.cssText = "padding: 5px 10px;";
 
     // Create list container
     const itemList = new XynTag("ul");
@@ -48,14 +45,14 @@ export async function example11() {
         // Add each item with remove button
         items.value.forEach((item, index) => {
             const li = document.createElement("li");
-            li.style.cssText = "margin: 5px 0; padding: 3px; display: flex; justify-content: space-between; align-items: center;";
+            li.className = "list-item";
 
             const itemText = document.createElement("span");
             itemText.textContent = item;
 
             const removeButton = document.createElement("button");
             removeButton.textContent = "×";
-            removeButton.style.cssText = "background: none; border: none; color: #ff4444; cursor: pointer; font-size: 16px; padding: 2px 6px; margin-left: 10px;";
+            removeButton.className = "remove-button";
             removeButton.onclick = () => {
                 items.value = items.value.filter((_, i) => i !== index);
             };
@@ -70,7 +67,6 @@ export async function example11() {
     const listContainer = new XynTag("div");
     const listContainerElement = listContainer.render();
     listContainerElement.className = "example-container";
-    listContainerElement.style.cssText = "margin: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;";
 
     listContainerElement.appendChild(inputElement);
     listContainerElement.appendChild(addButtonElement);
