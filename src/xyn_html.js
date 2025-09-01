@@ -31,6 +31,11 @@
  * @returns {void}
  */
 const NoOp = () => { };
+/**
+ * @template T
+ * @type {Map<() => void | (oldValue: T) => void, int>}
+ */
+const subscribers = new Map();
 
 /**
  * @typedef {object} XynElement
@@ -244,12 +249,6 @@ class XynSwitch {
  */
 class XynHTML {
     /**
-     * @template T
-     * @type {Map<() => void | (oldValue: T) => void, int>}
-     */
-    static subscribers = new Map();
-
-    /**
      * @param {XynElement} xynElement
      * @param {string | HTMLElement} element
      * @returns {() => HTMLElement}
@@ -329,17 +328,17 @@ class XynHTML {
                     return;
                 }
 
-                if (!XynHTML.subscribers.has(subscriber)) {
-                    XynHTML.subscribers.set(subscriber, 0);
+                if (!subscribers.has(subscriber)) {
+                    subscribers.set(subscriber, 0);
                 }
 
-                XynHTML.subscribers.set(subscriber, XynHTML.subscribers.get(subscriber) + 1);
+                subscribers.set(subscriber, subscribers.get(subscriber) + 1);
 
                 registeredSubscribers.set(subscriber, () => {
-                    XynHTML.subscribers.set(subscriber, XynHTML.subscribers.get(subscriber) - 1);
+                    subscribers.set(subscriber, subscribers.get(subscriber) - 1);
 
-                    if (XynHTML.subscribers.get(subscriber) < 1) {
-                        XynHTML.subscribers.delete(subscriber);
+                    if (subscribers.get(subscriber) < 1) {
+                        subscribers.delete(subscriber);
                     }
 
                     registeredSubscribers.delete(subscriber);
