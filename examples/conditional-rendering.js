@@ -24,9 +24,9 @@ export async function example12() {
 
     // Add content to card
     const cardTitle = new XynTag("h3");
-    cardTitle.children = [text`Interactive Card`];
+    cardTitle.children.add(text`Interactive Card`);
     const cardContent = new XynTag("p");
-    cardContent.children = [text`${message}`];
+    cardContent.children.add(text`${message}`);
 
     cardElement.appendChild(cardTitle.render());
     cardElement.appendChild(cardContent.render());

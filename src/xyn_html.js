@@ -39,44 +39,60 @@ const subscribers = new Map();
 
 /**
  * @typedef {object} XynElement
- * @property {() => HTMLElement | (parent: HTMLElement) => HTMLElement} render
+ * @property {(() => HTMLElement | (parent: HTMLElement) => HTMLElement)} render
+ */
+/**
+ * @typedef Unsubscribe
+ * @type {() => void}
  */
 
 /**
- * @class XynTag
- * @implements {XynElement}
- * @description XynTag is a class for creating HTML elements with signals.
+ * @class XynCSS
+ * @description XynCSS is a class for applying CSS classes and styles to HTML elements with signals.
+ * @example
+ * const el = document.createElement("div");
+ * const css = new XynCSS(el);
+ * const show = signal(true);
+ * css.classes`show ${show}`;
+ * css.styles({ color: signal("red") });
+ * document.body.appendChild(el);
+ * show.value = false; // Removes 'show' class
  */
-class XynTag {
-    #name = "";
-    /** @type {Map<string, XynHTML.signal<unknown>> | null} */
-    props = null;
-    /** @type {XynElement[] | null} */
-    children = null;
-    #classes = "";
-    #self = null;
-    #update = true;
+class XynCSS {
     /**
-     * @template T extends XynHTML.signal
-     * @param {string} name
-     * @param {Map<string, T> | null} props
-     * @param {XynElement[] | null} children
+     * @type {?HTMLElement}
      */
-    constructor(name, props = null, children = null) {
-        this.#name = name;
-        this.props = props;
-        this.children = children;
-    }
+    #el = null;
 
     /**
-     * @param {string[]} classes
-     * @param {XynHTML.signal[]} conditions
-     * @returns void
-     * @example
-     * XynTag().css`show ${show} alert ${alert}`
+     * @type {?Unsubscribe}
      */
-    css(classes, ...conditions) {
-        this.#classes = classes.filter((c, i) => {
+    #unsubscribeClasses = null;
+
+    /**
+     * @type {?Unsubscribe}
+     */
+    #unsubscribeStyles = null;
+
+    /**
+     * @param {HTMLElement} el
+     * @returns {XynCSS}
+     */
+    constructor(el) {
+        this.#el = el;
+    }
+
+    classes(classes, ...conditions) {
+        if (this.#unsubscribeClasses) {
+            this.#unsubscribeClasses();
+            this.#unsubscribeClasses = null;
+        }
+
+        /**
+         * @type {Unsubscribe[]}
+         */
+        const unsubscribers = [];
+        this.#el.className = classes.filter((c, i) => {
             const toggledClasses = [];
 
             if (conditions[i] != null) {
@@ -86,58 +102,352 @@ class XynTag {
             }
 
             toggledClasses.forEach(([cc, condition]) => {
-                effect(() => {
+                unsubscribers.push(effect(() => {
                     if (condition.value) {
-                        this.#self.classList.add(cc);
+                        this.#el?.classList.add(cc);
                     } else {
-                        this.#self.classList.remove(cc);
+                        this.#el?.classList.remove(cc);
                     }
-                }, [condition]);
+                }, [condition]));
             });
+
+            this.#unsubscribeClasses = () => unsubscribers.forEach(unsubscribe => unsubscribe());
 
             return conditions[i] ?? true;
         }).join(" ");
+    }
 
-        if (!this.#update) {
-            this.#self.className = this.#classes;
+    /**
+     * @param {Object.<string, (string | XynHTML.signal)>} styles
+     */
+    styles(styles) {
+        if (this.#unsubscribeStyles) {
+            this.#unsubscribeStyles();
+            this.#unsubscribeStyles = null;
         }
+
+        /**
+         * @type {Unsubscribe[]}
+         */
+        const unsubscribers = [];
+        Object.entries(styles).forEach(([s, v]) => {
+            unsubscribers.push(effect(() => {
+                this.#el.style[s] = typeof v !== "string" ? v?.value : v;
+            }, [conditions[i]]));
+        });
+
+        this.#unsubscribeStyles = () => unsubscribers.forEach(unsubscribe => unsubscribe());
+    }
+}
+
+/**
+ * @class XynAttributes
+ * @description XynAttributes is a class for applying attributes to HTML elements with signals.
+ * @example
+ * const el = document.createElement("div");
+ * const attributes = new XynAttributes(el);
+ * const id = signal(1);
+ * attributes.set("data-id", id);
+ * document.body.appendChild(el);
+ * id.value = 2; // Updates 'data-id' attribute
+ */
+class XynAttributes {
+    /**
+     * @type {?HTMLElement}
+     */
+    #el = null;
+    /**
+     * @type {Map<string, Unsubscribe>}
+     */
+    #unsubscribe = new Map();
+
+    /**
+     * @param {HTMLElement} el
+     * @returns {void}
+     */
+    constructor(el) {
+        this.#el = el;
+    }
+
+    /**
+     * @param {string} name
+     * @returns {any}
+     */
+    get(name) {
+        return this.#el.getAttribute(name);
+    }
+
+    /**
+     * @param {string} name
+     * @param {string | XynHTML.signal} value
+     * @returns {void}
+     */
+    set(name, value) {
+        if (this.#unsubscribe.has(name)) {
+            this.#unsubscribe.get(name)();
+            this.#unsubscribe.delete(name);
+        }
+
+        if (typeof value !== "string" && Object.hasOwn(value, "value") && Object.hasOwn(value, "subscribe")) {
+            this.#unsubscribe.set(name, effect(() => {
+                this.#el.setAttribute(name, value.value);
+            }, [value]));
+            
+            return;
+        }
+        
+        this.#el.setAttribute(name, value);
+    }
+}
+
+/**
+ * @class XynFragment
+ * @implements {XynElement}
+ * @description XynFragment is a class for creating document fragments with signals.
+ * @example
+ * const fragment = new XynFragment([text`Hello, ${name}!`]);
+ * document.body.appendChild(fragment.render());
+ * name.value = "XynHTML"; // Updates text to "Hello, XynHTML!"
+ * fragment.add(text`Welcome to XynHTML!`);
+ * document.body.appendChild(fragment.render());
+ * name.value = "World"; // Updates text to "Hello, World!"
+ * fragment.render(); // Renders the fragment to the DOM
+ * fragment.render(); // Does nothing, fragment is already rendered
+ * fragment.render(document.body); // Renders the fragment to the DOM again
+ * fragment.render(document.body); // Does nothing, fragment is already rendered
+ */
+class XynFragment {
+    /**
+     * @type {XynElement[]}
+     */
+    #children = [];
+    /**
+     * @type {!DocumentFragment}
+     */
+    #fragment = null;
+    /**
+     * @type {boolean}
+     */
+    #isRendered = false;
+
+    /**
+     * @param {XynElement[]} children
+     */
+    constructor(children) {
+        this.#fragment = document.createDocumentFragment();
+        if (children) {
+            this.#children = children;
+        }
+    }
+
+    /**
+     * @param {XynElement} child
+     * @returns {void}
+     * @description Adds a child to the end of the fragment.
+     */
+    add(...child) {
+        this.#children.push(...child);
+    }
+
+    /**
+     * @returns {void}
+     * @description Clears the fragment and removes all children.
+     */
+    clear() {
+        this.#children.forEach(child => this.#fragment.removeChild(child));
+        this.#children.splice(0, this.#children.length);
+    }
+
+    /**
+     * @param {XynElement} child
+     * @param {int} index
+     * @returns {void}
+     * @description Inserts a child at the specified index, defaults to the beginning.
+     */
+    insert(child, index = 0) {
+        this.#children.splice(index, 0, child);
+        this.#fragment.insertBefore(child.render(), this.#fragment.childNodes[index]);
+    }
+
+    /**
+     * @param {XynElement} child
+     * @returns {void}
+     * @description Removes a child from the fragment.
+     */
+    remove(child) {
+        const c = (this.#children.splice(this.#children.indexOf(child), 1))[0].render();
+        this.#fragment.removeChild(c);
+    }
+
+    /**
+     * @param {?HTMLElement} parent
+     * @returns {DocumentFragment}
+     */
+    render(parent = null) {
+        for (const child of this.#children) {
+            this.#fragment.appendChild(child.render());
+        }
+
+        if (parent && !this.#isRendered) {
+            parent.appendChild(this.#fragment);
+            this.#isRendered = true;
+        }
+
+        return this.#fragment;
+    }
+}
+
+class XynEvent {
+    /**
+     * @type {!HTMLElement}
+     */
+    #el = null;
+    /**
+     * @type {!string}
+     */
+    #eventName = null;
+    /**
+     * @type {!function(): void}
+     */
+    #func = null;
+    /**
+     * @type {boolean}
+     */
+    #isOn = false;
+    
+    /**
+     * @param {HTMLElement} el
+     * @param {string} eventName
+     * @param {function(): void} func
+     */
+    constructor(el, eventName, func) {
+        this.#el = el;
+        this.#eventName = eventName;
+        this.#func = func;
+
+        this.on();
+    }
+
+    /**
+     * @returns {void}
+     */
+    on() {
+        if (this.#isOn) {
+            return;
+        }
+        
+        this.#el.addEventListener(this.#eventName, this.#func);
+        this.#isOn = true;
+    }
+
+    /**
+     * @returns {void}
+     */
+    off() {
+        this.#el.removeEventListener(this.#eventName, this.#func);
+        this.#isOn = false;
+    }
+
+    /**
+     * @returns {void}
+     */
+    toggle() {
+        this.#isOn ? this.off() : this.on();
+    }
+
+    /**
+     * @param {XynHTML.signal<boolean>} watched
+     * @returns {void}
+     */
+    watch(watched) {
+        effect(() => watched.value ? this.on() : this.off(), [watched]);
+    }
+}
+
+/**
+ * @class XynTag
+ * @implements {XynElement}
+ * @description XynTag is a class for creating HTML elements with signals.
+ */
+class XynTag {
+    /** @type {?XynAttributes} */
+    #attributes = null;
+    /** @type {?XynFragment} */
+    #children = null;
+    /** @type {?XynCSS} */
+    #css = null;
+    /** @type {?HTMLElement} */
+    #self = null;
+    /**
+     * @param {string} name
+     * @param {?XynFragment} children
+     * returns {XynTag}
+     */
+    constructor(name, children = null) {
+        this.#self = document.createElement(name);
+        this.#children = children;
+    }
+
+    /**
+     * @readonly
+     * @type {XynAttributes}
+     * @example
+     * XynTag().attributes.set("data-id", id)
+     */
+    get attributes() {
+        if (!this.#attributes) {
+            this.#attributes = new XynAttributes(this.#self);
+        }
+
+        return this.#attributes;
+    }
+
+    get children() {
+        if (!this.#children) {
+            this.#children = new XynFragment();
+        }
+
+        return this.#children;
+    }
+
+    /**
+     * @readonly
+     * @type {XynCSS}
+     * @example
+     * XynTag().css.classes`show ${show} alert ${alert}`
+     */
+    get css() {
+        if (!this.#css) {
+            this.#css = new XynCSS(this.#self);
+        }
+
+        return this.#css;
+    }
+
+    /**
+     * @method event
+     * @param {string} eventName
+     * @param {function(): void} func
+     * @returns {function(): void}
+     * @description Adds an event listener to the element. Returns a function to remove the event listener.
+     * @example
+     * const event = XynTag().event("click", () => console.log("clicked"));
+     * event.off(); // Removes the event listener
+     * event.on(); // Adds the event listener back
+     * event.toggle(); // Toggles the event listener
+     * event.watch(show); // Watches a signal and toggles the event listener based on the signal's value
+     */
+    event(eventName, func) {
+        return new XynEvent(this.#self, eventName, func);
     }
 
     /**
      * @returns {HTMLElement}
      */
     render() {
-        if (this.#self) {
-            if (!this.#update) {
-                return this.#self;
-            }
-
-            for (const child of this.children) {
-                child.render();
-            }
+        if (this.#children) {
+            this.#children.render(this.#self);
         }
-
-        this.#self = document.createElement(this.#name);
-
-        if (this.props) {
-            this.props.forEach((key, prop) => {
-                effect(() => {
-                    this.#self.setAttribute(key, prop.value);
-                }, [prop]);
-            });
-        }
-
-        if (this.children) {
-            for (const child of this.children) {
-                this.#self.appendChild(child.render(this.#self));
-            }
-        }
-
-        if (this.#classes) {
-            this.#self.className = this.#classes;
-        }
-
-        this.#update = false;
 
         return this.#self;
     }
@@ -149,9 +459,18 @@ class XynTag {
  * @description XynText is a class for creating text nodes with signals.
  */
 class XynText {
+    /**
+     * @type {?TemplateStringArray}
+     */
     text = null;
+    /**
+     * @type {?XynHTML.signal[]}
+     */
     signals = null;
-    el = document.createTextNode("");
+    /**
+     * @type {TextNode}
+     */
+    #el = document.createTextNode("");
 
     /**
      * @param {TemplateStringArray} text
@@ -176,12 +495,11 @@ class XynText {
      * created and appended to the parent element.
      */
     render() {
-        const renderedText = () => this.el.textContent = this.text.map(
-            (text, i) => text + (this.signals[i]?.value ?? "")
-        ).join("");
-        effect(renderedText, this.signals);
+        effect(() => this.#el.textContent = this.text.map(
+                   (text, i) => text + (this.signals[i]?.value ?? "")
+               ).join(""), this.signals);
 
-        return this.el;
+        return this.#el;
     }
 }
 
@@ -223,7 +541,7 @@ class XynSwitch {
      */
     render(parent) {
         effect((prevValue) => {
-            if (prevValue != null) {
+            if (parent && prevValue != null) {
                 parent.replaceChild(this.#switchValue.value, prevValue);
             }
         }, [this.#switchValue]);
@@ -364,7 +682,7 @@ class XynHTML {
     /**
      * @param {() => void} fn
      * @param {XynHTML.signal[]} signals
-     * @returns {() => void} unsubscribe
+     * @returns {Unsubscribe} unsubscribe
      */
     static effect(fn, signals) {
         let count = signals.length;
@@ -462,6 +780,32 @@ export const effect = XynHTML.effect;
  */
 export const derived = XynHTML.derived;
 /**
+ * @export @alias {XynFragment}
+ * @description XynFragment is a class for creating document fragments with signals.
+ * @example Basic XynFragment usage:
+ * import { XynFragment, signal, text } from "./xyn_html.js";
+ * const name = signal("World");
+ * const fragment = new XynFragment([text`Hello, ${name}!`]);
+ * document.body.appendChild(fragment.render());
+ * name.value = "XynHTML"; // Updates text to "Hello, XynHTML!"
+ * fragment.add(text`Welcome to XynHTML!`);
+ * document.body.appendChild(fragment.render());
+ * name.value = "World"; // Updates text to "Hello, World!"
+ * fragment.render(); // Renders the fragment to the DOM
+ * fragment.render(); // Does nothing, fragment is already rendered
+ * fragment.render(document.body); // Renders the fragment to the DOM again
+ * fragment.render(document.body); // Does nothing, fragment is already rendered
+ */
+export { XynFragment };
+/**
+ * @export @alias {XynFragment}
+ * @description fragment is a function for creating document fragments with signals.
+ * @param {...XynElement} children
+ * @returns {XynFragment}
+ * @example fragment(text`Hello, ${name}!`)
+ */
+export const fragment = (...children) => new XynFragment(children);
+/**
  * @export @alias {XynTag}
  * @description XynTag is a class for creating HTML elements with signals.
  * @example Basic XynTag usage:
@@ -479,7 +823,16 @@ export const derived = XynHTML.derived;
  * document.body.appendChild(container.render());
  * show.value = false; // Removes 'show' class
  */
-export { XynTag }
+export { XynTag };
+/**
+ * @export @alias {XynTag}
+ * @description t is a function for creating HTML elements with signals.
+ * @param {TemplateStringArry} t
+ * @param {...XynHTML.signal} _
+ * @returns {XynTag}
+ * @example t`div`
+ */
+export const t = (t) => new XynTag(t[0]);
 /**
  * @export @type {(s: TemplateStringArray, ...v: XynHTML.signal[]) => XynText})}
  * @description XynText is a class for creating text nodes with signals.

@@ -1,5 +1,5 @@
 
-import { signal, XynTag, text } from "../src/xyn_html.js";
+import { t, signal, text } from "../src/xyn_html.js";
 import { createOutput } from "./index.js";
 
 export async function example10() {
@@ -9,20 +9,19 @@ export async function example10() {
     const clickCount = signal(0);
 
     // Create a button with reactive text
-    const button = new XynTag("button");
-    button.children = [text`${buttonText}`];
+    const button = t`button`;
+    button.children.add(text`${buttonText}`);
 
     // Add click handler
-    const buttonElement = button.render();
-    buttonElement.onclick = () => {
+    button.event("click", () => {
         clickCount.value++;
         buttonText.value = `Clicked ${clickCount.value} times`;
-    };
+    });
 
     // Create a div container and mount using createRoot
-    const container = new XynTag("div");
-    container.children = [button];
-    container.render().className = "example-container";
+    const container = t`div`;
+    container.children.add(button);
+    container.css.classes`example-container`;
 
     // Append to document body directly
     const outputContainer = document.getElementById('example10-output');
