@@ -311,6 +311,10 @@ class XynEvent {
      */
     #func = null;
     /**
+     * @type {?(Object | boolean)}
+     */
+    #options = null;
+    /**
      * @type {boolean}
      */
     #isOn = false;
@@ -319,11 +323,14 @@ class XynEvent {
      * @param {HTMLElement} el
      * @param {string} eventName
      * @param {function(): void} func
+     * @param {?(Object | boolean)} options
+     * @returns {XynEvent}
      */
-    constructor(el, eventName, func) {
+    constructor(el, eventName, func, options) {
         this.#el = el;
         this.#eventName = eventName;
         this.#func = func;
+        this.#options = options;
 
         this.on();
     }
@@ -336,7 +343,7 @@ class XynEvent {
             return;
         }
         
-        this.#el.addEventListener(this.#eventName, this.#func);
+        this.#el.addEventListener(this.#eventName, this.#func, this.#options);
         this.#isOn = true;
     }
 
@@ -428,6 +435,7 @@ class XynTag {
      * @method event
      * @param {string} eventName
      * @param {function(): void} func
+     * @param {?(Object | boolean)} options
      * @returns {function(): void}
      * @description Adds an event listener to the element. Returns a function to remove the event listener.
      * @example
@@ -437,8 +445,8 @@ class XynTag {
      * event.toggle(); // Toggles the event listener
      * event.watch(show); // Watches a signal and toggles the event listener based on the signal's value
      */
-    event(eventName, func) {
-        return new XynEvent(this.#self, eventName, func);
+    event(eventName, func, options) {
+        return new XynEvent(this.#self, eventName, func, options);
     }
 
     /**
