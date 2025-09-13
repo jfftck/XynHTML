@@ -33,9 +33,19 @@
 const NoOp = () => { };
 /**
  * @template T
- * @type {Map<() => void | (oldValue: T) => void, int>}
+ * @type {Map<function([T]): void, int>}
  */
 const subscribers = new Map();
+
+/**
+ * @function uuidv4
+ * @returns {string}
+ */
+function uuidv4() {
+    return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
+        (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> +c / 4).toString(16)
+    );
+}
 
 /**
  * @typedef {object} XynElement
@@ -53,9 +63,11 @@ const subscribers = new Map();
  * const el = document.createElement("div");
  * const css = new XynCSS(el);
  * const show = signal(true);
+ * const color = signal("red");
  * css.classes`show ${show}`;
- * css.styles({ color: signal("red") });
+ * css.styles({ color });
  * document.body.appendChild(el);
+ * color.value = "blue"; // Updates 'color' style
  * show.value = false; // Removes 'show' class
  */
 class XynCSS {
@@ -82,6 +94,19 @@ class XynCSS {
         this.#el = el;
     }
 
+    /**
+     * @param {TemplateStringArray} classes
+     * @param {...XynSignal<(boolean | string)>} conditions
+     * @returns {void}
+     * @description Applies CSS classes to the element based on conditions.
+     * @example
+     * const el = document.createElement("div");
+     * const css = new XynCSS(el);
+     * const show = signal(true);
+     * css.classes`show ${show}`;
+     * document.body.appendChild(el);
+     * show.value = false; // Removes 'show' class
+     */
     classes(classes, ...conditions) {
         if (this.#unsubscribeClasses) {
             this.#unsubscribeClasses();
@@ -92,29 +117,43 @@ class XynCSS {
          * @type {Unsubscribe[]}
          */
         const unsubscribers = [];
+        const addionalClasses = [];
         this.#el.className = classes.filter((c, i) => {
             const toggledClasses = [];
 
-            if (conditions[i] != null) {
-                const conditionClasses = c.split(" ");
-                conditionClasses.forEach((cc) =>
-                    toggledClasses.push([cc, conditions[i]]));
+            switch (typeof conditions[i]?.value) {
+                case "boolean":
+                    const conditionClasses = c.trim().split(" ");
+                    conditionClasses.forEach((cc) =>
+                        toggledClasses.push([cc, conditions[i]]));
+
+                    toggledClasses.forEach(([cc, condition]) => {
+                        unsubscribers.push(effect(() => {
+                            if (condition.value) {
+                                this.#el?.classList.add(cc);
+                            } else {
+                                this.#el?.classList.remove(cc);
+                            }
+                        }, [condition]));
+                    });
+
+                    return conditions[i] ?? true;
+                case "string":
+                    unsubscribers.push(effect((preValue) => {
+                        this.#el.classList.remove(preValue);
+                        this.#el.classList.add(conditions[i].value);
+                    }, [conditions[i]]));
+                    addionalClasses.push(conditions[i].value);
+                default:
+                    if (c.trim() === "") {
+                        return false;
+                    }
+
+                    return true;
             }
 
-            toggledClasses.forEach(([cc, condition]) => {
-                unsubscribers.push(effect(() => {
-                    if (condition.value) {
-                        this.#el?.classList.add(cc);
-                    } else {
-                        this.#el?.classList.remove(cc);
-                    }
-                }, [condition]));
-            });
-
-            this.#unsubscribeClasses = () => unsubscribers.forEach(unsubscribe => unsubscribe());
-
-            return conditions[i] ?? true;
-        }).join(" ");
+        }).join(" ") + " " + addionalClasses.join(" ").trim();
+        this.#unsubscribeClasses = () => unsubscribers.forEach(unsubscribe => unsubscribe());
     }
 
     /**
@@ -131,9 +170,15 @@ class XynCSS {
          */
         const unsubscribers = [];
         Object.entries(styles).forEach(([s, v]) => {
-            unsubscribers.push(effect(() => {
-                this.#el.style[s] = typeof v !== "string" ? v?.value : v;
-            }, [conditions[i]]));
+            if (v instanceof XynSignal) {
+                unsubscribers.push(effect(() => {
+                    this.#el.style[s] = v.value;
+                }, [v]));
+
+                return;
+            }
+
+            this.#el.style[s] = v;
         });
 
         this.#unsubscribeStyles = () => unsubscribers.forEach(unsubscribe => unsubscribe());
@@ -192,10 +237,10 @@ class XynAttributes {
             this.#unsubscribe.set(name, effect(() => {
                 this.#el.setAttribute(name, value.value);
             }, [value]));
-            
+
             return;
         }
-        
+
         this.#el.setAttribute(name, value);
     }
 }
@@ -254,7 +299,7 @@ class XynFragment {
      * @description Clears the fragment and removes all children.
      */
     clear() {
-        this.#children.forEach(child => this.#fragment.removeChild(child));
+        this.#children.replaceChildren();
         this.#children.splice(0, this.#children.length);
     }
 
@@ -318,7 +363,7 @@ class XynEvent {
      * @type {boolean}
      */
     #isOn = false;
-    
+
     /**
      * @param {HTMLElement} el
      * @param {string} eventName
@@ -342,7 +387,7 @@ class XynEvent {
         if (this.#isOn) {
             return;
         }
-        
+
         this.#el.addEventListener(this.#eventName, this.#func, this.#options);
         this.#isOn = true;
     }
@@ -454,7 +499,7 @@ class XynTag {
      */
     render() {
         if (this.#children) {
-            this.#children.render(this.#self);
+            this.#self.appendChild(this.#children.render());
         }
 
         return this.#self;
@@ -504,8 +549,8 @@ class XynText {
      */
     render() {
         effect(() => this.#el.textContent = this.text.map(
-                   (text, i) => text + (this.signals[i]?.value ?? "")
-               ).join(""), this.signals);
+            (text, i) => text + (this.signals[i]?.value ?? "")
+        ).join(""), this.signals);
 
         return this.#el;
     }
@@ -535,9 +580,17 @@ class XynSwitch {
      * @param {Map<unknown, XynElement>} valueMap
      * @param {XynElement} defaultValue
      */
-    constructor(caseValue, valueMap, defaultValue = { render() { return document.createComment("Placeholder") } }) {
+    constructor(caseValue, valueMap, defaultValue = null) {
+        if (defaultValue == null) {
+            defaultValue = {
+                id: uuidv4(),
+                render() {
+                    return document.createComment(`Placeholder ${this.id}`);
+                }
+            };
+        }
         this.#switchValue = derived(() => {
-            return valueMap.get(caseValue.value)?.render() ?? this.#defaultValue.render();
+            return (valueMap.get(caseValue.value) ?? this.#defaultValue).render();
         }, [caseValue]);
         this.valueMap = valueMap;
         this.#defaultValue = defaultValue;
@@ -555,6 +608,109 @@ class XynSwitch {
         }, [this.#switchValue]);
 
         return this.#switchValue.value;
+    }
+}
+
+/**
+ * @class XynSignal
+ * @description XynSignal is a class for creating signals with subscribers.
+ * @template T
+ * @param {T} value
+ * @returns {XynSignal}
+ * @example
+ * const counter = new XynSignal(0);
+ * const logCounter = () => console.log(counter.value);
+ * counter.subscribe(logCounter);
+ * counter.value = 1; // Logs 1
+ * counter.value = 2; // Logs 2
+ * counter.unsubscribe(logCounter);
+ * counter.value = 3; // Does nothing
+ * counter.subscribe(logCounter);
+ * counter.value = 4; // Logs 4
+ */
+class XynSignal {
+    /**
+     * @template T
+     * @type {?T}
+     */
+    #value = null;
+    /**
+     * @type {Map<Function, Function>}
+     */
+    #registeredSubscribers = new Map();
+    /**
+     * @param {any} value
+     */
+    constructor(value) {
+        this.#value = value;
+    }
+
+    /**
+     * @template T
+     * @type {?T}
+     */
+    get value() {
+        return this.#value;
+    }
+
+    set value(newValue) {
+        if (newValue === this.#value) {
+            return;
+        }
+
+        const oldValue = this.#value;
+        this.#value = newValue;
+        this.#registeredSubscribers.keys().forEach(subscriber => subscriber(oldValue));
+    }
+
+    /**
+     * @template T
+     * @method subscribe
+     * @param {function([T]): void} subscriber
+     * @param {int} count @default 1
+     * @returns {void}
+     */
+    subscribe(subscriber, count = 1) {
+        if (typeof subscriber !== "function") {
+            return;
+        }
+
+        if (count === 1) {
+            subscriber();
+        }
+
+        if (this.#registeredSubscribers.has(subscriber)) {
+            return;
+        }
+
+        if (!subscribers.has(subscriber)) {
+            subscribers.set(subscriber, 0);
+        }
+
+        subscribers.set(subscriber, subscribers.get(subscriber) + 1);
+        this.#registeredSubscribers.set(subscriber, () => {
+            subscribers.set(subscriber, subscribers.get(subscriber) - 1);
+
+            if (subscribers.get(subscriber) < 1) {
+                subscribers.delete(subscriber);
+            }
+
+            this.#registeredSubscribers.delete(subscriber);
+        });
+    }
+
+    /**
+     * param {function(): void} subscriber
+     * @returns {void}
+     */
+    unsubscribe(subscriber) {
+        if (typeof subscriber !== "function") {
+            return;
+        }
+
+        if (this.#registeredSubscribers.has(subscriber)) {
+            this.#registeredSubscribers.get(subscriber)();
+        }
     }
 }
 
@@ -577,34 +733,36 @@ class XynHTML {
     /**
      * @param {XynElement} xynElement
      * @param {string | HTMLElement} element
-     * @returns {() => HTMLElement}
+     * @returns {void}
      * @description Creates a mount function for a given XynElement and element name.
      */
-    static createMount(xynElement, element) {
+    static mountNext(xynElement, element) {
         const el = element instanceof HTMLElement ? element : document.querySelector(element);
 
         if (el) {
-            return () => el.appendChild(xynElement.render(el));
+            el.appendChild(xynElement.render(el));
+
+            return;
         }
 
-        throw new Error(`Element "${el.tagName}" not found`);
+        throw new Error(`Element with query of "${element}" not found`);
     }
 
     /**
-     * @param {XynElement} XynElement
+     * @param {XynElement} xynElement
      * @param {string | HTMLElement} element
-     * @returns {() => HTMLElement}
+     * @returns {void}
      * @description Creates a root mount function for a given XynTag and element name.
      * This will clear the element before mounting the XynTag.
      */
-    static createRoot(XynElement, element) {
+    static mountRoot(xynElement, element) {
         const el = element instanceof HTMLElement ? element : document.querySelector(element);
 
         if (el) {
             el.innerHTML = "";
         }
 
-        return XynHTML.createMount(XynElement, el);
+        return XynHTML.mountNext(xynElement, el);
     }
 
     /**
@@ -613,78 +771,7 @@ class XynHTML {
      * @returns {{ value: T, subscribe: (subscriber: Function) => string, unsubscribe: (subscriberId: string) => void }}
      */
     static signal(value) {
-        /**
-         * @type {Map<Function, Function>}
-         */
-        const registeredSubscribers = new Map();
-
-        return {
-            /**
-             * @type {T}
-             */
-            get value() {
-                return value;
-            },
-
-            set value(newValue) {
-                if (newValue === value) {
-                    return;
-                }
-
-                const oldValue = value;
-                value = newValue;
-                registeredSubscribers.keys().forEach(subscriber => subscriber(oldValue));
-            },
-
-            /**
-             * @param {() => void | (prevValue: T) => void} subscriber
-             * @param {int} count @default 1
-             * @returns {void}
-             */
-            subscribe(subscriber, count = 1) {
-                if (typeof subscriber !== "function") {
-                    return;
-                }
-
-                if (count === 1) {
-                    subscriber();
-                }
-
-                if (registeredSubscribers.has(subscriber)) {
-                    return;
-                }
-
-                if (!subscribers.has(subscriber)) {
-                    subscribers.set(subscriber, 0);
-                }
-
-                subscribers.set(subscriber, subscribers.get(subscriber) + 1);
-
-                registeredSubscribers.set(subscriber, () => {
-                    subscribers.set(subscriber, subscribers.get(subscriber) - 1);
-
-                    if (subscribers.get(subscriber) < 1) {
-                        subscribers.delete(subscriber);
-                    }
-
-                    registeredSubscribers.delete(subscriber);
-                });
-            },
-
-            /**
-             * param {() => void} subscriber
-             * @returns {void}
-             */
-            unsubscribe: (subscriber) => {
-                if (typeof subscriber !== "function") {
-                    return;
-                }
-
-                if (registeredSubscribers.has(subscriber)) {
-                    registeredSubscribers.get(subscriber)();
-                }
-            },
-        }
+        return new XynSignal(value);
     }
 
     /**
@@ -718,7 +805,7 @@ class XynHTML {
      * @returns {{unsubscribeDerived: () => void} extends XynHTML.signal} signal extended with unsubscribeDrived method
      */
     static derived(fn, signals) {
-        const derivedSignal = XynHTML.signal(fn());
+        const derivedSignal = new XynSignal(fn());
 
         return Object.assign(derivedSignal, { unsubscribeDerived: XynHTML.effect(() => derivedSignal.value = fn(), signals) });
     }
@@ -770,11 +857,11 @@ export default XynHTML;
 /**
  * @export @alias {XynHTML.createMount}
  */
-export const createMount = XynHTML.createMount;
+export const mountNext = XynHTML.mountNext;
 /**
  * @export @alias {XynHTML.createRoot}
  */
-export const createRoot = XynHTML.createRoot;
+export const mountRoot = XynHTML.mountRoot;
 /**
  * @export @alias {XynHTML.signal}
  */
@@ -812,7 +899,7 @@ export { XynFragment };
  * @returns {XynFragment}
  * @example fragment(text`Hello, ${name}!`)
  */
-export const fragment = (...children) => new XynFragment(children);
+export const fragment = (...children) => new XynFragment(...children);
 /**
  * @export @alias {XynTag}
  * @description XynTag is a class for creating HTML elements with signals.

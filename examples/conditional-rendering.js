@@ -12,24 +12,26 @@ export async function example12() {
 
     // Create a styled card
     const card = new XynTag("div");
-    const cardElement = card.render();
-    cardElement.className = "example-container";
-    cardElement.style.cssText = `
-        padding: 20px;
-        margin: 10px;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-        border: 2px solid #007acc;
-    `;
 
     // Add content to card
     const cardTitle = new XynTag("h3");
     cardTitle.children.add(text`Interactive Card`);
     const cardContent = new XynTag("p");
-    cardContent.children.add(text`${message}`);
+    cardContent.children.add(
+        text`${message}`
+    );
 
-    cardElement.appendChild(cardTitle.render());
-    cardElement.appendChild(cardContent.render());
+    card.children.add(cardTitle, cardContent);
+
+    // Create a styled card
+    card.css.classes`example-container`;
+    card.css.styles({
+        padding: "20px",
+        margin: "10px",
+        "border-radius": "8px",
+        transition: "all 0.3s ease",
+        border: "2px solid #007acc"
+    });
 
     // Create XynSwitch for conditional rendering
     const cardSwitch = new XynSwitch(isVisible, new Map([
@@ -42,7 +44,7 @@ export async function example12() {
     toggleButtonElement.style.cssText = "padding: 8px 16px; margin: 5px; cursor: pointer;";
 
     // Update button text based on visibility
-    const toggleTextEffect = effect(() => {
+    effect(() => {
         toggleButtonElement.textContent = isVisible.value ? "Hide Card" : "Show Card";
     }, [isVisible]);
 
@@ -59,37 +61,8 @@ export async function example12() {
         localTheme.value = localTheme.value === "light" ? "dark" : "light";
     };
 
-    // Effect to handle card theme styling
-    const cardTheme = derived(() => {
-        if (localTheme.value === "dark") {
-            return {
-                backgroundColor: "#2d2d2d",
-                color: "#ffffff",
-                borderColor: "#666"
-            };
-        } else {
-            return {
-                backgroundColor: "#f0f8ff",
-                color: "#000000",
-                borderColor: "#007acc"
-            };
-        }
-    }, [localTheme]);
-
-    effect(() => {
-        cardElement.style.backgroundColor = cardTheme.value.backgroundColor;
-        cardElement.style.color = cardTheme.value.color;
-        cardElement.style.borderColor = cardTheme.value.borderColor;
-    }, [cardTheme]);
-
     // Apply conditional styling based on local theme using CSS classes
-    effect(() => {
-        const cardEl = card.render();
-        // Remove existing theme classes
-        cardEl.classList.remove('local-theme-light', 'local-theme-dark');
-        // Add new theme class
-        cardEl.classList.add(`local-theme-${localTheme.value}`);
-    }, [localTheme]);
+    card.css.classes`${derived(() => `local-theme-${localTheme.value}`, [localTheme])}`;
 
     // Create container for this example
     const conditionalContainer = new XynTag("div");

@@ -1,8 +1,7 @@
-
 /* Local theme styles for conditional rendering example */
 .local-theme-light {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg in oklab, #667eea 0%, #ffcc8f 100%);
+  color: #000000;
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
@@ -28,7 +27,7 @@
 }
 
 .local-theme-dark {
-  background: linear-gradient(135deg, #2d1b69 0%, #11998e 100%);
+  background: linear-gradient(135deg in oklab, #2d1b69 0%, #11665e 100%);
   color: #ffffff;
   border-radius: 12px;
   padding: 20px;
