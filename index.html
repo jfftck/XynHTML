@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 
@@ -7,14 +6,15 @@
     <meta name="viewport" content="width=device-width">
     <title>XynHTML Examples</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/theme-toggles@4.10.1/css/within.min.css">
-    
+
     <!-- Highlight.js CSS - Default theme, will be overridden by JS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" id="highlight-theme">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css"
+        id="highlight-theme">
+
     <!-- Highlight.js JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
-    
+
     <link href="style.css" rel="stylesheet" type="text/css" />
     <link href="examples/local-theme.css" rel="stylesheet" type="text/css" />
     <script src="examples/index.js" type="module" defer></script>
@@ -49,608 +49,59 @@ const mySignal = XynHTML.signal("Hello");
 
     <!-- Example 1: Basic Signal Usage -->
     <h3>Example 1: Basic Signal Usage</h3>
-    <pre><code class="language-javascript">import { signal } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
-
-export async function example1() {
-    const output = createOutput('example1-output');
-    
-    const counter = signal(0);
-    output("Initial counter value: " + counter.value);
-
-    // Subscribe to changes
-    const counterSubscriber = () => {
-        output("Counter changed to: " + counter.value);
-    };
-    counter.subscribe(counterSubscriber);
-
-    // Update the signal value
-    counter.value = 5;
-    counter.value = 10;
-
-    // Unsubscribe
-    counter.unsubscribe(counterSubscriber);
-}</code></pre>
     <div id="example1-output"></div>
 
     <!-- Example 2: Multiple Signals and Effects -->
     <h3>Example 2: Multiple Signals and Effects</h3>
-    <pre><code class="language-javascript">import { signal, effect } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
-
-export async function example2() {
-    const output = createOutput('example2-output');
-    
-    const firstName = signal("John");
-    const lastName = signal("Doe");
-
-    // Effect that runs when either signal changes
-    const unsubscribeEffect = effect(() => {
-        output(`Full name: ${firstName.value} ${lastName.value}`);
-    }, [firstName, lastName]);
-
-    firstName.value = "Jane";
-    lastName.value = "Smith";
-}</code></pre>
     <div id="example2-output"></div>
 
     <!-- Example 3: Derived Values -->
     <h3>Example 3: Derived Values</h3>
-    <pre><code class="language-javascript">import { signal, derived, effect } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
-
-export async function example3() {
-    const output = createOutput('example3-output');
-    
-    const price = signal(100);
-    const quantity = signal(2);
-    const taxRate = signal(0.1);
-
-    // Derived signal for subtotal
-    const subtotal = derived(() => {
-        return price.value * quantity.value;
-    }, [price, quantity]);
-
-    // Derived signal for total with tax
-    const total = derived(() => {
-        return subtotal.value * (1 + taxRate.value);
-    }, [subtotal, taxRate]);
-
-    // Effect to display results
-    effect(() => {
-        output(`Price: $${price.value}, Quantity: ${quantity.value}`);
-        output(`Subtotal: $${subtotal.value.toFixed(2)}`);
-        output(`Tax Rate: ${(taxRate.value * 100).toFixed(1)}%`);
-        output(`Total with Tax: $${total.value.toFixed(2)}`);
-    }, [price, quantity, subtotal, total, taxRate]);
-
-    // Test updates
-    price.value = 150;
-    quantity.value = 3;
-    taxRate.value = 0.15;
-}</code></pre>
     <div id="example3-output"></div>
 
     <!-- Example 4: Complex State Management -->
     <h3>Example 4: Complex State Management</h3>
-    <pre><code class="language-javascript">import { signal, derived, effect } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
-
-export async function example4() {
-    const output = createOutput('example4-output');
-    
-    const todos = signal([]);
-    const filter = signal("all"); // "all", "completed", "pending"
-
-    // Derived signal for filtered todos
-    const filteredTodos = derived(() => {
-        if (filter.value === "completed") {
-            return todos.value.filter(todo => todo.completed);
-        } else if (filter.value === "pending") {
-            return todos.value.filter(todo => !todo.completed);
-        }
-        return todos.value;
-    }, [todos, filter]);
-
-    // Add some sample todos
-    todos.value = [
-        { id: 1, text: "Learn XynHTML", completed: false },
-        { id: 2, text: "Build a todo app", completed: true },
-        { id: 3, text: "Write documentation", completed: false }
-    ];
-
-    // Effect to display filtered results
-    effect(() => {
-        output(`Filter: ${filter.value}`);
-        output(`Filtered todos (${filteredTodos.value.length}):`);
-        filteredTodos.value.forEach(todo => {
-            output(`- ${todo.text} (${todo.completed ? 'completed' : 'pending'})`);
-        });
-        output("---");
-    }, [filter, filteredTodos]);
-
-    // Test different filters
-    filter.value = "pending";
-    filter.value = "completed";
-    filter.value = "all";
-}</code></pre>
     <div id="example4-output"></div>
 
     <!-- Example 5: Performance -->
     <h3>Example 5: Performance - No Unnecessary Updates</h3>
-    <pre><code class="language-javascript">import { signal } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
-
-export async function example5() {
-    const output = createOutput('example5-output');
-    
-    const performanceSignal = signal("test");
-    let updateCount = 0;
-
-    const perfSubscriber = () => {
-        updateCount++;
-        output(`Performance signal updated ${updateCount} times, value: ${performanceSignal.value}`);
-    };
-    performanceSignal.subscribe(perfSubscriber);
-
-    // Setting same value (should not trigger update)
-    performanceSignal.value = "test";
-    output("Set same value 'test' - no update should occur");
-
-    // Setting different value (should trigger update)
-    performanceSignal.value = "new value";
-    output("Set different value 'new value' - update should occur");
-
-    // Setting same value again (should not trigger update)
-    performanceSignal.value = "new value";
-    output("Set same value 'new value' again - no update should occur");
-}</code></pre>
     <div id="example5-output"></div>
 
     <!-- Example 6: Subscription Management -->
     <h3>Example 6: Subscription Management</h3>
-    <pre><code class="language-javascript">import { signal } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
-
-export async function example6() {
-    const output = createOutput('example6-output');
-    
-    const tempSignal = signal(0);
-    let cleanupCount = 0;
-
-    const tempSubscriber = () => {
-        cleanupCount++;
-        output(`Temp signal updated ${cleanupCount} times, value: ${tempSignal.value}`);
-    };
-    tempSignal.subscribe(tempSubscriber);
-
-    tempSignal.value = 1;
-    tempSignal.value = 2;
-
-    output("Unsubscribing from tempSignal...");
-    // Unsubscribing
-    tempSignal.unsubscribe(tempSubscriber);
-
-    // This update won't trigger the subscriber
-    tempSignal.value = 3;
-    output("Set value to 3 after unsubscribe - no update should occur");
-}</code></pre>
     <div id="example6-output"></div>
 
     <!-- Example 7: Chained Derived Values -->
     <h3>Example 7: Chained Derived Values</h3>
-    <pre><code class="language-javascript">import { signal, derived, effect } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
-
-export async function example7() {
-    const output = createOutput('example7-output');
-    
-    const textInput = signal("hello world");
-
-    const uppercase = derived(() => {
-        return textInput.value.toUpperCase();
-    }, [textInput]);
-
-    const wordCount = derived(() => {
-        return uppercase.value.split(' ').length;
-    }, [uppercase]);
-
-    const analysis = derived(() => {
-        return {
-            original: textInput.value,
-            uppercase: uppercase.value,
-            wordCount: wordCount.value,
-            charCount: textInput.value.length
-        };
-    }, [textInput, uppercase, wordCount]);
-
-    // Effect to display analysis
-    effect(() => {
-        const data = analysis.value;
-        output(`Original: "${data.original}"`);
-        output(`Uppercase: "${data.uppercase}"`);
-        output(`Word count: ${data.wordCount}`);
-        output(`Character count: ${data.charCount}`);
-        output("---");
-    }, [analysis]);
-
-    // Test with different inputs
-    textInput.value = "JavaScript is awesome";
-    textInput.value = "XynHTML reactive signals";
-}</code></pre>
     <div id="example7-output"></div>
 
     <!-- Example 8: Multiple Subscribers -->
     <h3>Example 8: Multiple Subscribers to One Signal</h3>
-    <pre><code class="language-javascript">import { signal } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
-
-export async function example8() {
-    const output = createOutput('example8-output');
-    
-    const sharedSignal = signal("shared");
-
-    const subscriber1 = () => {
-        output("Subscriber 1 received: " + sharedSignal.value);
-    };
-    const subscriber2 = () => {
-        output("Subscriber 2 received: " + sharedSignal.value);
-    };
-    const subscriber3 = () => {
-        output("Subscriber 3 received: " + sharedSignal.value);
-    };
-
-    sharedSignal.subscribe(subscriber1);
-    sharedSignal.subscribe(subscriber2);
-    sharedSignal.subscribe(subscriber3);
-
-    output("All three subscribers added. Updating value...");
-    sharedSignal.value = "updated value";
-
-    output("Removing subscriber 2...");
-    // Remove one subscriber
-    sharedSignal.unsubscribe(subscriber2);
-
-    output("Updating value again (subscriber 2 should not receive this):");
-    sharedSignal.value = "final value";
-}</code></pre>
     <div id="example8-output"></div>
 
     <!-- Example 9: Direct Signal Subscription -->
     <h3>Example 9: Direct Signal Subscription</h3>
-    <pre><code class="language-javascript">import { signal } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
-
-export async function example9() {
-    const output = createOutput('example9-output');
-    
-    const directSignal = signal("initial");
-
-    const directSubscriber1 = () => {
-        output("Direct subscriber 1: " + directSignal.value);
-    };
-    const directSubscriber2 = () => {
-        output("Direct subscriber 2: " + directSignal.value);
-    };
-
-    // Subscribe directly to the signal
-    directSignal.subscribe(directSubscriber1);
-    directSignal.subscribe(directSubscriber2);
-
-    output("Both subscribers added. Making updates...");
-    directSignal.value = "first update";
-    directSignal.value = "second update";
-
-    output("Unsubscribing subscriber 1...");
-    // Unsubscribe one subscriber
-    directSignal.unsubscribe(directSubscriber1);
-
-    output("Making final update (only subscriber 2 should receive):");
-    directSignal.value = "final update";
-}</code></pre>
     <div id="example9-output"></div>
 
     <!-- Example 10: DOM Creation -->
     <h3>Example 10: DOM Creation with XynTag and createMount</h3>
-    <pre><code class="language-javascript">import { signal, XynTag, text } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
-
-export async function example10() {
-    const output = createOutput('example10-output');
-    
-    const buttonText = signal("Click me!");
-    const clickCount = signal(0);
-
-    // Create a button with reactive text
-    const button = new XynTag("button");
-    button.children = [text`${buttonText}`];
-
-    // Add click handler
-    const buttonElement = button.render();
-    buttonElement.onclick = () => {
-        clickCount.value++;
-        buttonText.value = `Clicked ${clickCount.value} times`;
-        output(`Button clicked! Count: ${clickCount.value}`);
-    };
-
-    // Create a div container
-    const container = new XynTag("div");
-    container.children = [button];
-    const containerElement = container.render();
-    containerElement.className = "example-container";
-
-    const outputContainer = document.getElementById('example10-output');
-    if (outputContainer) {
-        output("Interactive button created below:");
-        outputContainer.appendChild(containerElement);
-    }
-}</code></pre>
     <div id="example10-output"></div>
 
     <!-- Example 11: Dynamic List -->
     <h3>Example 11: Dynamic List with XynTag and createMount</h3>
-    <pre><code class="language-javascript">import { signal, XynTag, text, effect } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
-
-export async function example11() {
-    const output = createOutput('example11-output');
-
-    const items = signal(["Apple", "Banana", "Cherry"]);
-
-    // Create input field
-    const listItemInput = new XynTag("input");
-    const inputElement = listItemInput.render();
-    inputElement.type = "text";
-    inputElement.placeholder = "Enter new item";
-
-    // Create add button
-    const addButton = new XynTag("button");
-    const addButtonElement = addButton.render();
-    addButtonElement.textContent = "+";
-    addButtonElement.onclick = () => {
-        if (inputElement.value.trim()) {
-            items.value = [...items.value, inputElement.value.trim()];
-            inputElement.value = "";
-        }
-    };
-
-    // Create clear button
-    const clearButton = new XynTag("button");
-    const clearButtonElement = clearButton.render();
-    clearButtonElement.textContent = "Clear";
-    clearButtonElement.onclick = () => {
-        items.value = [];
-    };
-
-    // Create list container
-    const itemList = new XynTag("ul");
-    let listElement = itemList.render();
-
-    // Effect to update the list when items change
-    const listEffect = effect(() => {
-        // Clear existing list
-        listElement.innerHTML = "";
-
-        // Add each item with remove button
-        items.value.forEach((item, index) => {
-            const li = document.createElement("li");
-            li.className = "list-item";
-
-            const itemText = document.createElement("span");
-            itemText.textContent = item;
-
-            const removeButton = document.createElement("button");
-            removeButton.textContent = "×";
-            removeButton.className = "remove-button";
-            removeButton.onclick = () => {
-                items.value = items.value.filter((_, i) => i !== index);
-            };
-
-            li.appendChild(itemText);
-            li.appendChild(removeButton);
-            listElement.appendChild(li);
-        });
-    }, [items]);
-
-    // Create main container
-    const listContainer = new XynTag("div");
-    const listContainerElement = listContainer.render();
-    listContainerElement.className = "example-container";
-
-    listContainerElement.appendChild(inputElement);
-    listContainerElement.appendChild(addButtonElement);
-    listContainerElement.appendChild(clearButtonElement);
-    listContainerElement.appendChild(listElement);
-
-    const outputContainer = document.getElementById('example11-output');
-    if (outputContainer) {
-        output("Dynamic list created below:");
-        outputContainer.appendChild(listContainerElement);
-    }
-}</code></pre>
     <div id="example11-output"></div>
 
     <!-- Example 12: Conditional Rendering -->
     <h3>Example 12: Conditional Rendering with XynSwitch</h3>
-    <pre><code class="language-javascript">import { signal, XynTag, text, XynSwitch, effect } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
-
-export async function example12() {
-    const output = createOutput('example12-output');
-    
-    const isVisible = signal(true);
-    const localTheme = signal(window.globalTheme.value);
-    const message = signal("Hello from XynHTML!");
-
-    // Create a styled card
-    const card = new XynTag("div");
-    const cardElement = card.render();
-    cardElement.className = "interactive-card";
-
-    const cardTitle = new XynTag("h3");
-    cardTitle.children = [text`Interactive Card`];
-    const cardContent = new XynTag("p");
-    cardContent.children = [text`${message}`];
-
-    card.children = [cardTitle, cardContent];
-
-    // Create placeholder for hidden state
-    const hiddenPlaceholder = new XynTag("div");
-    hiddenPlaceholder.children = [text`Card is hidden`];
-
-    // Create XynSwitch for conditional rendering
-    const cardSwitch = new XynSwitch(isVisible, new Map([
-        [true, card]
-    ]));
-
-    // Create controls
-    const toggleButton = document.createElement("button");
-    toggleButton.textContent = "Toggle Visibility";
-    toggleButton.onclick = () => {
-        isVisible.value = !isVisible.value;
-        output(`Card visibility: ${isVisible.value ? 'visible' : 'hidden'}`);
-    };
-
-    const messageInput = document.createElement("input");
-    messageInput.type = "text";
-    messageInput.value = message.value;
-    messageInput.placeholder = "Change message";
-    messageInput.oninput = () => {
-        message.value = messageInput.value;
-    };
-
-    const themeButton = document.createElement("button");
-    themeButton.textContent = "Toggle Local Theme";
-    themeButton.onclick = () => {
-        localTheme.value = localTheme.value === 'light' ? 'dark' : 'light';
-        output(`Local theme: ${localTheme.value}`);
-    };
-
-    // Apply local theme effect
-    effect(() => {
-        cardElement.className = `interactive-card local-theme-${localTheme.value}`;
-    }, [localTheme]);
-
-    // Create container
-    const container = document.createElement("div");
-    container.className = "example-container";
-    container.appendChild(toggleButton);
-    container.appendChild(messageInput);
-    container.appendChild(themeButton);
-    container.appendChild(cardSwitch.render());
-
-    const outputContainer = document.getElementById('example12-output');
-    if (outputContainer) {
-        output("Conditional rendering example created below:");
-        outputContainer.appendChild(container);
-    }
-}</code></pre>
     <div id="example12-output"></div>
 
     <!-- Example 13: Form Validation -->
     <h3>Example 13: Form with Reactive Validation</h3>
-    <pre><code class="language-javascript">import { signal, derived, XynTag, text, effect } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
-
-export async function example13() {
-    const output = createOutput('example13-output');
-
-    const email = signal("");
-    const password = signal("");
-
-    // Derived validation signals
-    const isValidEmail = derived(() => {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value);
-    }, [email]);
-
-    const isValidPassword = derived(() => {
-        return password.value.length >= 8;
-    }, [password]);
-
-    const isFormValid = derived(() => {
-        return isValidEmail.value && isValidPassword.value;
-    }, [isValidEmail, isValidPassword]);
-
-    // Create form elements
-    const form = new XynTag("form");
-    const formElement = form.render();
-    formElement.className = "example-container";
-
-    // Email input
-    const emailInput = document.createElement("input");
-    emailInput.type = "email";
-    emailInput.placeholder = "Enter your email";
-    emailInput.oninput = (e) => {
-        email.value = e.target.value;
-    };
-
-    // Email validation message
-    const emailValidation = document.createElement("div");
-    emailValidation.style.cssText = "font-size: 12px; margin: 5px 0;";
-
-    // Password input
-    const passwordInput = document.createElement("input");
-    passwordInput.type = "password";
-    passwordInput.placeholder = "Enter your password";
-    passwordInput.oninput = (e) => {
-        password.value = e.target.value;
-    };
-
-    // Password validation message
-    const passwordValidation = document.createElement("div");
-    passwordValidation.style.cssText = "font-size: 12px; margin: 5px 0;";
-
-    // Submit button
-    const submitButton = document.createElement("button");
-    submitButton.type = "button";
-    submitButton.textContent = "Submit";
-    submitButton.onclick = () => {
-        if (isFormValid.value) {
-            output(`Form submitted! Email: ${email.value}`);
-        }
-    };
-
-    // Effects for validation styling
-    effect(() => {
-        emailInput.style.borderColor = email.value && !isValidEmail.value ? "#ff4444" : "#ccc";
-        emailValidation.textContent = email.value && !isValidEmail.value ? "Please enter a valid email address" : "";
-        emailValidation.style.color = "#ff4444";
-    }, [email, isValidEmail]);
-
-    effect(() => {
-        passwordInput.style.borderColor = password.value && !isValidPassword.value ? "#ff4444" : "#ccc";
-        passwordValidation.textContent = password.value && !isValidPassword.value ? "Password must be at least 8 characters long" : "";
-        passwordValidation.style.color = "#ff4444";
-    }, [password, isValidPassword]);
-
-    effect(() => {
-        submitButton.disabled = !isFormValid.value;
-        submitButton.style.backgroundColor = isFormValid.value ? "#007acc" : "#cccccc";
-        submitButton.style.color = isFormValid.value ? "white" : "#666666";
-    }, [isFormValid]);
-
-    // Assemble form
-    formElement.appendChild(document.createTextNode("Email:"));
-    formElement.appendChild(emailInput);
-    formElement.appendChild(emailValidation);
-    formElement.appendChild(document.createElement("br"));
-    formElement.appendChild(document.createTextNode("Password:"));
-    formElement.appendChild(passwordInput);
-    formElement.appendChild(passwordValidation);
-    formElement.appendChild(document.createElement("br"));
-    formElement.appendChild(submitButton);
-
-    const outputContainer = document.getElementById('example13-output');
-    if (outputContainer) {
-        output("Reactive form with validation created below:");
-        outputContainer.appendChild(formElement);
-    }
-}</code></pre>
     <div id="example13-output"></div>
 
     <script>
         // Initialize highlight.js after DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             hljs.highlightAll();
         });
     </script>

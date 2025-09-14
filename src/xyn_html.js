@@ -270,10 +270,6 @@ class XynFragment {
      * @type {!DocumentFragment}
      */
     #fragment = null;
-    /**
-     * @type {boolean}
-     */
-    #isRendered = false;
 
     /**
      * @param {XynElement[]} children
@@ -328,14 +324,9 @@ class XynFragment {
      * @param {?HTMLElement} parent
      * @returns {DocumentFragment}
      */
-    render(parent = null) {
+    render() {
         for (const child of this.#children) {
             this.#fragment.appendChild(child.render());
-        }
-
-        if (parent && !this.#isRendered) {
-            parent.appendChild(this.#fragment);
-            this.#isRendered = true;
         }
 
         return this.#fragment;
@@ -600,10 +591,10 @@ class XynSwitch {
      * @param {HTMLElement} parent
      * @returns {HTMLElement}
      */
-    render(parent) {
+    render() {
         effect((prevValue) => {
-            if (parent && prevValue != null) {
-                parent.replaceChild(this.#switchValue.value, prevValue);
+            if (prevValue != null) {
+                prevValue.parentElement.replaceChild(this.#switchValue.value, prevValue);
             }
         }, [this.#switchValue]);
 
