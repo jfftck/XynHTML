@@ -1,5 +1,9 @@
 import { signal, effect } from "../src/xyn_html.js";
 
+function getExamples() {
+    return document.querySelectorAll("[data-example]").values().map((container) => container.getAttribute("data-example"));
+}
+
 // Utility function to create output in specific containers
 export function createOutput(containerId) {
     return function(message) {
@@ -331,74 +335,17 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
 
 // Lazy loading for examples
 async function loadExamples() {
-    try {
-        // Example 1: Basic Signal Usage
-        const { example1 } = await import('./basic-signal.js');
-        addSourceCode('example1-output', example1);
-        await example1();
-
-        // Example 2: Multiple Signals and Effects
-        const { example2 } = await import('./multiple-signals.js');
-        addSourceCode('example2-output', example2);
-        await example2();
-
-        // Example 3: Derived Values
-        const { example3 } = await import('./derived-values.js');
-        addSourceCode('example3-output', example3);
-        await example3();
-
-        // Example 4: Complex State Management
-        const { example4 } = await import('./state-management.js');
-        addSourceCode('example4-output', example4);
-        await example4();
-
-        // Example 5: Performance
-        const { example5 } = await import('./performance.js');
-        addSourceCode('example5-output', example5);
-        await example5();
-
-        // Example 6: Subscription Management
-        const { example6 } = await import('./subscription-management.js');
-        addSourceCode('example6-output', example6);
-        await example6();
-
-        // Example 7: Chained Derived Values
-        const { example7 } = await import('./chained-derived.js');
-        addSourceCode('example7-output', example7);
-        await example7();
-
-        // Example 8: Multiple Subscribers
-        const { example8 } = await import('./multiple-subscribers.js');
-        addSourceCode('example8-output', example8);
-        await example8();
-
-        // Example 9: Direct Signal Subscription
-        const { example9 } = await import('./direct-subscription.js');
-        addSourceCode('example9-output', example9);
-        await example9();
-
-        // Example 10: DOM Creation
-        const { example10 } = await import('./dom-creation.js');
-        addSourceCode('example10-output', example10);
-        await example10();
-
-        // Example 11: Dynamic List
-        const { example11 } = await import('./dynamic-list.js');
-        addSourceCode('example11-output', example11);
-        await example11();
-
-        // Example 12: Conditional Rendering
-        const { example12 } = await import('./conditional-rendering.js');
-        addSourceCode('example12-output', example12);
-        await example12();
-
-        // Example 13: Form Validation
-        const { example13 } = await import('./form-validation.js');
-        addSourceCode('example13-output', example13);
-        await example13();
-    } catch (error) {
-        console.error('Error loading examples:', error);
-    }
+    const examples = getExamples();
+    examples.forEach(async (uri, i) => {
+        try {
+            const exampleModule = await import(`./${uri}.js`);
+            const example = Object.values(exampleModule).filter(v => typeof v === 'function')[0];
+            addSourceCode(`example${i + 1}-output`, example);
+            await example();
+        } catch (err) {
+            console.error(`Error loading example ${uri}:`, err);
+        }
+    });
 }
 
 // Start loading examples when DOM is ready and then clean up the event listener
