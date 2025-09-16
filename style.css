@@ -7,6 +7,8 @@
   --color-warning: #ffc107;
   --color-info: #17a2b8;
   --color-text: #000;
+
+  counter-reset: example;
 }
 
 svg.theme-toggle__within {
@@ -34,6 +36,13 @@ body {
   }
 }
 
+hr {
+  border: 0;
+  border-top: 1px solid;
+  border-color: color-mix(in oklab, currentColor 20%, var(--color-background));
+  margin: 1rem 0;
+}
+
 h1 {
   color: color-mix(in oklab, currentColor 35%, var(--color-background));
 }
@@ -44,7 +53,7 @@ h2 {
 
 h3 {
   color: color-mix(in oklab, currentColor 55%, var(--color-background));
-  margin: 2rem 0 0.25rem;
+  margin: 3rem 0 0.5rem;
 }
 
 pre {
@@ -540,7 +549,6 @@ div[id$="-output"] {
   border-radius: 6px;
   padding: 12px;
   margin: 12px 0;
-  min-height: 40px;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 13px;
   line-height: 1.5;
@@ -552,7 +560,8 @@ div[id$="-output"] p {
 }
 
 div[id$="-output"]:empty::before {
-  content: "Output will appear here...";
+  counter-increment: example;
+  content: "Attempting to load example " counter(example) "...";
   color: color-mix(in oklab, currentColor 40%, var(--color-background));
   font-style: italic;
 }

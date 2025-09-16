@@ -39,7 +39,7 @@
 
 <body>
     <h1>XynHTML</h1>
-    <h2>Examples of Signals</h2>
+    <h2>Signals and XynHTML Features</h2>
 
     <h3>Importing XynHTML</h3>
     <pre><code class="language-javascript">// Import the XynHTML library functions
@@ -47,7 +47,7 @@ import {
     signal, 
     effect, 
     derived, 
-    XynTag, 
+    tag, 
     text, 
     XynSwitch 
 } from "./xyn_html.js"
@@ -60,47 +60,34 @@ const mySignal = XynHTML.signal("Hello");
 // - signal: Create reactive signals
 // - effect: Create side effects that react to signal changes
 // - derived: Create computed signals
-// - XynTag: Create HTML elements
+// - tag: Create HTML elements
 // - text: Create reactive text nodes
 // - XynSwitch: Create conditional rendering components</code></pre>
 
-    <!-- Example 1: Basic Signal Usage -->
     <div id="example1-output" data-example="basic-signal"></div>
 
-    <!-- Example 2: Multiple Signals and Effects -->
     <div id="example2-output" data-example="multiple-signals"></div>
 
-    <!-- Example 3: Derived Values -->
     <div id="example3-output" data-example="derived-values"></div>
 
-    <!-- Example 4: Complex State Management -->
     <div id="example4-output" data-example="state-management"></div>
 
-    <!-- Example 5: Performance -->
     <div id="example5-output" data-example="performance"></div>
 
-    <!-- Example 6: Subscription Management -->
     <div id="example6-output" data-example="subscription-management"></div>
 
-    <!-- Example 7: Chained Derived Values -->
     <div id="example7-output" data-example="chained-derived"></div>
 
-    <!-- Example 8: Multiple Subscribers -->
     <div id="example8-output" data-example="multiple-subscribers"></div>
 
-    <!-- Example 9: Direct Signal Subscription -->
     <div id="example9-output" data-example="direct-subscription"></div>
 
-    <!-- Example 10: DOM Creation -->
     <div id="example10-output" data-example="dom-creation"></div>
 
-    <!-- Example 11: Dynamic List -->
     <div id="example11-output" data-example="dynamic-list"></div>
 
-    <!-- Example 12: Conditional Rendering -->
     <div id="example12-output" data-example="conditional-rendering"></div>
 
-    <!-- Example 13: Form Validation -->
     <div id="example13-output" data-example="form-validation"></div>
 
     <script>

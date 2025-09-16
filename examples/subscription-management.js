@@ -7,8 +7,7 @@ export async function example6(output) {
     let cleanupCount = 0;
 
     const tempSubscriber = () => {
-        cleanupCount++;
-        output(`Temp signal updated ${cleanupCount} times`);
+        output(`Temp signal updated ${cleanupCount++} times`);
     };
     tempSignal.subscribe(tempSubscriber);
 
