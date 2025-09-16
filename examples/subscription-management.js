@@ -1,10 +1,8 @@
+import { signal, tag } from "../src/xyn_html.js";
 
-import { signal } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
+export const title = "Example 6: Subscription Management";
 
-export async function example6() {
-    const output = createOutput('example6-output');
-
+export async function example6(output) {
     const tempSignal = signal(0);
     let cleanupCount = 0;
 
@@ -14,7 +12,10 @@ export async function example6() {
     };
     tempSignal.subscribe(tempSubscriber);
 
+    // Updating the signal
+    output.append(tag`hr`.render());
     tempSignal.value = 1;
+    output.append(tag`hr`.render());
     tempSignal.value = 2;
 
     // Unsubscribing
@@ -22,6 +23,7 @@ export async function example6() {
     output("Unsubscribed from temp signal");
 
     // This update won't trigger the subscriber
+    output.append(tag`hr`.render());
     tempSignal.value = 3;
     output("Updated signal after unsubscribe - no notification sent");
 }

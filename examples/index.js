@@ -6,14 +6,39 @@ function getExamples() {
 
 // Utility function to create output in specific containers
 export function createOutput(containerId) {
-    return function(message) {
-        const container = document.getElementById(containerId);
+    const container = document.getElementById(containerId);
+
+    function message(message) {
         if (container) {
             const p = document.createElement('p');
             p.textContent = message;
             container.appendChild(p);
         }
-    };
+    }
+
+    message.clear = function() {
+        if (container) {
+            container.innerHTML = '';
+        }
+    }
+
+    message.append = function(element) {
+        if (container) {
+            container.appendChild(element);
+        }
+    }
+
+    return message;
+}
+
+function addExampleTitle(containerId, title) {
+    const container = document.getElementById(containerId);
+    if (container) {
+        const parent = container.parentElement;
+        const h3 = document.createElement('h3');
+        h3.textContent = title;
+        parent.insertBefore(h3, container);
+    }
 }
 
 // Add source code to examples
@@ -340,8 +365,10 @@ async function loadExamples() {
         try {
             const exampleModule = await import(`./${uri}.js`);
             const example = Object.values(exampleModule).filter(v => typeof v === 'function')[0];
+            const { title } = exampleModule;
+            addExampleTitle(`example${i + 1}-output`, title);
             addSourceCode(`example${i + 1}-output`, example);
-            await example();
+            await example(createOutput(`example${i + 1}-output`));
         } catch (err) {
             console.error(`Error loading example ${uri}:`, err);
         }

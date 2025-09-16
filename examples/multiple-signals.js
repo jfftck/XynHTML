@@ -1,18 +1,22 @@
+import { signal, effect, tag } from "../src/xyn_html.js";
 
-import { signal, effect } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
+export const title = "Example 2: Multiple Signals and Effects";
 
-export async function example2() {
-    const output = createOutput('example2-output');
-
+export async function example2(output) {
     const firstName = signal("John");
     const lastName = signal("Doe");
 
     // Effect that runs when either signal changes
-    const unsubscribeEffect = effect(() => {
+    const unsubscribe = effect(() => {
         output(`Full name: ${firstName.value} ${lastName.value}`);
     }, [firstName, lastName]);
 
+    // Update signals to see effect in action
+    output.append(tag`hr`.render());
     firstName.value = "Jane";
+    output.append(tag`hr`.render());
     lastName.value = "Smith";
+
+    // Clean up
+    unsubscribe();
 }

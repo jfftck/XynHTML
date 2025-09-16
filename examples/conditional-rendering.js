@@ -1,9 +1,8 @@
-import { signal, derived, XynTag, text, XynSwitch, effect } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
+import { signal, derived, text, XynSwitch, tag } from "../src/xyn_html.js";
 
-export async function example12() {
-    const output = createOutput('example12-output');
+export const title = "Example 12: Conditional Rendering with XynSwitch";
 
+export async function example12(output) {
     // Get global theme from examples/index.js or create fallback
     const globalTheme = window.globalTheme || signal("light");
     const isVisible = signal(true);
@@ -11,12 +10,12 @@ export async function example12() {
     const message = signal("Hello from XynHTML!");
 
     // Create a styled card
-    const card = new XynTag("div");
+    const card = tag`div`;
 
     // Add content to card
-    const cardTitle = new XynTag("h3");
+    const cardTitle = tag`h3`;
     cardTitle.children.add(text`Interactive Card`);
-    const cardContent = new XynTag("p");
+    const cardContent = tag`p`;
     cardContent.children.add(
         text`${message}`
     );
@@ -39,49 +38,54 @@ export async function example12() {
     ]));
 
     // Create toggle button
-    const toggleButton = new XynTag("button");
-    const toggleButtonElement = toggleButton.render();
-    toggleButtonElement.style.cssText = "padding: 8px 16px; margin: 5px; cursor: pointer;";
+    const toggleButton = tag`button`;
+    const buttonText = derived(() => isVisible.value ? "Hide Card" : "Show Card", [isVisible]);
+    toggleButton.children.add(text`${buttonText}`);
+    toggleButton.css.styles({
+        padding: "8px 16px",
+        margin: "5px",
+        cursor: "pointer"
+    });
 
-    // Update button text based on visibility
-    effect(() => {
-        toggleButtonElement.textContent = isVisible.value ? "Hide Card" : "Show Card";
-    }, [isVisible]);
-
-    toggleButtonElement.onclick = () => {
+    toggleButton.event("click", () => {
         isVisible.value = !isVisible.value;
-    };
+    });
 
     // Create local theme toggle button
-    const themeButton = new XynTag("button");
-    const themeButtonElement = themeButton.render();
-    themeButtonElement.style.cssText = "padding: 8px 16px; margin: 5px; cursor: pointer;";
-    themeButtonElement.textContent = "Toggle Local Theme";
-    themeButtonElement.onclick = () => {
+    const themeButton = tag`button`;
+    themeButton.css.styles({
+        padding: "8px 16px",
+        margin: "5px",
+        cursor: "pointer"
+    });
+    themeButton.children.add(text`Local Theme: ${localTheme}`);
+    themeButton.event("click", () => {
         localTheme.value = localTheme.value === "light" ? "dark" : "light";
-    };
+    });
 
     // Apply conditional styling based on local theme using CSS classes
     card.css.classes`${derived(() => `local-theme-${localTheme.value}`, [localTheme])}`;
 
     // Create container for this example
-    const conditionalContainer = new XynTag("div");
-    const conditionalContainerElement = conditionalContainer.render();
-    conditionalContainerElement.className = "example-container";
-    conditionalContainerElement.style.cssText = "margin: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px;";
+    const conditionalContainer = tag`div`;
+    conditionalContainer.css.classes`example-container`;
+    conditionalContainer.css.styles({
+        margin: "20px",
+        padding: "15px",
+        border: "1px solid #ccc",
+        "border-radius": "5px"
+    });
 
-    conditionalContainerElement.appendChild(toggleButtonElement);
-    conditionalContainerElement.appendChild(themeButtonElement);
+    conditionalContainer.children.add(
+        toggleButton,
+        themeButton
+    );
 
     // Render the switch and append it to the container
-    const switchContainer = document.createElement("div");
-    const switchElement = cardSwitch.render(switchContainer);
-    switchContainer.appendChild(switchElement);
-    conditionalContainerElement.appendChild(switchContainer);
+    const switchContainer = tag`div`;
+    switchContainer.children.add(cardSwitch);
+    conditionalContainer.children.add(switchContainer);
 
-    const outputContainer = document.getElementById('example12-output');
-    if (outputContainer) {
-        output("Conditional rendering with XynSwitch created below:");
-        outputContainer.appendChild(conditionalContainerElement);
-    }
+    output("Conditional rendering with XynSwitch created below:");
+    output.append(conditionalContainer.render());
 }

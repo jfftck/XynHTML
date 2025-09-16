@@ -1,9 +1,8 @@
-import { effect, signal, derived } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
+import { effect, signal, derived, tag } from "../src/xyn_html.js";
 
-export async function example7() {
-    const output = createOutput('example7-output');
+export const title = "Example 7: Chained Derived Values";
 
+export async function example7(output) {
     const textInput = signal("hello world");
 
     const uppercase = derived(() => {
@@ -21,15 +20,22 @@ export async function example7() {
             wordCount: wordCount.value,
             charCount: textInput.value.length
         };
-    }, [textInput, uppercase, wordCount]);
+    }, [textInput]); // Note that we only need to watch for changes on textInput.
 
     // Subscribe to see analysis changes
-    const unsubscribeEffect = effect(() => {
+    const unsubscribe = effect(() => {
         output(`Analysis: ${JSON.stringify(analysis.value, null, 2)}`);
-        output("---");
     }, [analysis]);
 
     // Update text to see chained derived values
+    output.append(tag`hr`.render());
     textInput.value = "XynHTML is awesome";
+    output.append(tag`hr`.render());
     textInput.value = "Building reactive applications made simple";
+
+    // Clean up
+    unsubscribe();
+    analysis.unsubscribeDerived();
+    wordCount.unsubscribeDerived();
+    uppercase.unsubscribeDerived();
 }

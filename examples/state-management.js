@@ -1,9 +1,8 @@
-import { effect, signal, derived } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
+import { effect, signal, derived, tag } from "../src/xyn_html.js";
 
-export async function example4() {
-    const output = createOutput('example4-output');
+export const title = "Example 4: Complex State Management";
 
+export async function example4(output) {
     const todos = signal([]);
     const filter = signal("all"); // "all", "completed", "pending"
 
@@ -18,10 +17,9 @@ export async function example4() {
     }, [todos, filter]);
 
     // Subscribe to see filtered results
-    const unsubscribeEffect = effect(() => {
+    const unsubscribe = effect(() => {
         output(`Filter: ${filter.value}`);
         output(`Filtered todos: ${JSON.stringify(filteredTodos.value)}`);
-        output("---");
     }, [filteredTodos]);
 
     // Add some todos
@@ -32,7 +30,14 @@ export async function example4() {
     ];
 
     // Test different filters
+    output.append(tag`hr`.render());
     filter.value = "completed";
+    output.append(tag`hr`.render());
     filter.value = "pending";
+    output.append(tag`hr`.render());
     filter.value = "all";
+
+    // Clean up
+    unsubscribe();
+    filteredTodos.unsubscribeDerived();
 }

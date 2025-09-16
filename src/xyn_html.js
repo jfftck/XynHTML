@@ -918,7 +918,7 @@ export { XynTag };
  * @returns {XynTag}
  * @example t`div`
  */
-export const t = (t) => new XynTag(t[0]);
+export const tag = (t) => new XynTag(t[0]);
 /**
  * @export @type {(s: TemplateStringArray, ...v: XynHTML.signal[]) => XynText})}
  * @description XynText is a class for creating text nodes with signals.

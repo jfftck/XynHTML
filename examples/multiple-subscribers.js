@@ -1,10 +1,8 @@
+import { signal, tag } from "../src/xyn_html.js";
 
-import { signal } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
+export const title = "Example 8: Multiple Subscribers to One Signal";
 
-export async function example8() {
-    const output = createOutput('example8-output');
-
+export async function example8(output) {
     const sharedSignal = signal("shared");
 
     const subscriber1 = () => {
@@ -21,11 +19,13 @@ export async function example8() {
     sharedSignal.subscribe(subscriber2);
     sharedSignal.subscribe(subscriber3);
 
+    output.append(tag`hr`.render());
     sharedSignal.value = "updated value";
 
     // Remove one subscriber
     sharedSignal.unsubscribe(subscriber2);
     output("Removed subscriber 2");
 
+    output.append(tag`hr`.render());
     sharedSignal.value = "second update";
 }

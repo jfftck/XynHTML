@@ -1,11 +1,8 @@
+import { signal, XynTag, effect } from "../src/xyn_html.js";
 
+export const title = "Example 11: Dynamic List with XynTag and createMount";
 
-import { signal, XynTag, text, effect } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
-
-export async function example11() {
-    const output = createOutput('example11-output');
-
+export async function example11(output) {
     const items = signal(["Apple", "Banana", "Cherry"]);
 
     // Create input field
@@ -38,7 +35,7 @@ export async function example11() {
     let listElement = itemList.render();
 
     // Effect to update the list when items change
-    const listEffect = effect(() => {
+    effect(() => {
         // Clear existing list
         listElement.innerHTML = "";
 

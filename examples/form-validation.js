@@ -1,11 +1,8 @@
-
-
 import { signal, derived, XynTag, text, effect } from "../src/xyn_html.js";
-import { createOutput } from "./index.js";
 
-export async function example13() {
-    const output = createOutput('example13-output');
+export const title = "Example 13: Form with Reactive Validation";
 
+export async function example13(output) {
     const email = signal("");
     const password = signal("");
 
