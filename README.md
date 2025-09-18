@@ -28,12 +28,12 @@ Below is the current implementation status of XynHTML's planned features:
 - ✅ **DOM Element Components** - XynTag class for creating reactive HTML elements
 - ✅ **Dynamic Text Rendering** - Template literal text nodes with signal interpolation
 - ✅ **DOM Switch Elements** - XynSwitch class for creating reactive switcher of multiple HTML elements
+- ✅ **HTML Fragments** - Document fragment support for efficient DOM updates
 
 ### Advanced Data Structures
 - 🟥 **List-like Signal** - Reactive arrays with built-in list operations
 - 🟥 **Map-like Signal** - Reactive key-value stores with object-like interface
 - 🟥 **Route Signal** - Reactive state management based on page route, this will parse the query parameters
-- 🟥 **HTML Fragments** - Document fragment support for efficient DOM updates
 
 ### Developer Experience & Tooling
 - 🚧 **Code Parser with Syntax Highlighting** - Parse and highlight JavaScript, HTML, CSS, and other languages within XynTag components
