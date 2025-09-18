@@ -17,9 +17,9 @@ export async function example9(output) {
     directSignal.subscribe(directSubscriber2);
 
     // Update the signal value
-    output.append(tag`hr`.render());
+    output.append(tag`hr`);
     directSignal.value = "first update";
-    output.append(tag`hr`.render());
+    output.append(tag`hr`);
     directSignal.value = "second update";
 
     // Unsubscribe one subscriber
@@ -27,6 +27,6 @@ export async function example9(output) {
     output("Unsubscribed first subscriber");
 
     // Update the signal value again
-    output.append(tag`hr`.render());
+    output.append(tag`hr`);
     directSignal.value = "third update";
 }

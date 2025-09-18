@@ -48,9 +48,15 @@ function uuidv4() {
 }
 
 /**
- * @typedef {object} XynElement
+ * @class XynElement
  * @property {(() => HTMLElement | (parent: HTMLElement) => HTMLElement)} render
  */
+class XynElement {
+    render() {
+        throw new Error("Method 'render()' must be implemented.");
+    }
+}
+
 /**
  * @typedef Unsubscribe
  * @type {() => void}
@@ -261,7 +267,7 @@ class XynAttributes {
  * fragment.render(document.body); // Renders the fragment to the DOM again
  * fragment.render(document.body); // Does nothing, fragment is already rendered
  */
-class XynFragment {
+class XynFragment extends XynElement {
     /**
      * @type {XynElement[]}
      */
@@ -275,6 +281,7 @@ class XynFragment {
      * @param {XynElement[]} children
      */
     constructor(children) {
+        super();
         this.#fragment = document.createDocumentFragment();
         if (children) {
             this.#children = children;
@@ -321,6 +328,7 @@ class XynFragment {
     }
 
     /**
+     * @overrides
      * @param {?HTMLElement} parent
      * @returns {DocumentFragment}
      */
@@ -412,7 +420,7 @@ class XynEvent {
  * @implements {XynElement}
  * @description XynTag is a class for creating HTML elements with signals.
  */
-class XynTag {
+class XynTag extends XynElement {
     /** @type {?XynAttributes} */
     #attributes = null;
     /** @type {?XynFragment} */
@@ -423,12 +431,25 @@ class XynTag {
     #self = null;
     /**
      * @param {string} name
-     * @param {?XynFragment} children
+     * @param {...(XynElement | Object.<string, any>)} childrenOrAttributes
      * returns {XynTag}
      */
-    constructor(name, children = null) {
+    constructor(name, ...childrenOrAttributes) {
+        super();
         this.#self = document.createElement(name);
-        this.#children = children;
+        if (childrenOrAttributes.length > 0) {
+            for (const childOrAttribute of childrenOrAttributes) {
+                if (childOrAttribute instanceof XynElement) {
+                    this.children.add(childOrAttribute);
+                } else if (typeof childOrAttribute === "object" && !Array.isArray(childOrAttribute)) {
+                    for (const [key, value] of Object.entries(childOrAttribute)) {
+                        this.attributes.set(key, value);
+                    }
+                } else {
+                    console.warn("Invalid child or attribute:", childOrAttribute);
+                }
+            }
+        }
     }
 
     /**
@@ -486,6 +507,7 @@ class XynTag {
     }
 
     /**
+     * @overrides
      * @returns {HTMLElement}
      */
     render() {
@@ -502,30 +524,30 @@ class XynTag {
  * @implements {XynElement}
  * @description XynText is a class for creating text nodes with signals.
  */
-class XynText {
+class XynText extends XynElement {
     /**
      * @type {?TemplateStringArray}
      */
-    text = null;
+    #text = null;
     /**
      * @type {?XynHTML.signal[]}
      */
-    signals = null;
+    #signals = null;
     /**
      * @type {TextNode}
      */
     #el = document.createTextNode("");
 
     /**
-     * @param {TemplateStringArray} text
+     * @param {TemplateStringArray | string} text
      * @param {...XynHTML.signal} signals
      * @returns {XynText}
      * @example
      * XynText`Hello, ${name}!`
      */
     create(text, ...signals) {
-        this.text = text;
-        this.signals = signals;
+        this.#text = text;
+        this.#signals = signals;
         return this;
     }
 
@@ -539,9 +561,14 @@ class XynText {
      * created and appended to the parent element.
      */
     render() {
-        effect(() => this.#el.textContent = this.text.map(
-            (text, i) => text + (this.signals[i]?.value ?? "")
-        ).join(""), this.signals);
+        if (typeof this.#text === "string") {
+            this.#el.textContent = this.#text;
+            return this.#el;
+        }
+
+        effect(() => this.#el.textContent = this.#text.map(
+            (text, i) => text + (this.#signals[i]?.value ?? "")
+        ).join(""), this.#signals);
 
         return this.#el;
     }
@@ -552,7 +579,7 @@ class XynText {
  * @implements {XynElement}
  * @description XynSwitch is a class for creating switch cases with signals.
  */
-class XynSwitch {
+class XynSwitch extends XynElement {
     /**
      * @type {XynHTML.signal<XynElement> | null}
      */
@@ -572,6 +599,7 @@ class XynSwitch {
      * @param {XynElement} defaultValue
      */
     constructor(caseValue, valueMap, defaultValue = null) {
+        super();
         if (defaultValue == null) {
             defaultValue = {
                 id: uuidv4(),
@@ -802,9 +830,14 @@ class XynHTML {
     }
 
     /**
-     * @alias XynTag
+     * @param {(TemplateStringArray | string)} tagName
+     * @param {...(XynElement | Object.<string, any>)} childrenOrAttributes
+     * @returns {XynTag}
+     * @description Creates a new XynTag with the given tag name and children and/or attributes.
      */
-    static XynTag = XynTag;
+    static tag = (tagName, ...childrenOrAttributes) =>
+        new XynTag((Array.isArray(tagName) ? tagName.join("") : tagName).trim(), ...childrenOrAttributes);
+
     /**
      * @alias XynText
      * @param {TemplateStringArray} s
@@ -913,12 +946,12 @@ export { XynTag };
 /**
  * @export @alias {XynTag}
  * @description t is a function for creating HTML elements with signals.
- * @param {TemplateStringArry} t
- * @param {...XynHTML.signal} _
+ * @param {(TemplateStringArry | string)} tagName
+ * @param {...(XynElement | Object.<string, any>)} childrenOrAttributes
  * @returns {XynTag}
  * @example t`div`
  */
-export const tag = (t) => new XynTag(t[0]);
+export const tag = XynHTML.tag;
 /**
  * @export @type {(s: TemplateStringArray, ...v: XynHTML.signal[]) => XynText})}
  * @description XynText is a class for creating text nodes with signals.

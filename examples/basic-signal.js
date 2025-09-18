@@ -18,9 +18,9 @@ export async function example1(output) {
     counter.subscribe(counterSubscriber);
 
     // Update the signal value
-    output.append(tag`hr`.render());
+    output.append(tag`hr`);
     counter.value = 5;
-    output.append(tag`hr`.render());
+    output.append(tag`hr`);
     counter.value = 10;
 
     // Unsubscribe using the signal's unsubscribe method

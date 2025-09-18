@@ -25,11 +25,11 @@ export async function example3(output) {
     }, [total]);
 
     // Update values to see derived calculations
-    output.append(tag`hr`.render());
+    output.append(tag`hr`);
     price.value = 150;
-    output.append(tag`hr`.render());
+    output.append(tag`hr`);
     quantity.value = 3;
-    output.append(tag`hr`.render());
+    output.append(tag`hr`);
     taxRate.value = 0.15;
 
     // Clean up

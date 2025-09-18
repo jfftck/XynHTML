@@ -19,13 +19,13 @@ export async function example8(output) {
     sharedSignal.subscribe(subscriber2);
     sharedSignal.subscribe(subscriber3);
 
-    output.append(tag`hr`.render());
+    output.append(tag`hr`);
     sharedSignal.value = "updated value";
 
     // Remove one subscriber
     sharedSignal.unsubscribe(subscriber2);
     output("Removed subscriber 2");
 
-    output.append(tag`hr`.render());
+    output.append(tag`hr`);
     sharedSignal.value = "second update";
 }

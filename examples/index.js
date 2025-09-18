@@ -1,4 +1,4 @@
-import { signal, effect } from "../src/xyn_html.js";
+import { signal, effect, tag, mountNext, text } from "../src/xyn_html.js";
 
 function getExamples() {
     return document.querySelectorAll("[data-example]").values().map((container) => container.getAttribute("data-example"));
@@ -10,21 +10,22 @@ export function createOutput(containerId) {
 
     function message(message) {
         if (container) {
-            const p = document.createElement('p');
-            p.textContent = message;
-            container.appendChild(p);
+            const p = tag`p`
+
+            p.children.add(text(message));
+            mountNext(p, container);
         }
     }
 
     message.clear = function() {
         if (container) {
-            container.innerHTML = '';
+            container.replaceChildren();
         }
     }
 
     message.append = function(element) {
         if (container) {
-            container.appendChild(element);
+            mountNext(element, container);
         }
     }
 

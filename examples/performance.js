@@ -13,12 +13,12 @@ export async function example5(output) {
     performanceSignal.subscribe(perfSubscriber);
 
     // Setting same value (should not trigger update)
-    output.append(tag`hr`.render());
+    output.append(tag`hr`);
     performanceSignal.value = "test";
     output("Set same value 'test' - no update triggered");
 
     // Setting different value (should trigger update)
-    output.append(tag`hr`.render());
+    output.append(tag`hr`);
     performanceSignal.value = "new value";
     output("Set different value 'new value' - update triggered");
 }

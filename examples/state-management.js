@@ -30,11 +30,11 @@ export async function example4(output) {
     ];
 
     // Test different filters
-    output.append(tag`hr`.render());
+    output.append(tag`hr`);
     filter.value = "completed";
-    output.append(tag`hr`.render());
+    output.append(tag`hr`);
     filter.value = "pending";
-    output.append(tag`hr`.render());
+    output.append(tag`hr`);
     filter.value = "all";
 
     // Clean up

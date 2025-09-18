@@ -1,4 +1,4 @@
-import { signal, derived, XynTag, text, effect } from "../src/xyn_html.js";
+import { signal, derived, tag, text, effect } from "../src/xyn_html.js";
 
 export const title = "Example 13: Form with Reactive Validation";
 
@@ -20,7 +20,7 @@ export async function example13(output) {
     }, [isValidEmail, isValidPassword]);
 
     // Create form elements
-    const form = new XynTag("form");
+    const form = tag`form`;
     const formElement = form.render();
     formElement.className = "example-container";
 
@@ -88,10 +88,7 @@ export async function example13(output) {
     formElement.appendChild(document.createElement("br"));
     formElement.appendChild(submitButton);
 
-    const outputContainer = document.getElementById('example13-output');
-    if (outputContainer) {
-        output("Reactive form with validation created below:");
-        outputContainer.appendChild(formElement);
-    }
+    output("Reactive form with validation created below:");
+    output.append(form);
 }
 

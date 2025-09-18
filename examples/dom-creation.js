@@ -30,5 +30,5 @@ export async function example10(output) {
 
     // Append to document body directly
     output("Interactive button created:");
-    output.append(container.render());
+    output.append(container);
 }

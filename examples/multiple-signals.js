@@ -12,9 +12,9 @@ export async function example2(output) {
     }, [firstName, lastName]);
 
     // Update signals to see effect in action
-    output.append(tag`hr`.render());
+    output.append(tag`hr`);
     firstName.value = "Jane";
-    output.append(tag`hr`.render());
+    output.append(tag`hr`);
     lastName.value = "Smith";
 
     // Clean up

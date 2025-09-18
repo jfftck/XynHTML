@@ -87,5 +87,5 @@ export async function example12(output) {
     conditionalContainer.children.add(switchContainer);
 
     output("Conditional rendering with XynSwitch created below:");
-    output.append(conditionalContainer.render());
+    output.append(conditionalContainer);
 }

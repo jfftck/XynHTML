@@ -70,10 +70,7 @@ export async function example11(output) {
     listContainerElement.appendChild(clearButtonElement);
     listContainerElement.appendChild(listElement);
 
-    const outputContainer = document.getElementById('example11-output');
-    if (outputContainer) {
-        output("Dynamic list created below:");
-        outputContainer.appendChild(listContainerElement);
-    }
+    output("Dynamic list created below:");
+    output.append(listContainer);
 }
 
