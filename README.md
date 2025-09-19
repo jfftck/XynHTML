@@ -3,7 +3,7 @@
 
 > ⚠️ **Warning**: This library is unstable and still under active development. APIs may change without notice. Use at your own risk in production environments.
 
-A lightweight, reactive library for building web applications using a declarative syntax. XynHTML is inspired by React and Vue, but focuses on simplicity and performance with built-in reactive signals.
+A lightweight, reactive library for building web applications using a declarative syntax. XynHTML is inspired by jQuery, but focuses on simplicity and performance with built-in reactive signals.
 
 ## Features
 
@@ -25,19 +25,31 @@ Below is the current implementation status of XynHTML's planned features:
 - ✅ **Derived Values** - Computed signals that update based on dependencies
 
 ### Component System
-- ✅ **DOM Element Components** - XynTag class for creating reactive HTML elements
+- ✅ **DOM Element Components** - Function for creating reactive HTML elements
 - ✅ **Dynamic Text Rendering** - Template literal text nodes with signal interpolation
 - ✅ **DOM Switch Elements** - XynSwitch class for creating reactive switcher of multiple HTML elements
 - ✅ **HTML Fragments** - Document fragment support for efficient DOM updates
+- 🟥 **Map an Iterable to Elements** - Utilize a list signal to reactively generate updates to a list of elements
 
 ### Advanced Data Structures
-- 🟥 **List-like Signal** - Reactive arrays with built-in list operations
-- 🟥 **Map-like Signal** - Reactive key-value stores with object-like interface
+- 🟥 **List Signal** - Reactive arrays with built-in list operations
+- 🟥 **Map Signal** - Reactive key-value stores with object-like interface
 - 🟥 **Route Signal** - Reactive state management based on page route, this will parse the query parameters
 
 ### Developer Experience & Tooling
 - 🚧 **Code Parser with Syntax Highlighting** - Parse and highlight JavaScript, HTML, CSS, and other languages within XynTag components
 - 🚧 **Widget System** - Pre-built reactive components (buttons, forms, modals, tooltips, etc.) for rapid development
+    - 🚧 **Button** - A simple syntax for creating the different types of buttons
+    - 🚧 **Input** - Support all kinds of text input with a single function
+    - 🚧 **Check/Radio** - Made as an easy way to add selectable elements
+    - 🚧 **Dropdown List** - Create dropdown lists that support single value and multiple values
+    - 🚧 **Slider** - Add and extend sliders with reactive data
+    - 🚧 **Time and Date** - Reactive clocks and calendars
+    - 🚧 **Combo Lists** - Add a text input to any control with reactive values
+    - 🚧 **Tooltips** - Add reactive tooltips and error messages to other reactive elements
+    - 🚧 **Windows** - Dialog windows that are modal and free floating are handled with this control
+    - 🚧 **Layout Container** - A reactive container designed to be used with the Theme Manager
+    - 🚧 **Theme Manager** - A reactive and injected set of styles based on community developed themes
 
 ### Routing & Navigation
 - 🚧 **Client-Side Routing** - Hash-based and history API routing for single-page applications
@@ -57,7 +69,7 @@ Below is the current implementation status of XynHTML's planned features:
 1. Import XynHTML in your project:
 
 ```javascript
-import { signal, effect, derived, XynTag, text, createRoot } from "./xyn_html.js";
+import { signal, effect, derived, tag, text, mountNext, mountRoot } from "./xyn_html.js";
 ```
 
 2. Create reactive signals:
@@ -70,13 +82,11 @@ const message = signal("Hello World!");
 3. Build UI components:
 
 ```javascript
-const button = new XynTag("button");
-button.children = [text`Count: ${counter}`];
+const button = tag`button`;
+button.children.add(text`Count: ${counter}`);
+button.event.add("click", () => counter.value++);
 
-const buttonElement = button.render();
-buttonElement.onclick = () => counter.value++;
-
-document.body.appendChild(buttonElement);
+mountNext(button, document.body);
 ```
 
 ## Core Concepts
@@ -110,16 +120,16 @@ const fullName = derived(() => {
 fullName.unsubscribeDerived();
 ```
 
-### XynTag Components
+### XynHTML Components
 Build HTML elements with reactive content:
 
 ```javascript
-const container = new XynTag("div");
-const title = new XynTag("h1");
-title.children = [text`Welcome, ${userName}!`];
-container.children = [title];
+const container = tag`div`;
+const title = tag`h1`;
+title.children.add(text`Welcome, ${userName}!`);
+container.children.add(title);
 
-document.body.appendChild(container.render());
+mountNext(container, "body"); // Can also get the by selector strings
 ```
 
 ## Examples
@@ -147,14 +157,14 @@ Runs a callback when any of the dependency signals change.
 ### derived(callback, dependencies)
 Creates a computed signal that updates based on other signals. Returns a signal with an additional `unsubscribeDerived()` method for cleanup.
 
-### XynTag(tagName, props, children)
+### tag(tagName, ...{XynHTML.tag | Object<string, any>}) | tag\`tagName\`
 Creates a new HTML element component.
 
 ### text\`template\`
 Creates reactive text content with signal interpolation.
 
-### createRoot(component, selector)
-Mounts a component to a DOM element.
+### mountNext(component, selector) | mountRoot(component, selector)
+Both mount a component to a DOM element, with the only difference of `mountRoot` will clear the contents and then mount it, and mountNext just appends it.
 
 #### Derived Signal Methods
 - **unsubscribeDerived()**: Cleans up the derived signal's internal effect subscription.
