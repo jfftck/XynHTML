@@ -34,7 +34,11 @@ Below is the current implementation status of XynHTML's planned features:
 ### Advanced Data Structures
 - 🟥 **List Signal** - Reactive arrays with built-in list operations
 - 🟥 **Map Signal** - Reactive key-value stores with object-like interface
+
+### Addtional Components
 - 🟥 **Route Signal** - Reactive state management based on page route, this will parse the query parameters
+- 🟥 **Animation Signal** - Reactive state management based on the last animation state
+- 🟥 **Transition Signal** - Reactive state management that returns the last state of transitions
 
 ### Developer Experience & Tooling
 - 🚧 **Code Parser with Syntax Highlighting** - Parse and highlight JavaScript, HTML, CSS, and other languages within XynTag components
