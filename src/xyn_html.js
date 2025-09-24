@@ -796,9 +796,10 @@ class XynHTML {
     /**
      * @param {() => void} fn
      * @param {XynHTML.signal[]} signals
+     * @param {?function(): void} cleanup
      * @returns {Unsubscribe} unsubscribe
      */
-    static effect(fn, signals) {
+    static effect(fn, signals, cleanup = null) {
         let count = signals.length;
 
         if (count < 1) {
@@ -814,6 +815,7 @@ class XynHTML {
             signals?.forEach(signal => signal.unsubscribe(fn));
             signals = null;
             fn = null;
+            cleanup?.();
         };
     }
 
@@ -821,12 +823,15 @@ class XynHTML {
      * @template T
      * @param {() => T} fn
      * @param {XynHTML.signal[]} signals
+     * @param {?function(): void} cleanup
      * @returns {{unsubscribeDerived: () => void} extends XynHTML.signal} signal extended with unsubscribeDrived method
      */
-    static derived(fn, signals) {
+    static derived(fn, signals, cleanup = null) {
         const derivedSignal = new XynSignal(fn());
 
-        return Object.assign(derivedSignal, { unsubscribeDerived: XynHTML.effect(() => derivedSignal.value = fn(), signals) });
+        return Object.assign(derivedSignal, {
+            unsubscribeDerived: XynHTML.effect(() => derivedSignal.value = fn(), signals, cleanup)
+        });
     }
 
     /**
