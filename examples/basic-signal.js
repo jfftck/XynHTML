@@ -5,6 +5,7 @@ export const title = "Example 1: Basic Signal Usage";
 
 export async function example1(output) {
     const counter = signal(0);
+    output.signalUpdate("counter", counter);
 
     // Subscribe to changes - use signal's subscribe method
     const counterSubscriber = (preValue) => {
@@ -18,9 +19,7 @@ export async function example1(output) {
     counter.subscribe(counterSubscriber);
 
     // Update the signal value
-    output.append(tag`hr`);
     counter.value = 5;
-    output.append(tag`hr`);
     counter.value = 10;
 
     // Unsubscribe using the signal's unsubscribe method

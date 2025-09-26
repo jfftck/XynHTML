@@ -38,9 +38,24 @@ body {
 
 hr {
   border: 0;
-  border-top: 1px solid;
-  border-color: color-mix(in oklab, currentColor 20%, var(--color-background));
+  background: linear-gradient(to bottom, transparent 50%,
+      color-mix(in oklab, currentColor 20%, var(--color-background)) 50%,
+      color-mix(in oklab, currentColor 20%, var(--color-background)) calc(50% + 1px),
+      transparent calc(50% + 1px));
   margin: 1rem 0;
+  display: flex;
+  justify-content: center;
+  overflow: visible;
+  min-height: 1px;
+
+  &[data-signal]::before {
+    content: attr(data-signal);
+    font-size: 0.8rem;
+    background-color: color-mix(in oklab, currentColor 20%, var(--color-background));
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.2rem;
+    display: block;
+  }
 }
 
 h1 {
@@ -561,7 +576,7 @@ div[id$="-output"] p {
 
 div[id$="-output"]:empty::before {
   counter-increment: example;
-  content: "Attempting to load example " counter(example) "...";
+  content: "Attempting to load example... (failure: " counter(example) ")";
   color: color-mix(in oklab, currentColor 40%, var(--color-background));
   font-style: italic;
 }
@@ -628,9 +643,9 @@ button:disabled {
   color: #ff4444;
   cursor: pointer;
   font-size: 16px;
-  padding: 2px 6px;
+  padding: 0.2rem 0.5rem;
   margin-left: 10px;
-  border-radius: 50%;
+  border-radius: 0.5rem;
 }
 
 .remove-button:hover {

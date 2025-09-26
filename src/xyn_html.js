@@ -794,12 +794,15 @@ class XynHTML {
     }
 
     /**
-     * @param {() => void} fn
+     * @param {function(?preValue): void} fn
      * @param {XynHTML.signal[]} signals
-     * @param {?function(): void} cleanup
-     * @returns {Unsubscribe} unsubscribe
+     * @param {?Object} options
+     * @param {?function(): void} options.cleanup
+     * @param {?int} options.delay
+     * @returns {function(): void & {cleanup: function(): void, delay: int}} unsubscribe
      */
-    static effect(fn, signals, cleanup = null) {
+    static effect(fn, signals, { cleanup = null, delay = 0 } = {}) {
+        let timeout;
         let count = signals.length;
 
         if (count < 1) {
@@ -808,29 +811,76 @@ class XynHTML {
         }
 
         for (const signal of signals) {
-            signal.subscribe(fn, count--);
+            signal.subscribe((pre) => {
+                if (delay < 1) {
+                    fn(pre);
+                    return;
+                }
+                clearTimeout(timeout);
+                timeout = setTimeout(fn, delay, pre);
+            }, count--);
         }
 
-        return () => {
+        function unsubscribe() {
             signals?.forEach(signal => signal.unsubscribe(fn));
             signals = null;
             fn = null;
             cleanup?.();
-        };
+        }
+
+        return Object.assign(unsubscribe, {
+            /**
+             * @type {int}
+             */
+            get delay() {
+                return delay;
+            },
+
+            set delay(newDelay) {
+                delay = newDelay;
+            },
+
+            /**
+             * @param {function(): void} newCleanup
+             */
+            set cleanup(newCleanup) {
+                cleanup = newCleanup;
+            }
+        });
     }
 
     /**
      * @template T
+     * @template R
      * @param {() => T} fn
      * @param {XynHTML.signal[]} signals
-     * @param {?function(): void} cleanup
-     * @returns {{unsubscribeDerived: () => void} extends XynHTML.signal} signal extended with unsubscribeDrived method
+     * @param {?Object} options
+     * @param {?function(): void} options.cleanup
+     * @param {?int} options.delay
+     * @returns {XynSignal<R> & {unsubscribeDerived: () => void, delay: int, cleanup: function(): void}} derivedSignal
      */
-    static derived(fn, signals, cleanup = null) {
+    static derived(fn, signals, { cleanup = null, delay = 0 } = {}) {
         const derivedSignal = new XynSignal(fn());
 
+        const unsubscribe = XynHTML.effect(() => derivedSignal.value = fn(), signals, { cleanup, delay });
+
         return Object.assign(derivedSignal, {
-            unsubscribeDerived: XynHTML.effect(() => derivedSignal.value = fn(), signals, cleanup)
+            unsubscribeDerived: unsubscribe,
+            /**
+             * @type {int}
+             */
+            get delay() {
+                return unsubscribe.delay;
+            },
+            set delay(newDelay) {
+                unsubscribe.delay = newDelay;
+            },
+            /**
+             * @param {function(): void} newCleanup
+             */
+            set cleanup(newCleanup) {
+                unsubscribe.cleanup = newCleanup;
+            }
         });
     }
 

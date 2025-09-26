@@ -7,6 +7,10 @@ export async function example3(output) {
     const quantity = signal(2);
     const taxRate = signal(0.1);
 
+    output.signalUpdate("price", price);
+    output.signalUpdate("quantity", quantity);
+    output.signalUpdate("taxRate", taxRate);
+
     // Derived signal for subtotal
     const subtotal = derived(() => {
         return price.value * quantity.value;
@@ -25,11 +29,8 @@ export async function example3(output) {
     }, [total]);
 
     // Update values to see derived calculations
-    output.append(tag`hr`);
     price.value = 150;
-    output.append(tag`hr`);
     quantity.value = 3;
-    output.append(tag`hr`);
     taxRate.value = 0.15;
 
     // Clean up

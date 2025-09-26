@@ -1,18 +1,19 @@
-import { signal, XynTag, effect } from "../src/xyn_html.js";
+import { signal, tag, effect } from "../src/xyn_html.js";
 
 export const title = "Example 11: Dynamic List with XynTag and createMount";
 
 export async function example11(output) {
     const items = signal(["Apple", "Banana", "Cherry"]);
+    output.signalUpdate("items", items);
 
     // Create input field
-    const listItemInput = new XynTag("input");
+    const listItemInput = tag`input`;
     const inputElement = listItemInput.render();
     inputElement.type = "text";
     inputElement.placeholder = "Enter new item";
 
     // Create add button
-    const addButton = new XynTag("button");
+    const addButton = tag`button`;
     const addButtonElement = addButton.render();
     addButtonElement.textContent = "+";
     addButtonElement.onclick = () => {
@@ -23,7 +24,7 @@ export async function example11(output) {
     };
 
     // Create clear button
-    const clearButton = new XynTag("button");
+    const clearButton = tag`button`;
     const clearButtonElement = clearButton.render();
     clearButtonElement.textContent = "Clear";
     clearButtonElement.onclick = () => {
@@ -31,7 +32,7 @@ export async function example11(output) {
     };
 
     // Create list container
-    const itemList = new XynTag("ul");
+    const itemList = tag`ul`;
     let listElement = itemList.render();
 
     // Effect to update the list when items change
@@ -61,7 +62,7 @@ export async function example11(output) {
     }, [items]);
 
     // Create main container
-    const listContainer = new XynTag("div");
+    const listContainer = tag`div`;
     const listContainerElement = listContainer.render();
     listContainerElement.className = "example-container";
 

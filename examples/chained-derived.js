@@ -13,6 +13,10 @@ export async function example7(output) {
         return uppercase.value.split(' ').length;
     }, [uppercase]);
 
+    output.signalUpdate("textInput", textInput);
+    output.signalUpdate("uppercase", uppercase);
+    output.signalUpdate("wordCount", wordCount);
+
     const analysis = derived(() => {
         return {
             original: textInput.value,
@@ -28,9 +32,7 @@ export async function example7(output) {
     }, [analysis]);
 
     // Update text to see chained derived values
-    output.append(tag`hr`);
     textInput.value = "XynHTML is awesome";
-    output.append(tag`hr`);
     textInput.value = "Building reactive applications made simple";
 
     // Clean up

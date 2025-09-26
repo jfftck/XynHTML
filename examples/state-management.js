@@ -6,6 +6,9 @@ export async function example4(output) {
     const todos = signal([]);
     const filter = signal("all"); // "all", "completed", "pending"
 
+    output.signalUpdate("todos", todos);
+    output.signalUpdate("filter", filter);
+
     // Derived signal for filtered todos
     const filteredTodos = derived(() => {
         if (filter.value === "completed") {
@@ -30,11 +33,8 @@ export async function example4(output) {
     ];
 
     // Test different filters
-    output.append(tag`hr`);
     filter.value = "completed";
-    output.append(tag`hr`);
     filter.value = "pending";
-    output.append(tag`hr`);
     filter.value = "all";
 
     // Clean up

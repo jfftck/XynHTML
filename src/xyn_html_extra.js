@@ -288,20 +288,22 @@ export class XynRouter {
  * @returns {{matcher: function(XynRouter): {isMatch: boolean, isExact: boolean}, handler: function({router: XynRouter, isExact: boolean, routeName: string}): void, routeName: string}}
  * @description Creates a new route.
  */
-export const route = (matcher, handler, routeName) => ({matcher, handler, routeName});
+export const route = (matcher, handler, routeName) => ({ matcher, handler, routeName });
 
 /**
  * @param {...string} path
  * @returns {function({pathname: string, search: URLSearchParams, hash: string}): {isMatch: boolean, isExact: boolean}}
  * @description Creates a new path matcher.
  */
-export const pathMatcher = (...path) => ({pathname}) => {
+export const pathMatcher = (...path) => ({ pathname }) => {
 	const pathnameParts = pathname.split("/");
 	const isMatch = path.every(
-		(part, i) => typeof part === "string" ? part === pathnameParts[i] : part.value = pathnameParts[i]);
+		(part, i) => typeof part === "string" ?
+			part === pathnameParts[i] :
+			(part.value = pathnameParts[i]) == null);
 	const isExact = isMatch && pathnameParts.length === path.length;
 
-	return {isMatch, isExact};
+	return { isMatch, isExact };
 }
 
 /**
@@ -309,11 +311,11 @@ export const pathMatcher = (...path) => ({pathname}) => {
  * @returns {function({routeName: string}): void}
  * @description Creates a new basic router handler.
  */
-export const basicRouting = (routeSignal) => ({routeName}) => routeSignal.value = routeName;
+export const basicRouting = (routeSignal) => ({ routeName }) => routeSignal.value = routeName;
 
 /**
  * @param {XynSignal<string>} routeSignal
  * @returns {function({isExact: boolean, routeName: string}): void}
  * @description Creates a new exact router handler.
  */
-export const exactRouting = (routeSignal) => ({isExact, routeName}) => routeSignal.value = isExact ? routeName : null;
+export const exactRouting = (routeSignal) => ({ isExact, routeName }) => routeSignal.value = isExact ? routeName : null;

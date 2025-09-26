@@ -5,6 +5,8 @@ export const title = "Example 9: Direct Signal Subscription";
 export async function example9(output) {
     const directSignal = signal("initial");
 
+    output.signalUpdate("directSignal", directSignal);
+
     const directSubscriber1 = () => {
         output("Direct subscriber 1: " + directSignal.value);
     };
@@ -17,9 +19,7 @@ export async function example9(output) {
     directSignal.subscribe(directSubscriber2);
 
     // Update the signal value
-    output.append(tag`hr`);
     directSignal.value = "first update";
-    output.append(tag`hr`);
     directSignal.value = "second update";
 
     // Unsubscribe one subscriber
@@ -27,6 +27,5 @@ export async function example9(output) {
     output("Unsubscribed first subscriber");
 
     // Update the signal value again
-    output.append(tag`hr`);
     directSignal.value = "third update";
 }

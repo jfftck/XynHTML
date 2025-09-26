@@ -29,6 +29,17 @@ export function createOutput(containerId) {
         }
     }
 
+    message.signalUpdate = function(signalName, signal) {
+        effect((pre) => {
+            if (pre === undefined) {
+                return;
+            }
+            const hr = tag`hr`;
+            hr.attributes.set("data-signal", `${signalName} updated: ${signal.value}`);
+            this.append(hr);
+        }, [signal]);
+    }
+
     return message;
 }
 
