@@ -25,6 +25,9 @@
  * SOFTWARE.
  */
 
+/** @type {string} */
+let defaultTag = "div";
+
 /**
  * @type {() => void}
  * @description A no-op function.
@@ -113,7 +116,7 @@ function selectorToXynTag(parts, ...values) {
             } else {
                 classes.addStatic(className);
             }
-        } else if (part.startsWith("#")) {
+        } else if (!id && part.startsWith("#")) {
             id = part.slice(1);
         } else if (part.startsWith("[")) {
             const [key, value] = part.slice(1, -1).split("=");
@@ -128,7 +131,7 @@ function selectorToXynTag(parts, ...values) {
         }
     } while (match);
 
-    const tag = new XynTag(tagName, Object.fromEntries(attributes.entries()));
+    const tag = new XynTag(tagName ?? defaultTag, Object.fromEntries(attributes.entries()));
 
     if (id) {
         tag.attributes.set("id", id);
@@ -998,6 +1001,33 @@ class XynHTML {
      * XynText`Hello, ${name}!`
      */
     static text = (s, ...v) => new XynText().create(s, ...v);
+
+    /**
+     * @param {XynHTML.signal} caseValue
+     * @param {Map<unknown, XynElement>} valueMap
+     * @param {XynElement} defaultValue
+     * @returns {XynSwitch}
+     * @description XynSwitch is a class for creating switch cases with signals.
+     * @example
+     * const value = XynHTML.signal(1);
+     * const container = XynHTML.tag'div';
+     * const switchCase = XynHTML.switchCase(value, new Map[[1, XynHTML.tag'span', null, [XynHTML.text'Case 1']], [2, XynHTML.tag'span', null,
+     * [XynHTML.text'Case 2']]]]);
+     * container.children = [switchCase];
+     * XynHTML.mountRoot(container, document.body);
+     * value.value = 2; // Updates text to "Case 2"
+     * value.value = 3; // Updates text to default case
+     */
+    static switchCase = (caseValue, valueMap, defaultValue) => new XynSwitch(caseValue, valueMap, defaultValue);
+
+    /**
+     * @param {string} tag
+     * @returns {void}
+     * @description Sets the default tag name for XynTag.
+     */
+    static set defaultTag(tag = "div") {
+        defaultTag = tag;
+    }
 }
 
 /**
@@ -1130,3 +1160,21 @@ export const text = XynHTML.text;
  * value.value = 3; // Updates text to default case
  */
 export { XynSwitch }
+/**
+ * @export @alias {XynSwitch}
+ * @description switch is a function for creating switch cases with signals.
+ * @param {XynHTML.signal} caseValue
+ * @param {Map<unknown, XynElement>} valueMap
+ * @param {XynElement} defaultValue
+ * @returns {XynSwitch}
+ * @example switchCase(value, new Map[[1, new XynTag("span", null, [text`Case 1`])], [2,
+ * new XynTag("span", null, [text`Case 2`])]])
+ * */
+export const switchCase = XynHTML.switchCase;
+
+/**
+ * @param {string} newTag
+ * @returns {void}
+ * @description Sets the default tag name for XynTag.
+ */
+export const setDefaultTag = (newTag) => XynHTML.defaultTag = newTag;

@@ -10,7 +10,7 @@ A lightweight, reactive library for building web applications using a declarativ
 - **Reactive Signals**: Create reactive data that automatically updates the UI
 - **Effects**: Run side effects when signals change
 - **Derived Values**: Compute values based on other signals
-- **Declarative Components**: Build UI components with XynTag
+- **Declarative Components**: Build UI components with tagged template literals using `tag` function
 - **Conditional Rendering**: Show/hide elements based on signal values
 - **Form Validation**: Build reactive forms with real-time validation
 - **No Build Step**: Works directly in the browser with ES modules
@@ -36,9 +36,9 @@ Below is the current implementation status of XynHTML's planned features:
 - 🟥 **Map Signal** - Reactive key-value stores with object-like interface
 
 ### Addtional Components
-- 🟥 **Route Signal** - Reactive state management based on page route, this will parse the query parameters
-- 🟥 **Animation Signal** - Reactive state management based on the last animation state
-- 🟥 **Transition Signal** - Reactive state management that returns the last state of transitions
+- ⌛️ **Route Signal** - Reactive state management based on page route, this will parse the query parameters
+- ⌛️ **Animation Signal** - Reactive state management based on the last animation state
+- ⌛️ **Transition Signal** - Reactive state management that returns the last state of transitions
 
 ### Developer Experience & Tooling
 - 🚧 **Code Parser with Syntax Highlighting** - Parse and highlight JavaScript, HTML, CSS, and other languages within XynTag components
@@ -65,6 +65,7 @@ Below is the current implementation status of XynHTML's planned features:
 ### Legend
 - ✅ **Implemented** - Feature is complete and functional
 - 🟥 **Planned** - Feature is planned but not yet implemented
+- ⌛️ **In Progress** - Feature is currently being worked on and is completely untested
 - 🏢 **Wishlist Completed** - Wishlist feature that has been implemented
 - 🚧 **Wishlist Incomplete** - Wishlist feature ideas that might be completed in the future, but no commitment is made
 
