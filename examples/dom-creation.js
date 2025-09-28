@@ -24,9 +24,8 @@ export async function example10(output) {
     });
 
     // Create a div container and mount using createRoot
-    const container = tag`div`;
+    const container = tag`div.example-container`;
     container.children.add(incButton, clearButton);
-    container.css.classes`example-container`;
 
     // Append to document body directly
     output("Interactive button created:");

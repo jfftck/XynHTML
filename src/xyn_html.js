@@ -37,6 +37,8 @@ const NoOp = () => { };
  */
 const subscribers = new Map();
 
+const tagParser = /(^[^.#[][^.#[]*)|(\.[^.#[]+)|(#[^.#[]+)|(\[[^.#[]+\])/g
+
 /**
  * @function uuidv4
  * @returns {string}
@@ -45,6 +47,98 @@ function uuidv4() {
     return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
         (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> +c / 4).toString(16)
     );
+}
+
+class XynCSSClasses {
+    #static = [];
+    #dynamic = new Map();
+
+    addStatic(className) {
+        this.#static.push(className);
+    }
+
+    addDynamic(className, signal) {
+        this.#dynamic.set(className, signal);
+    }
+
+    get hasValues() {
+        return this.#dynamic.length > 0 || this.#static.length > 0;
+    }
+
+    get classes() {
+        const classes = [...this.#dynamic.keys(), this.#static.join(" ")];
+
+        return [
+            classes,
+            ...this.#dynamic.values()
+        ];
+    }
+}
+
+function selectorToXynTag(parts, ...values) {
+    let selector = parts.reduce((acc, part, i) => {
+        acc.push(part);
+
+        if (typeof values[i] === "string") {
+            acc.push(values[i]);
+        } else if (values[i] instanceof XynSignal) {
+            acc.push(`/*${i}*/`);
+        }
+
+        return acc;
+    }, []).join("");
+
+    let match;
+    let tagName;
+    let id;
+    const classes = new XynCSSClasses();
+    const attributes = new Map();
+
+    do {
+        match = tagParser.exec(selector);
+
+        if (!match) {
+            continue;
+        }
+
+        const part = match[0];
+
+        if (part.startsWith(".")) {
+            const [className, value] = part.slice(1).split("=");
+
+            console.log("className", className, "value", value);
+
+            if (value) {
+                classes.addDynamic(className, values[parseInt(value.split("*")[1], 10)]);
+            } else {
+                classes.addStatic(className);
+            }
+        } else if (part.startsWith("#")) {
+            id = part.slice(1);
+        } else if (part.startsWith("[")) {
+            const [key, value] = part.slice(1, -1).split("=");
+
+            if (value.startsWith("/*") && value.endsWith("*/")) {
+                attributes.set(key, values[parseInt(value.split("*")[1], 10)]);
+            } else {
+                attributes.set(key, value);
+            }
+        } else if (!tagName) {
+            tagName = part;
+        }
+    } while (match);
+
+    const tag = new XynTag(tagName, Object.fromEntries(attributes.entries()));
+
+    if (id) {
+        tag.attributes.set("id", id);
+    }
+
+    if (classes.hasValues) {
+        tag.css.classes(...classes.classes);
+    }
+
+    return tag;
 }
 
 /**
@@ -891,7 +985,8 @@ class XynHTML {
      * @description Creates a new XynTag with the given tag name and children and/or attributes.
      */
     static tag = (tagName, ...childrenOrAttributes) =>
-        new XynTag((Array.isArray(tagName) ? tagName.join("") : tagName).trim(), ...childrenOrAttributes);
+        selectorToXynTag(tagName, ...childrenOrAttributes);
+    // new XynTag((Array.isArray(tagName) ? tagName.join("") : tagName).trim(), ...childrenOrAttributes);
 
     /**
      * @alias XynText

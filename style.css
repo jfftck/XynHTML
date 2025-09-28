@@ -1,12 +1,5 @@
 :root {
   --color-background: #f8f8f8;
-  --color-primary: #007acc;
-  --color-secondary-background: #6c757d;
-  --color-success: #28a745;
-  --color-danger: #dc3545;
-  --color-warning: #ffc107;
-  --color-info: #17a2b8;
-  --color-text: #000;
 
   counter-reset: example;
 }
@@ -38,10 +31,9 @@ body {
 
 hr {
   border: 0;
-  background: linear-gradient(to bottom, transparent 50%,
+  background: linear-gradient(to bottom, transparent calc(50% - 2px),
       color-mix(in oklab, currentColor 20%, var(--color-background)) 50%,
-      color-mix(in oklab, currentColor 20%, var(--color-background)) calc(50% + 1px),
-      transparent calc(50% + 1px));
+      transparent calc(50% + 2px));
   margin: 1rem 0;
   display: flex;
   justify-content: center;
