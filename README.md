@@ -27,9 +27,14 @@ Below is the current implementation status of XynHTML's planned features:
 ### Component System
 - ✅ **DOM Element Components** - Function for creating reactive HTML elements
 - ✅ **Dynamic Text Rendering** - Template literal text nodes with signal interpolation
-- ✅ **DOM Switch Elements** - XynSwitch class for creating reactive switcher of multiple HTML elements
+- ✅ **Switch DOM Elements** - Container for creating reactive switcher of multiple HTML elements
 - ✅ **HTML Fragments** - Document fragment support for efficient DOM updates
 - 🟥 **Map an Iterable to Elements** - Utilize a list signal to reactively generate updates to a list of elements
+- ✅ **CSS Selector Based Component Creation** - Function for creating a whole HTML node tree by using a syntax like CSS selectors
+    - ✅ **HTML DOM Elements** - Creating a basic HTML element and setting CSS classes, IDs, attributes, and events
+    - ✅ **Text Nodes** - Adding text nodes with reactive text
+    - 🟥 **Switch Element** - Make a switchable container that reactively selects an element
+    - 🟥 **List of Elements** - Generate a list of elements based on a reactive list
 
 ### Advanced Data Structures
 - 🟥 **List Signal** - Reactive arrays with built-in list operations

@@ -30,8 +30,8 @@ export function createOutput(containerId) {
     }
 
     message.signalUpdate = function(signalName, signal) {
-        effect((pre) => {
-            if (pre === undefined) {
+        effect((previousValue) => {
+            if (previousValue === undefined) {
                 return;
             }
             const hr = tag`hr`;
@@ -389,6 +389,8 @@ async function loadExamples() {
 
 // Start loading examples when DOM is ready and then clean up the event listener
 const loadExamplesOnReady = async () => {
+    addSourceCode("output-helper", createOutput);
+    // Load examples on initial page load
     await loadExamples();
     // Mark initial load as complete to enable transitions for future changes
     setTimeout(() => {
