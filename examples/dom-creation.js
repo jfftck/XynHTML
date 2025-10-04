@@ -1,27 +1,43 @@
-import { tag, signal, text } from "../src/xyn_html.js";
+import { xyn, signal, tag, text } from "../src/xyn_html.js";
 
-export const title = "Example 10: DOM Creation with XynTag and createMount";
+export const title = "Example 10: DOM Creation with xyn";
 
 export async function example10(output) {
     const buttonText = signal("Click me!");
     const clickCount = signal(0);
 
     // Create a button with reactive text
-    const incButton = tag`button`;
-    incButton.children.add(text`${buttonText}`);
+    const container = xyn`div.example-container {
+        button@click=${() => {
+            buttonText.value = `Clicked ${++clickCount.value} times`;
+        }} { ""${buttonText}"" }
+        button@click=${() => {
+            clickCount.value = 0;
+            buttonText.value = "Click me!";
+        }} { ""Reset"" }
+    }`;
 
-    // Add click handler
-    incButton.event("click", () => {
+    // Append to document body directly
+    output("Interactive button created:");
+    output.append(container);
+}
+
+async function oldexample10(output) {
+    const buttonText = signal("Click me!");
+    const clickCount = signal(0);
+
+    // Create a button with reactive text
+    const incButton = tag`button@click=${() => {
         clickCount.value++;
         buttonText.value = `Clicked ${clickCount.value} times`;
-    });
+    }}`;
+    incButton.children.add(text`${buttonText}`);
 
-    const clearButton = tag`button`;
-    clearButton.children.add(text`Reset`);
-    clearButton.event("click", () => {
+    const clearButton = tag`button@click=${() => {
         clickCount.value = 0;
         buttonText.value = "Click me!";
-    });
+    }}`;
+    clearButton.children.add(text`Reset`);
 
     // Create a div container and mount using createRoot
     const container = tag`div.example-container`;

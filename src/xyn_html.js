@@ -40,7 +40,8 @@ const NoOp = () => { };
  */
 const subscribers = new Map();
 
-const tagParser = /(^[^.#[][^.#[]*)|(\.[^.#[]+)|(#[^.#[]+)|(\[[^.#[]+\])/g
+const tagParser = /(^[^.#[@][^.#[@]*)|(\.[^.#[@]+)|(#[^.#[@]+)|(\[[^.#[@]+\])|(@[^.#[@]+)/g;
+const nodesParser = /(?:[\s\t]*(?<tag>[a-zA-Z][^"\s]*))|(?:""(?<textnode>[^"]+)"")|(?:\/\/(?<children>[0-9]+)\/\/)/g;
 
 /**
  * @function uuidv4
@@ -52,23 +53,23 @@ function uuidv4() {
     );
 }
 
-class XynCSSClasses {
+class TemplateString {
     #static = [];
     #dynamic = new Map();
 
-    addStatic(className) {
-        this.#static.push(className);
+    addStatic(value) {
+        this.#static.push(value);
     }
 
-    addDynamic(className, signal) {
-        this.#dynamic.set(className, signal);
+    addDynamic(value, signal) {
+        this.#dynamic.set(value, signal);
     }
 
     get hasValues() {
         return this.#dynamic.length > 0 || this.#static.length > 0;
     }
 
-    get classes() {
+    get values() {
         const classes = [...this.#dynamic.keys(), this.#static.join(" ")];
 
         return [
@@ -78,24 +79,31 @@ class XynCSSClasses {
     }
 }
 
-function selectorToXynTag(parts, ...values) {
-    let selector = parts.reduce((acc, part, i) => {
+function createSelector(parts, ...values) {
+    return parts.reduce((acc, part, i) => {
         acc.push(part);
 
         if (typeof values[i] === "string") {
             acc.push(values[i]);
-        } else if (values[i] instanceof XynSignal) {
+        } else if (values[i] instanceof XynSignal || typeof values[i] === "function") {
             acc.push(`/*${i}*/`);
         }
 
         return acc;
     }, []).join("");
+}
 
+function getIndex(value) {
+    return parseInt(value.split("*")[1], 10);
+}
+
+function selectorToXynTag(selector, ...values) {
     let match;
     let tagName;
     let id;
-    const classes = new XynCSSClasses();
+    const classes = new TemplateString();
     const attributes = new Map();
+    const events = new Map();
 
     do {
         match = tagParser.exec(selector);
@@ -109,10 +117,8 @@ function selectorToXynTag(parts, ...values) {
         if (part.startsWith(".")) {
             const [className, value] = part.slice(1).split("=");
 
-            console.log("className", className, "value", value);
-
             if (value) {
-                classes.addDynamic(className, values[parseInt(value.split("*")[1], 10)]);
+                classes.addDynamic(className, values[getIndex(value)]);
             } else {
                 classes.addStatic(className);
             }
@@ -122,10 +128,13 @@ function selectorToXynTag(parts, ...values) {
             const [key, value] = part.slice(1, -1).split("=");
 
             if (value.startsWith("/*") && value.endsWith("*/")) {
-                attributes.set(key, values[parseInt(value.split("*")[1], 10)]);
+                attributes.set(key, values[getIndex(value)]);
             } else {
                 attributes.set(key, value);
             }
+        } else if (part.startsWith("@")) {
+            const [eventName, value] = part.slice(1).split("=");
+            events.set(eventName, values[getIndex(value)]);
         } else if (!tagName) {
             tagName = part;
         }
@@ -138,10 +147,66 @@ function selectorToXynTag(parts, ...values) {
     }
 
     if (classes.hasValues) {
-        tag.css.classes(...classes.classes);
+        tag.css.classes(...classes.values);
+    }
+
+    for (const [eventName, eventHandler] of events.entries()) {
+        tag.event(eventName, eventHandler);
     }
 
     return tag;
+}
+
+function selectorsToTreeNode(selector, ...values) {
+    const tags = [];
+    let match;
+    const childrenGroups = [];
+    let groupStart = 0;
+    let groupStartCount = 0;
+    let groupCount = 0;
+
+    for (let i = 0; i < selector.length; i++) {
+        if (selector[i] === "{") {
+            groupStartCount++;
+            if (groupStartCount === 1) {
+                groupStart = i;
+            }
+        } else if (selector[i] === "}") {
+            groupStartCount--;
+
+            if (groupStartCount === 0) {
+                childrenGroups.push(selector.slice(groupStart + 1, i - 1));
+                selector = `${selector.slice(0, groupStart)}//${groupCount++}//${selector.slice(i + 1, selector.length)}`;
+            }
+        }
+    }
+
+    for (match of selector.matchAll(nodesParser)) {
+        const { tag, textnode, children } = match.groups;
+
+        console.info(selector, tag, textnode, children, childrenGroups);
+
+        if (tag) {
+            tags.push(selectorToXynTag(tag, ...values));
+        }
+
+        if (textnode) {
+            if (textnode.startsWith("/*") && textnode.endsWith("*/")) {
+                tags.push(text`${values[getIndex(textnode)]}`);
+            } else {
+                tags.push(text(textnode));
+            }
+        }
+
+        if (children) {
+            const part = childrenGroups[children];
+            if (typeof part === "string") {
+                tags[tags.length - 1].children.add(selectorsToTreeNode(part, ...values));
+            }
+        }
+    }
+
+    return fragment(...tags);
 }
 
 /**
@@ -375,9 +440,9 @@ class XynFragment extends XynElement {
     #fragment = null;
 
     /**
-     * @param {XynElement[]} children
+     * @param {...XynElement} children
      */
-    constructor(children) {
+    constructor(...children) {
         super();
         this.#fragment = document.createDocumentFragment();
         if (children) {
@@ -426,7 +491,6 @@ class XynFragment extends XynElement {
 
     /**
      * @overrides
-     * @param {?HTMLElement} parent
      * @returns {DocumentFragment}
      */
     render() {
@@ -636,7 +700,7 @@ class XynText extends XynElement {
     #el = document.createTextNode("");
 
     /**
-     * @param {TemplateStringArray | string} text
+     * @param {TemplateStringsArray | string} text
      * @param {...XynHTML.signal} signals
      * @returns {XynText}
      * @example
@@ -908,7 +972,7 @@ class XynHTML {
         }
 
         for (const signal of signals) {
-            signal.subscribe((pre) => {
+            signal?.subscribe((pre) => {
                 if (delay < 1) {
                     fn(pre);
                     return;
@@ -919,7 +983,7 @@ class XynHTML {
         }
 
         function unsubscribe() {
-            signals?.forEach(signal => signal.unsubscribe(fn));
+            signals?.forEach(signal => signal?.unsubscribe(fn));
             signals = null;
             fn = null;
             cleanup?.();
@@ -982,14 +1046,45 @@ class XynHTML {
     }
 
     /**
-     * @param {(TemplateStringArray | string)} tagName
-     * @param {...(XynElement | Object.<string, any>)} childrenOrAttributes
+     * @param {(TemplateStringArray | string)} parts
+     * @param {...(XynSignal | Object.<string, any>)} values
      * @returns {XynTag}
-     * @description Creates a new XynTag with the given tag name and children and/or attributes.
+     * @description Creates a new XynTag with a selector syntax.
+     * @example
+     * // Creates a div with id "container" and class "card"
+     * // with a click event listener that logs "clicked" to the console.
+     * XynHTML.tag`div#container.card@click=${() => console.log("clicked")}`
      */
-    static tag = (tagName, ...childrenOrAttributes) =>
-        selectorToXynTag(tagName, ...childrenOrAttributes);
-    // new XynTag((Array.isArray(tagName) ? tagName.join("") : tagName).trim(), ...childrenOrAttributes);
+    static tag = (parts, ...values) =>
+        selectorToXynTag(createSelector(parts, ...values), ...values);
+
+    /**
+     * @param {(TemplateStringArray | string)} parts
+     * @param {...(XynSignal | Object.<string, any>)} values
+     * @returns {XynTag}
+     * @description Creates a tree of XynTags from selector strings.
+     * @example
+     * // Creates a div with id "container", containing a div with class "row"
+     * // and a click event that logs the target object to the console,
+     * // containing a span with class "col" and a colspan attribute, containing
+     * // the text node.
+     * // colSpan is a signal, so it will be updated when the signal changes.
+     * // text is a signal, so it will be updated when the signal changes.
+     * XynHTML.xyn`div#container > div.row@click=${(e) => console.log("target: ", e.target)} > span.col[colSpan=${colSpan}] ""${text}""`
+     * 
+     * // Creates the same tree as above, but with indentation and curly braces.
+     * XynHTML.xyn`
+     * div#container {
+     *   div.row@click=${(e) => console.log("target: ", e.target)} {
+     *     span.col[colSpan=${colSpan}] {
+     *       ""${text}""
+     *     }
+     *   }
+     * }
+     * `
+     */
+    static xyn = (parts, ...values) =>
+        selectorsToTreeNode(createSelector(parts, ...values), ...values);
 
     /**
      * @alias XynText
@@ -1133,14 +1228,22 @@ export { XynTag };
  */
 export const tag = XynHTML.tag;
 /**
- * @export @type {(s: TemplateStringArray, ...v: XynHTML.signal[]) => XynText})}
+ * @export @alias {XynTag}
+ * @description xyn is a function for creating a tree of XynTags from selector strings.
+ * @param {(TemplateStringsArray | string)} parts
+ * @param {...(XynSignal | Object.<string, any>)} values
+ * @returns {XynTag}
+ * @example xyn`div#container > div.row@click=${() => console.log("clicked!")} > span.col[colSpan=${colSpan}] "${text}"`
+ */
+export const xyn = XynHTML.xyn;
+/**
+ * @export @type {(s: TemplateStringsArray, ...v: XynHTML.signal[]) => XynText})}
  * @description XynText is a class for creating text nodes with signals.
  * @example Basic XynText usage:
  * import { signal, XynTag, text } from "./xyn_html.js";
  * 
  * const name = signal("World");
- * const container = new XynTag("div");
- * container.children = [text`Hello, ${name}!`];
+ * const container = new XynTag("div", text`Hello, ${name}!`);
  * 
  * document.body.appendChild(container.render());
  * name.value = "XynHTML"; // Updates text to "Hello, XynHTML!"
