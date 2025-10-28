@@ -389,9 +389,10 @@ window
 // Lazy loading for examples
 async function loadExamples() {
     const examples = getExamples();
+    const timestamp = Date.now();
     examples.forEach(async (uri, i) => {
         try {
-            const exampleModule = await import(`./${uri}.js`);
+            const exampleModule = await import(`./${uri}.js?v=${timestamp}`);
             const example = Object.values(exampleModule).filter(
                 (v) => typeof v === "function",
             )[0];
