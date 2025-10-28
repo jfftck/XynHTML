@@ -1,5 +1,4 @@
-
-import { signal, tag } from "../src/xyn_html.js";
+import { signal } from "../src/xyn_html.js";
 
 export const title = "Example 1: Basic Signal Usage";
 
@@ -8,8 +7,8 @@ export async function example1(output) {
     output.signalUpdate("counter", counter);
 
     // Subscribe to changes - use signal's subscribe method
-    const counterSubscriber = (preValue) => {
-        if (preValue === undefined) {
+    const counterSubscriber = ({ previousValue }) => {
+        if (previousValue === undefined) {
             output("Initial counter value: " + counter.value);
 
             return;

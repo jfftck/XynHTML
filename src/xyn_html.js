@@ -2,20 +2,20 @@
  * @fileoverview XynHTML is a library for building web applications using a
  * declarative syntax. It is inspired by React and Vue, but with a focus on
  * simplicity and performance.
- * 
+ *
  * @license MIT
  * Copyright (c) 2024 XynHTML
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,23 +33,41 @@ let defaultTag = "div";
  * @description A no-op function.
  * @returns {void}
  */
-const NoOp = () => { };
+const NoOp = () => {};
+
+const UndefinedChange = {
+    value: undefined,
+    previousValue: undefined,
+    operation: undefined,
+    index: undefined,
+    key: undefined,
+    map: undefined,
+    previousEntry: undefined,
+    previousValues: undefined,
+    values: undefined,
+};
+
 /**
  * @template T
  * @type {Map<function([T]): void, int>}
  */
 const subscribers = new Map();
 
-const tagParser = /(^[^.#[@][^.#[@]*)|(\.[^.#[@]+)|(#[^.#[@]+)|(\[[^.#[@]+\])|(@[^.#[@]+)/g;
-const nodesParser = /(?:[\s\t]*(?<tag>[a-zA-Z][^"\s]*))|(?:""(?<textnode>[^"]+)"")|(?:\/\/(?<children>[0-9]+)\/\/)/g;
+const tagParser =
+    /(^[^.#[@][^.#[@]*)|(\.[^.#[@]+)|(#[^.#[@]+)|(\[[^.#[@]+\])|(@[^.#[@]+)/g;
+const nodesParser =
+    /(?:[\s\t]*(?<tag>[a-zA-Z][^"\s]*))|(?:""(?<textnode>[^"]+)"")|(?:\/\/(?<children>[0-9]+)\/\/)/g;
 
 /**
  * @function uuidv4
  * @returns {string}
  */
 function uuidv4() {
-    return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
-        (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> +c / 4).toString(16)
+    return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
+        (
+            +c ^
+            (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))
+        ).toString(16),
     );
 }
 
@@ -72,25 +90,27 @@ class TemplateString {
     get values() {
         const classes = [...this.#dynamic.keys(), this.#static.join(" ")];
 
-        return [
-            classes,
-            ...this.#dynamic.values()
-        ];
+        return [classes, ...this.#dynamic.values()];
     }
 }
 
 function createSelector(parts, ...values) {
-    return parts.reduce((acc, part, i) => {
-        acc.push(part);
+    return parts
+        .reduce((acc, part, i) => {
+            acc.push(part);
 
-        if (typeof values[i] === "string") {
-            acc.push(values[i]);
-        } else if (values[i] instanceof XynSignal || typeof values[i] === "function") {
-            acc.push(`/*${i}*/`);
-        }
+            if (typeof values[i] === "string") {
+                acc.push(values[i]);
+            } else if (
+                values[i] instanceof XynSignal ||
+                typeof values[i] === "function"
+            ) {
+                acc.push(`/*${i}*/`);
+            }
 
-        return acc;
-    }, []).join("");
+            return acc;
+        }, [])
+        .join("");
 }
 
 function getIndex(value) {
@@ -140,7 +160,10 @@ function selectorToXynTag(selector, ...values) {
         }
     } while (match);
 
-    const tag = new XynTag(tagName ?? defaultTag, Object.fromEntries(attributes.entries()));
+    const tag = new XynTag(
+        tagName ?? defaultTag,
+        Object.fromEntries(attributes.entries()),
+    );
 
     if (id) {
         tag.attributes.set("id", id);
@@ -201,12 +224,138 @@ function selectorsToTreeNode(selector, ...values) {
         if (children) {
             const part = childrenGroups[children];
             if (typeof part === "string") {
-                tags[tags.length - 1].children.add(selectorsToTreeNode(part, ...values));
+                tags[tags.length - 1].children.add(
+                    selectorsToTreeNode(part, ...values),
+                );
             }
         }
     }
 
     return fragment(...tags);
+}
+
+/**
+ * @template T
+ * @class XynChange
+ * @description XynEffectValue is a class for storing the value of an effect.
+ * @param {T} value
+ * @returns {XynChange}
+ */
+class XynChange {
+    #value;
+    #previousValue;
+
+    /**
+     * @param {T} value
+     * @returns {XynChange}
+     */
+    constructor(value, previousValue) {
+        this.#value = value;
+        this.#previousValue = previousValue;
+    }
+
+    /**
+     * @param {T} value
+     * @returns {XynChange}
+     * @description Creates a new XynEffectValue instance.
+     */
+    static create(value, previousValue) {
+        return new XynChange(value, previousValue);
+    }
+
+    /**
+     * @returns {T}
+     */
+    get value() {
+        return this.#value;
+    }
+
+    get previousValue() {
+        return this.#previousValue;
+    }
+}
+
+/**
+ * @template T
+ * @class XynListChange
+ * @description XynListEffectValues is a class for storing the values of a list effect.
+ * @param {int} index
+ * @param {T[]} values
+ * @returns {XynListChange}
+ */
+class XynListChange {
+    #index;
+    #values;
+    #previousValues;
+    #operation;
+
+    static PUSH = "push";
+    static POP = "pop";
+    static SHIFT = "shift";
+    static UNSHIFT = "unshift";
+    static SPLICE = "splice";
+    static REPLACE = "replace";
+
+    constructor(index, values, previousValues, operation) {
+        this.#index = index;
+        this.#values = values;
+        this.#previousValues = previousValues;
+        this.#operation = operation;
+    }
+
+    static create(index, values, previousValues, operation) {
+        return new XynListChange(index, values, previousValues, operation);
+    }
+
+    get index() {
+        return this.#index;
+    }
+
+    get values() {
+        return this.#values;
+    }
+
+    get previousValues() {
+        return this.#previousValues;
+    }
+
+    get operation() {
+        return this.#operation;
+    }
+}
+
+class XynMapChange {
+    #key;
+    #map;
+    #previousEntry;
+    #operation;
+
+    constructor(key, map, previousEntry, operation) {
+        this.#key = key;
+        this.#map = map;
+        this.#previousEntry = previousEntry;
+        this.#operation = operation;
+    }
+
+    static create(key, map, entry, operation) {
+        return new XynMapChange(key, map, entry, operation);
+    }
+
+    get key() {
+        return this.#key;
+    }
+
+    get map() {
+        return this.#map;
+    }
+
+    get previousEntry() {
+        return this.#previousEntry;
+    }
+
+    get operation() {
+        return this.#operation;
+    }
 }
 
 /**
@@ -286,42 +435,59 @@ class XynCSS {
          */
         const unsubscribers = [];
         const addionalClasses = [];
-        this.#el.className = classes.filter((c, i) => {
-            const toggledClasses = [];
+        this.#el.className =
+            classes
+                .filter((c, i) => {
+                    const toggledClasses = [];
 
-            switch (typeof conditions[i]?.value) {
-                case "boolean":
-                    const conditionClasses = c.trim().split(" ");
-                    conditionClasses.forEach((cc) =>
-                        toggledClasses.push([cc, conditions[i]]));
+                    switch (typeof conditions[i]?.value) {
+                        case "boolean":
+                            const conditionClasses = c.trim().split(" ");
+                            conditionClasses.forEach((cc) =>
+                                toggledClasses.push([cc, conditions[i]]),
+                            );
 
-                    toggledClasses.forEach(([cc, condition]) => {
-                        unsubscribers.push(effect(() => {
-                            if (condition.value) {
-                                this.#el?.classList.add(cc);
-                            } else {
-                                this.#el?.classList.remove(cc);
+                            toggledClasses.forEach(([cc, condition]) => {
+                                unsubscribers.push(
+                                    effect(() => {
+                                        if (condition.value) {
+                                            this.#el?.classList.add(cc);
+                                        } else {
+                                            this.#el?.classList.remove(cc);
+                                        }
+                                    }, [condition]),
+                                );
+                            });
+
+                            return conditions[i] ?? true;
+                        case "string":
+                            unsubscribers.push(
+                                effect(
+                                    ({ previousValue }) => {
+                                        this.#el.classList.remove(
+                                            previousValue,
+                                        );
+                                        this.#el.classList.add(
+                                            conditions[i].value,
+                                        );
+                                    },
+                                    [conditions[i]],
+                                ),
+                            );
+                            addionalClasses.push(conditions[i].value);
+                        default:
+                            if (c.trim() === "") {
+                                return false;
                             }
-                        }, [condition]));
-                    });
 
-                    return conditions[i] ?? true;
-                case "string":
-                    unsubscribers.push(effect((preValue) => {
-                        this.#el.classList.remove(preValue);
-                        this.#el.classList.add(conditions[i].value);
-                    }, [conditions[i]]));
-                    addionalClasses.push(conditions[i].value);
-                default:
-                    if (c.trim() === "") {
-                        return false;
+                            return true;
                     }
-
-                    return true;
-            }
-
-        }).join(" ") + " " + addionalClasses.join(" ").trim();
-        this.#unsubscribeClasses = () => unsubscribers.forEach(unsubscribe => unsubscribe());
+                })
+                .join(" ") +
+            " " +
+            addionalClasses.join(" ").trim();
+        this.#unsubscribeClasses = () =>
+            unsubscribers.forEach((unsubscribe) => unsubscribe());
     }
 
     /**
@@ -339,9 +505,11 @@ class XynCSS {
         const unsubscribers = [];
         Object.entries(styles).forEach(([s, v]) => {
             if (v instanceof XynSignal) {
-                unsubscribers.push(effect(() => {
-                    this.#el.style[s] = v.value;
-                }, [v]));
+                unsubscribers.push(
+                    effect(() => {
+                        this.#el.style[s] = v.value;
+                    }, [v]),
+                );
 
                 return;
             }
@@ -349,7 +517,8 @@ class XynCSS {
             this.#el.style[s] = v;
         });
 
-        this.#unsubscribeStyles = () => unsubscribers.forEach(unsubscribe => unsubscribe());
+        this.#unsubscribeStyles = () =>
+            unsubscribers.forEach((unsubscribe) => unsubscribe());
     }
 }
 
@@ -401,10 +570,17 @@ class XynAttributes {
             this.#unsubscribe.delete(name);
         }
 
-        if (typeof value !== "string" && Object.hasOwn(value, "value") && Object.hasOwn(value, "subscribe")) {
-            this.#unsubscribe.set(name, effect(() => {
-                this.#el.setAttribute(name, value.value);
-            }, [value]));
+        if (
+            typeof value !== "string" &&
+            Object.hasOwn(value, "value") &&
+            Object.hasOwn(value, "subscribe")
+        ) {
+            this.#unsubscribe.set(
+                name,
+                effect(() => {
+                    this.#el.setAttribute(name, value.value);
+                }, [value]),
+            );
 
             return;
         }
@@ -476,7 +652,10 @@ class XynFragment extends XynElement {
      */
     insert(child, index = 0) {
         this.#children.splice(index, 0, child);
-        this.#fragment.insertBefore(child.render(), this.#fragment.childNodes[index]);
+        this.#fragment.insertBefore(
+            child.render(),
+            this.#fragment.childNodes[index],
+        );
     }
 
     /**
@@ -485,7 +664,9 @@ class XynFragment extends XynElement {
      * @description Removes a child from the fragment.
      */
     remove(child) {
-        const c = (this.#children.splice(this.#children.indexOf(child), 1))[0].render();
+        const c = this.#children
+            .splice(this.#children.indexOf(child), 1)[0]
+            .render();
         this.#fragment.removeChild(c);
     }
 
@@ -572,7 +753,7 @@ class XynEvent {
      * @returns {void}
      */
     watch(watched) {
-        effect(() => watched.value ? this.on() : this.off(), [watched]);
+        effect(() => (watched.value ? this.on() : this.off()), [watched]);
     }
 }
 
@@ -602,12 +783,20 @@ class XynTag extends XynElement {
             for (const childOrAttribute of childrenOrAttributes) {
                 if (childOrAttribute instanceof XynElement) {
                     this.children.add(childOrAttribute);
-                } else if (typeof childOrAttribute === "object" && !Array.isArray(childOrAttribute)) {
-                    for (const [key, value] of Object.entries(childOrAttribute)) {
+                } else if (
+                    typeof childOrAttribute === "object" &&
+                    !Array.isArray(childOrAttribute)
+                ) {
+                    for (const [key, value] of Object.entries(
+                        childOrAttribute,
+                    )) {
                         this.attributes.set(key, value);
                     }
                 } else {
-                    console.warn("Invalid child or attribute:", childOrAttribute);
+                    console.warn(
+                        "Invalid child or attribute:",
+                        childOrAttribute,
+                    );
                 }
             }
         }
@@ -665,6 +854,54 @@ class XynTag extends XynElement {
      */
     event(eventName, func, options) {
         return new XynEvent(this.#self, eventName, func, options);
+    }
+
+    /**
+     * @method remove
+     * @returns {void}
+     * @description Removes the element from the DOM.
+     */
+    remove() {
+        this.#self.remove();
+    }
+
+    /**
+     * @method replaceWith
+     * @param {XynElement} newElement
+     * @returns {void}
+     * @description Replaces the element with a new element.
+     */
+    replaceWith(newElement) {
+        this.#children.forEach((child) => newElement.children.add(child));
+        this.#self.replaceWith(newElement.render());
+        this.#children = null;
+    }
+
+    /**
+     * @method insertAfter
+     * @param {XynElement} newElement
+     * @returns {void}
+     * @description Inserts a new element after the element.
+     */
+    insertAfter(newElement) {
+        if (this.#self.nextSibling) {
+            this.#self.parentElement.insertBefore(
+                newElement.render(),
+                this.#self.nextSibling,
+            );
+        } else {
+            this.#self.parentElement.appendChild(newElement.render());
+        }
+    }
+
+    /**
+     * @method insertBefore
+     * @param {XynElement} newElement
+     * @returns {void}
+     * @description Inserts a new element before the element.
+     */
+    insertBefore(newElement) {
+        this.#self.parentElement.insertBefore(newElement.render(), this.#self);
     }
 
     /**
@@ -727,9 +964,13 @@ class XynText extends XynElement {
             return this.#el;
         }
 
-        effect(() => this.#el.textContent = this.#text.map(
-            (text, i) => text + (this.#signals[i]?.value ?? "")
-        ).join(""), this.#signals);
+        effect(
+            () =>
+                (this.#el.textContent = this.#text
+                    .map((text, i) => text + (this.#signals[i]?.value ?? ""))
+                    .join("")),
+            this.#signals,
+        );
 
         return this.#el;
     }
@@ -766,11 +1007,13 @@ class XynSwitch extends XynElement {
                 id: uuidv4(),
                 render() {
                     return document.createComment(`Placeholder ${this.id}`);
-                }
+                },
             };
         }
         this.#switchValue = derived(() => {
-            return (valueMap.get(caseValue.value) ?? this.#defaultValue).render();
+            return (
+                valueMap.get(caseValue.value) ?? this.#defaultValue
+            ).render();
         }, [caseValue]);
         this.valueMap = valueMap;
         this.#defaultValue = defaultValue;
@@ -781,11 +1024,17 @@ class XynSwitch extends XynElement {
      * @returns {HTMLElement}
      */
     render() {
-        effect((prevValue) => {
-            if (prevValue != null) {
-                prevValue.parentElement.replaceChild(this.#switchValue.value, prevValue);
-            }
-        }, [this.#switchValue]);
+        effect(
+            ({ previousValue }) => {
+                if (previousValue != null) {
+                    previousValue.parentElement.replaceChild(
+                        this.#switchValue.value,
+                        previousValue,
+                    );
+                }
+            },
+            [this.#switchValue],
+        );
 
         return this.#switchValue.value;
     }
@@ -840,13 +1089,224 @@ class XynSignal {
 
         const oldValue = this.#value;
         this.#value = newValue;
-        this.#registeredSubscribers.keys().forEach(subscriber => subscriber(oldValue));
+        this.#registeredSubscribers
+            .keys()
+            .forEach((subscriber) =>
+                subscriber(XynChange.create(newValue, oldValue)),
+            );
     }
 
     /**
-     * @template T
      * @method subscribe
-     * @param {function([T]): void} subscriber
+     * @param {function([XynChange<T>]): void} subscriber
+     * @param {int} count @default 1
+     * @returns {void}
+     */
+    subscribe(subscriber, count = 1) {
+        if (typeof subscriber !== "function") {
+            return;
+        }
+
+        if (count === 1) {
+            subscriber(UndefinedChange);
+        }
+
+        if (this.#registeredSubscribers.has(subscriber)) {
+            return;
+        }
+
+        if (!subscribers.has(subscriber)) {
+            subscribers.set(subscriber, 0);
+        }
+
+        subscribers.set(subscriber, subscribers.get(subscriber) + 1);
+        this.#registeredSubscribers.set(subscriber, () => {
+            subscribers.set(subscriber, subscribers.get(subscriber) - 1);
+
+            if (subscribers.get(subscriber) < 1) {
+                subscribers.delete(subscriber);
+            }
+
+            this.#registeredSubscribers.delete(subscriber);
+        });
+    }
+
+    /**
+     * param {function(): void} subscriber
+     * @returns {void}
+     */
+    unsubscribe(subscriber) {
+        if (typeof subscriber !== "function") {
+            return;
+        }
+
+        if (this.#registeredSubscribers.has(subscriber)) {
+            this.#registeredSubscribers.get(subscriber)();
+        }
+    }
+}
+
+/**
+ * @template T
+ * @class XynListSignal
+ * @description XynListSignal is a class for creating signals with subscribers.
+ * @param {T[]} list
+ * @returns {XynListSignal}
+ * @example
+ * const list = new XynListSignal([1, 2, 3]);
+ * const logList = () => console.log(list);
+ * list.subscribe(logList);
+ * list.push(4); // Logs [1, 2, 3, 4]
+ * list.pop(); // Logs [1, 2, 3]
+ * list.unsubscribe(logList);
+ * list.push(5); // Does nothing
+ * list.subscribe(logList);
+ * list.push(6); // Logs [1, 2, 3, 6]
+ * list.replace(0, 0); // Logs [0, 2, 3, 6]
+ * list.shift(); // Logs [2, 3, 6]
+ * list.unshift(1); // Logs [1, 2, 3, 6]
+ * list.splice(1, 2, 4, 5); // Logs [1, 4, 5, 6]
+ * list.length; // 4
+ * list.get(0); // 1
+ * list.get(1); // 4
+ */
+class XynListSignal {
+    #list = [];
+
+    #registeredSubscribers = new Map();
+
+    constructor(list = []) {
+        this.#list = list;
+    }
+
+    at(index) {
+        return this.#list.at(index);
+    }
+
+    entries() {
+        return this.#list.entries();
+    }
+
+    get map() {
+        return this.#list.map;
+    }
+
+    get filter() {
+        return this.#list.filter;
+    }
+
+    get reduce() {
+        return this.#list.reduce;
+    }
+
+    replace(index, value) {
+        if (
+            index < 0 ||
+            index >= this.#list.length ||
+            this.#list[index] === value
+        ) {
+            return;
+        }
+
+        const oldValue = this.#list[index];
+        this.#list[index] = value;
+        this.#registeredSubscribers
+            .keys()
+            .forEach((subscriber) =>
+                subscriber(
+                    XynListChange.create(
+                        index,
+                        [value],
+                        [oldValue],
+                        XynListChange.REPLACE,
+                    ),
+                ),
+            );
+    }
+
+    push(value) {
+        this.#list.push(value);
+        this.#registeredSubscribers
+            .keys()
+            .forEach((subscriber) =>
+                subscriber(
+                    XynListChange.create(
+                        this.#list.length - 1,
+                        [value],
+                        [],
+                        XynListChange.PUSH,
+                    ),
+                ),
+            );
+    }
+
+    pop() {
+        const value = this.#list.pop();
+        this.#registeredSubscribers
+            .keys()
+            .forEach((subscriber) =>
+                subscriber(
+                    XynListChange.create(
+                        this.#list.length,
+                        [],
+                        [value],
+                        XynListChange.POP,
+                    ),
+                ),
+            );
+
+        return value;
+    }
+
+    shift() {
+        const value = this.#list.shift();
+        this.#registeredSubscribers
+            .keys()
+            .forEach((subscriber) =>
+                subscriber(
+                    XynListChange.create(0, [], [value], XynListChange.SHIFT),
+                ),
+            );
+
+        return value;
+    }
+
+    unshift(value) {
+        this.#list.unshift(value);
+        this.#registeredSubscribers
+            .keys()
+            .forEach((subscriber) =>
+                subscriber(
+                    XynListChange.create(0, [value], [], XynListChange.UNSHIFT),
+                ),
+            );
+    }
+
+    splice(start, deleteCount, ...items) {
+        const oldValues = this.#list.splice(start, deleteCount, ...items);
+        this.#registeredSubscribers
+            .keys()
+            .forEach((subscriber) =>
+                subscriber(
+                    XynListChange.create(
+                        start,
+                        items,
+                        oldValues,
+                        XynListChange.SPLICE,
+                    ),
+                ),
+            );
+
+        return oldValues;
+    }
+
+    get length() {
+        return this.#list.length;
+    }
+
+    /**
+     * @method subscribe
+     * @param {function([XynListChange<T>]): void} subscriber
      * @param {int} count @default 1
      * @returns {void}
      */
@@ -917,7 +1377,10 @@ class XynHTML {
      * @description Creates a mount function for a given XynElement and element name.
      */
     static mountNext(xynElement, element) {
-        const el = element instanceof HTMLElement ? element : document.querySelector(element);
+        const el =
+            element instanceof HTMLElement
+                ? element
+                : document.querySelector(element);
 
         if (el) {
             el.appendChild(xynElement.render(el));
@@ -936,7 +1399,10 @@ class XynHTML {
      * This will clear the element before mounting the XynTag.
      */
     static mountRoot(xynElement, element) {
-        const el = element instanceof HTMLElement ? element : document.querySelector(element);
+        const el =
+            element instanceof HTMLElement
+                ? element
+                : document.querySelector(element);
 
         if (el) {
             el.innerHTML = "";
@@ -967,23 +1433,23 @@ class XynHTML {
         let count = signals.length;
 
         if (count < 1) {
-            fn();
+            fn(UndefinedChange);
             return NoOp;
         }
 
         for (const signal of signals) {
-            signal?.subscribe((pre) => {
+            signal?.subscribe((change = UndefinedChange) => {
                 if (delay < 1) {
-                    fn(pre);
+                    fn(change);
                     return;
                 }
                 clearTimeout(timeout);
-                timeout = setTimeout(fn, delay, pre);
+                timeout = setTimeout(fn, delay, change);
             }, count--);
         }
 
         function unsubscribe() {
-            signals?.forEach(signal => signal?.unsubscribe(fn));
+            signals?.forEach((signal) => signal?.unsubscribe(fn));
             signals = null;
             fn = null;
             cleanup?.();
@@ -1006,7 +1472,7 @@ class XynHTML {
              */
             set cleanup(newCleanup) {
                 cleanup = newCleanup;
-            }
+            },
         });
     }
 
@@ -1023,7 +1489,11 @@ class XynHTML {
     static derived(fn, signals, { cleanup = null, delay = 0 } = {}) {
         const derivedSignal = new XynSignal(fn());
 
-        const unsubscribe = XynHTML.effect(() => derivedSignal.value = fn(), signals, { cleanup, delay });
+        const unsubscribe = XynHTML.effect(
+            () => (derivedSignal.value = fn()),
+            signals,
+            { cleanup, delay },
+        );
 
         return Object.assign(derivedSignal, {
             unsubscribeDerived: unsubscribe,
@@ -1041,7 +1511,7 @@ class XynHTML {
              */
             set cleanup(newCleanup) {
                 unsubscribe.cleanup = newCleanup;
-            }
+            },
         });
     }
 
@@ -1071,7 +1541,7 @@ class XynHTML {
      * // colSpan is a signal, so it will be updated when the signal changes.
      * // text is a signal, so it will be updated when the signal changes.
      * XynHTML.xyn`div#container > div.row@click=${(e) => console.log("target: ", e.target)} > span.col[colSpan=${colSpan}] ""${text}""`
-     * 
+     *
      * // Creates the same tree as above, but with indentation and curly braces.
      * XynHTML.xyn`
      * div#container {
@@ -1113,7 +1583,8 @@ class XynHTML {
      * value.value = 2; // Updates text to "Case 2"
      * value.value = 3; // Updates text to default case
      */
-    static switchCase = (caseValue, valueMap, defaultValue) => new XynSwitch(caseValue, valueMap, defaultValue);
+    static switchCase = (caseValue, valueMap, defaultValue) =>
+        new XynSwitch(caseValue, valueMap, defaultValue);
 
     /**
      * @param {string} tag
@@ -1130,20 +1601,20 @@ class XynHTML {
  * @description XynHTML is a library for building web applications using a
  * declarative syntax. It is inspired by React and Vue, but with a focus on
  * simplicity and performance.
- * 
+ *
  * @example Basic usage with signals and effects:
  * import { signal, effect, XynTag, text } from "./xyn_html.js";
- * 
+ *
  * const counter = signal(0);
  * const increment = () => counter.value++;
- * 
+ *
  * const button = new XynTag("button");
  * button.children = [text`Count: ${counter}`];
- * 
+ *
  * const buttonElement = button.render();
  * buttonElement.onclick = increment;
  * document.body.appendChild(buttonElement);
- * 
+ *
  * @example Creating reactive components:
  * const message = signal("Hello");
  * const container = new XynTag("div");
@@ -1204,16 +1675,16 @@ export const fragment = (...children) => new XynFragment(...children);
  * @description XynTag is a class for creating HTML elements with signals.
  * @example Basic XynTag usage:
  * import { XynTag, signal, text } from "./xyn_html.js";
- * 
+ *
  * const show = signal(true);
  * const container = new XynTag("div");
  * const span = new XynTag("span");
  * span.children = [text`Hello World`];
  * container.children = [span];
- * 
+ *
  * // Apply conditional CSS classes
  * span.css`show ${show}`;
- * 
+ *
  * document.body.appendChild(container.render());
  * show.value = false; // Removes 'show' class
  */
@@ -1241,10 +1712,10 @@ export const xyn = XynHTML.xyn;
  * @description XynText is a class for creating text nodes with signals.
  * @example Basic XynText usage:
  * import { signal, XynTag, text } from "./xyn_html.js";
- * 
+ *
  * const name = signal("World");
  * const container = new XynTag("div", text`Hello, ${name}!`);
- * 
+ *
  * document.body.appendChild(container.render());
  * name.value = "XynHTML"; // Updates text to "Hello, XynHTML!"
  */
@@ -1262,7 +1733,7 @@ export const text = XynHTML.text;
  * value.value = 2; // Updates text to "Case 2"
  * value.value = 3; // Updates text to default case
  */
-export { XynSwitch }
+export { XynSwitch };
 /**
  * @export @alias {XynSwitch}
  * @description switch is a function for creating switch cases with signals.
@@ -1280,4 +1751,4 @@ export const switchCase = XynHTML.switchCase;
  * @returns {void}
  * @description Sets the default tag name for XynTag.
  */
-export const setDefaultTag = (newTag) => XynHTML.defaultTag = newTag;
+export const setDefaultTag = (newTag) => (XynHTML.defaultTag = newTag);

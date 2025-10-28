@@ -16,9 +16,7 @@ export async function example12(output) {
     const cardTitle = tag`h3`;
     cardTitle.children.add(text`Interactive Card`);
     const cardContent = tag`p`;
-    cardContent.children.add(
-        text`${message}`
-    );
+    cardContent.children.add(text`${message}`);
 
     card.children.add(cardTitle, cardContent);
 
@@ -29,22 +27,22 @@ export async function example12(output) {
         margin: "10px",
         "border-radius": "8px",
         transition: "all 0.3s ease",
-        border: "2px solid #007acc"
     });
 
     // Create XynSwitch for conditional rendering
-    const cardSwitch = new XynSwitch(isVisible, new Map([
-        [true, card]
-    ]));
+    const cardSwitch = new XynSwitch(isVisible, new Map([[true, card]]));
 
     // Create toggle button
     const toggleButton = tag`button`;
-    const buttonText = derived(() => isVisible.value ? "Hide Card" : "Show Card", [isVisible]);
+    const buttonText = derived(
+        () => (isVisible.value ? "Hide Card" : "Show Card"),
+        [isVisible],
+    );
     toggleButton.children.add(text`${buttonText}`);
     toggleButton.css.styles({
         padding: "8px 16px",
         margin: "5px",
-        cursor: "pointer"
+        cursor: "pointer",
     });
 
     toggleButton.event("click", () => {
@@ -56,7 +54,7 @@ export async function example12(output) {
     themeButton.css.styles({
         padding: "8px 16px",
         margin: "5px",
-        cursor: "pointer"
+        cursor: "pointer",
     });
     themeButton.children.add(text`Local Theme: ${localTheme}`);
     themeButton.event("click", () => {
@@ -64,7 +62,8 @@ export async function example12(output) {
     });
 
     // Apply conditional styling based on local theme using CSS classes
-    card.css.classes`${derived(() => `local-theme-${localTheme.value}`, [localTheme])}`;
+    card.css
+        .classes`demo-card ${derived(() => `local-theme-${localTheme.value}`, [localTheme])}`;
 
     // Create container for this example
     const conditionalContainer = tag`div`;
@@ -73,13 +72,10 @@ export async function example12(output) {
         margin: "20px",
         padding: "15px",
         border: "1px solid #ccc",
-        "border-radius": "5px"
+        "border-radius": "5px",
     });
 
-    conditionalContainer.children.add(
-        toggleButton,
-        themeButton
-    );
+    conditionalContainer.children.add(toggleButton, themeButton);
 
     // Render the switch and append it to the container
     const switchContainer = tag`div`;

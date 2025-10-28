@@ -1,3 +1,15 @@
+@property --theme-button-start {
+  syntax: '<color>';
+  inherits: false;
+  initial-value: #667eeadd;
+}
+
+@property --theme-button-end {
+  syntax: '<color>';
+  inherits: false;
+  initial-value: #667eea11;
+}
+
 :root {
   --color-background: #f8f8f8;
 
@@ -326,10 +338,10 @@ pre code {
 }
 
 .theme-switcher button {
-  background-image: linear-gradient(in oklab 135deg, #667eeadd 0%, #667eea11 60%, transparent);
+  background-image: linear-gradient(in oklab 135deg, var(--theme-button-start) 0%, var(--theme-button-end) 80%, transparent);
   background-color: #f1f288;
   color: black;
-  border: none;
+  border: 1px solid transparent;
   padding: 10px 16px;
   border-radius: 6px;
   font-weight: 600;
@@ -341,6 +353,7 @@ pre code {
 }
 
 .theme-switcher button:hover {
+  border-color: #ffffff44;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
@@ -508,6 +521,8 @@ body[data-theme="dark"] .theme-switcher {
   & button {
     background-color: #764ba2;
     color: white;
+    --theme-button-start: #00000088;
+    --theme-button-end: #667eea44;
   }
 
   @supports(backdrop-filter: blur(10px)) {
@@ -606,10 +621,6 @@ button {
   color: currentColor;
   cursor: pointer;
   transition: all 0.2s ease;
-}
-
-button:hover {
-  background-color: color-mix(in oklab, currentColor 15%, var(--color-background));
 }
 
 button:disabled {

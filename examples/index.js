@@ -1,7 +1,10 @@
 import { signal, effect, tag, mountNext, text } from "../src/xyn_html.js";
 
 function getExamples() {
-    return document.querySelectorAll("[data-example]").values().map((container) => container.getAttribute("data-example"));
+    return document
+        .querySelectorAll("[data-example]")
+        .values()
+        .map((container) => container.getAttribute("data-example"));
 }
 
 // Utility function to create output in specific containers
@@ -10,35 +13,41 @@ export function createOutput(containerId) {
 
     function message(message) {
         if (container) {
-            const p = tag`p`
+            const p = tag`p`;
 
             p.children.add(text(message));
             mountNext(p, container);
         }
     }
 
-    message.clear = function() {
+    message.clear = function () {
         if (container) {
             container.replaceChildren();
         }
-    }
+    };
 
-    message.append = function(element) {
+    message.append = function (element) {
         if (container) {
             mountNext(element, container);
         }
-    }
+    };
 
-    message.signalUpdate = function(signalName, signal) {
-        effect((previousValue) => {
-            if (previousValue === undefined) {
-                return;
-            }
-            const hr = tag`hr`;
-            hr.attributes.set("data-signal", `${signalName} updated: ${signal.value}`);
-            this.append(hr);
-        }, [signal]);
-    }
+    message.signalUpdate = function (signalName, signal) {
+        effect(
+            ({ previousValue }) => {
+                if (previousValue === undefined) {
+                    return;
+                }
+                const hr = tag`hr`;
+                hr.attributes.set(
+                    "data-signal",
+                    `${signalName} updated: ${signal.value}`,
+                );
+                this.append(hr);
+            },
+            [signal],
+        );
+    };
 
     return message;
 }
@@ -47,7 +56,7 @@ function addExampleTitle(containerId, title) {
     const container = document.getElementById(containerId);
     if (container) {
         const parent = container.parentElement;
-        const h3 = document.createElement('h3');
+        const h3 = document.createElement("h3");
         h3.textContent = title;
         parent.insertBefore(h3, container);
     }
@@ -58,9 +67,9 @@ function addSourceCode(containerId, func) {
     const container = document.getElementById(containerId);
     if (container) {
         const parent = container.parentElement;
-        const pre = document.createElement('pre');
-        const code = document.createElement('code');
-        code.className = 'language-javascript';
+        const pre = document.createElement("pre");
+        const code = document.createElement("code");
+        code.className = "language-javascript";
         code.textContent = func.toString();
         pre.appendChild(code);
         parent.insertBefore(pre, container);
@@ -70,10 +79,12 @@ function addSourceCode(containerId, func) {
 
 // Global theme management
 function getSystemTheme() {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
 }
 
-const savedTheme = localStorage.getItem('xynhtml-theme') || getSystemTheme();
+const savedTheme = localStorage.getItem("xynhtml-theme") || getSystemTheme();
 const globalTheme = signal(savedTheme);
 
 // Make globalTheme available to other modules
@@ -82,43 +93,45 @@ window.globalTheme = globalTheme;
 // Highlight.js theme configurations
 const highlightThemes = {
     light: [
-        { name: 'Default', value: 'default' },
-        { name: 'GitHub', value: 'github' },
-        { name: 'Atom One Light', value: 'atom-one-light' },
-        { name: 'VS Code Light', value: 'vs' },
-        { name: 'Lightfair', value: 'lightfair' },
-        { name: 'Grayscale', value: 'grayscale' },
-        { name: 'Brown Paper', value: 'brown-paper' },
-        { name: 'School Book', value: 'school-book' },
-        { name: 'Foundation', value: 'foundation' },
-        { name: 'Googlecode', value: 'googlecode' }
+        { name: "Default", value: "default" },
+        { name: "GitHub", value: "github" },
+        { name: "Atom One Light", value: "atom-one-light" },
+        { name: "VS Code Light", value: "vs" },
+        { name: "Lightfair", value: "lightfair" },
+        { name: "Grayscale", value: "grayscale" },
+        { name: "Brown Paper", value: "brown-paper" },
+        { name: "School Book", value: "school-book" },
+        { name: "Foundation", value: "foundation" },
+        { name: "Googlecode", value: "googlecode" },
     ],
     dark: [
-        { name: 'Dark', value: 'dark' },
-        { name: 'Monokai', value: 'monokai' },
-        { name: 'Nord', value: 'nord' },
-        { name: 'Atom One Dark', value: 'atom-one-dark' },
-        { name: 'VS Code Dark', value: 'vs2015' },
-        { name: 'Obsidian', value: 'obsidian' },
-        { name: 'Tokyo Night Dark', value: 'tokyo-night-dark' },
-        { name: 'Monokai Sublime', value: 'monokai-sublime' },
-        { name: 'Arta', value: 'arta' },
-        { name: 'Codepen Embed', value: 'codepen-embed' }
-    ]
+        { name: "Dark", value: "dark" },
+        { name: "Monokai", value: "monokai" },
+        { name: "Nord", value: "nord" },
+        { name: "Atom One Dark", value: "atom-one-dark" },
+        { name: "VS Code Dark", value: "vs2015" },
+        { name: "Obsidian", value: "obsidian" },
+        { name: "Tokyo Night Dark", value: "tokyo-night-dark" },
+        { name: "Monokai Sublime", value: "monokai-sublime" },
+        { name: "Arta", value: "arta" },
+        { name: "Codepen Embed", value: "codepen-embed" },
+    ],
 };
 
 // Syntax highlighting theme management
-const savedSyntaxTheme = localStorage.getItem('xynhtml-syntax-theme');
-const syntaxTheme = signal(savedSyntaxTheme || (getSystemTheme() === 'dark' ? 'monokai' : 'github'));
+const savedSyntaxTheme = localStorage.getItem("xynhtml-syntax-theme");
+const syntaxTheme = signal(
+    savedSyntaxTheme || (getSystemTheme() === "dark" ? "monokai" : "github"),
+);
 
 // Track if this is the initial load to prevent fade effects
 const isInitialLoad = signal(true);
 
 function applySyntaxTheme(themeName, skipTransition = false) {
-    const themeLink = document.getElementById('highlight-theme');
+    const themeLink = document.getElementById("highlight-theme");
     if (!themeLink) return;
 
-    const codeBlocks = document.querySelectorAll('pre code');
+    const codeBlocks = document.querySelectorAll("pre code");
     if (codeBlocks.length === 0) return;
 
     // Set up the new theme URL
@@ -126,10 +139,10 @@ function applySyntaxTheme(themeName, skipTransition = false) {
 
     // Function to re-highlight and fade back in
     const reHighlightAndFadeIn = () => {
-        codeBlocks.forEach(block => {
+        codeBlocks.forEach((block) => {
             // Clear existing highlighting classes and data-highlighted attribute
-            block.className = block.className.replace(/hljs-\S+/g, '');
-            block.removeAttribute('data-highlighted');
+            block.className = block.className.replace(/hljs-\S+/g, "");
+            block.removeAttribute("data-highlighted");
             delete block.dataset.highlighted;
             hljs.highlightElement(block);
         });
@@ -137,8 +150,8 @@ function applySyntaxTheme(themeName, skipTransition = false) {
         // Only fade back in if not skipping transitions
         if (!skipTransition) {
             setTimeout(() => {
-                codeBlocks.forEach(block => {
-                    block.style.opacity = '1';
+                codeBlocks.forEach((block) => {
+                    block.style.opacity = "1";
                 });
             }, 50);
         }
@@ -161,7 +174,8 @@ function applySyntaxTheme(themeName, skipTransition = false) {
         // Error handling for failed theme loads
         themeLink.onerror = () => {
             console.warn(`Failed to load theme: ${themeName}, using default`);
-            themeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css';
+            themeLink.href =
+                "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css";
             setTimeout(reHighlightAndFadeIn, 50);
         };
 
@@ -180,13 +194,13 @@ function applySyntaxTheme(themeName, skipTransition = false) {
     }
 
     // Fade out all code blocks and wait for animation to complete
-    codeBlocks.forEach(block => {
-        block.style.transition = 'opacity 0.2s ease-in-out';
+    codeBlocks.forEach((block) => {
+        block.style.transition = "opacity 0.2s ease-in-out";
 
         const handleTransitionEnd = (event) => {
-            if (event.propertyName === 'opacity' && event.target === block) {
+            if (event.propertyName === "opacity" && event.target === block) {
                 fadeOutCount++;
-                block.removeEventListener('transitionend', handleTransitionEnd);
+                block.removeEventListener("transitionend", handleTransitionEnd);
 
                 // If all blocks have faded out, apply the theme change
                 if (fadeOutCount === totalBlocks) {
@@ -195,14 +209,14 @@ function applySyntaxTheme(themeName, skipTransition = false) {
             }
         };
 
-        block.addEventListener('transitionend', handleTransitionEnd);
-        block.style.opacity = '0';
+        block.addEventListener("transitionend", handleTransitionEnd);
+        block.style.opacity = "0";
     });
 
     // Fallback timeout in case transition events don't fire
     setTimeout(() => {
         if (fadeOutCount < totalBlocks) {
-            console.warn('Fade animation timeout, applying theme change');
+            console.warn("Fade animation timeout, applying theme change");
             onAllFadeOutsComplete();
         }
     }, 500);
@@ -211,21 +225,21 @@ function applySyntaxTheme(themeName, skipTransition = false) {
 // Apply global theme
 const applyGlobalTheme = (theme) => {
     // Remove existing theme classes
-    document.body.classList.remove('theme-light', 'theme-dark');
+    document.body.classList.remove("theme-light", "theme-dark");
 
     // Add new theme class
     document.body.classList.add(`theme-${theme}`);
 
     // Set data attribute for CSS targeting (keep for compatibility)
-    document.body.setAttribute('data-theme', theme);
-    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute("data-theme", theme);
+    document.documentElement.setAttribute("data-theme", theme);
 };
 
 // Create global theme switcher at top of page
-const globalThemeSwitcher = document.createElement('div');
-globalThemeSwitcher.className = 'theme-switcher';
+const globalThemeSwitcher = document.createElement("div");
+globalThemeSwitcher.className = "theme-switcher";
 
-const globalThemeButton = document.createElement('button');
+const globalThemeButton = document.createElement("button");
 globalThemeButton.type = "button";
 globalThemeButton.ariaLabel = "Toggle theme";
 globalThemeButton.title = "Toggle theme";
@@ -258,24 +272,24 @@ globalThemeButton.innerHTML = `
 `;
 
 globalThemeButton.onclick = () => {
-    globalTheme.value = globalTheme.value === 'light' ? 'dark' : 'light';
+    globalTheme.value = globalTheme.value === "light" ? "dark" : "light";
 };
 
 // Create syntax highlighting theme selector
-const syntaxThemeSelector = document.createElement('select');
-syntaxThemeSelector.className = 'syntax-theme-selector';
-syntaxThemeSelector.title = 'Select syntax highlighting theme';
+const syntaxThemeSelector = document.createElement("select");
+syntaxThemeSelector.className = "syntax-theme-selector";
+syntaxThemeSelector.title = "Select syntax highlighting theme";
 
 function updateSyntaxThemeDropdown() {
     const allThemes = [...highlightThemes.light, ...highlightThemes.dark];
 
-    syntaxThemeSelector.innerHTML = '';
+    syntaxThemeSelector.innerHTML = "";
 
     // Add light themes group
-    const lightGroup = document.createElement('optgroup');
-    lightGroup.label = 'Light Themes';
-    highlightThemes.light.forEach(theme => {
-        const option = document.createElement('option');
+    const lightGroup = document.createElement("optgroup");
+    lightGroup.label = "Light Themes";
+    highlightThemes.light.forEach((theme) => {
+        const option = document.createElement("option");
         option.value = theme.value;
         option.textContent = theme.name;
         if (theme.value === syntaxTheme.value) {
@@ -285,10 +299,10 @@ function updateSyntaxThemeDropdown() {
     });
 
     // Add dark themes group
-    const darkGroup = document.createElement('optgroup');
-    darkGroup.label = 'Dark Themes';
-    highlightThemes.dark.forEach(theme => {
-        const option = document.createElement('option');
+    const darkGroup = document.createElement("optgroup");
+    darkGroup.label = "Dark Themes";
+    highlightThemes.dark.forEach((theme) => {
+        const option = document.createElement("option");
         option.value = theme.value;
         option.textContent = theme.name;
         if (theme.value === syntaxTheme.value) {
@@ -303,12 +317,12 @@ function updateSyntaxThemeDropdown() {
 
 syntaxThemeSelector.onchange = (e) => {
     syntaxTheme.value = e.target.value;
-    localStorage.setItem('xynhtml-syntax-theme', syntaxTheme.value);
+    localStorage.setItem("xynhtml-syntax-theme", syntaxTheme.value);
 };
 
 // Global theme effect - only triggers on actual changes
 effect(() => {
-    localStorage.setItem('xynhtml-theme', globalTheme.value);
+    localStorage.setItem("xynhtml-theme", globalTheme.value);
     applyGlobalTheme(globalTheme.value);
     if (globalTheme.value === "light") {
         globalThemeButton.classList.add("theme-toggle--toggled");
@@ -319,7 +333,7 @@ effect(() => {
 
 // Syntax theme effect - skip transitions on initial load
 effect(() => {
-    localStorage.setItem('xynhtml-syntax-theme', syntaxTheme.value);
+    localStorage.setItem("xynhtml-syntax-theme", syntaxTheme.value);
     applySyntaxTheme(syntaxTheme.value, isInitialLoad.value);
     updateSyntaxThemeDropdown();
 }, [syntaxTheme]);
@@ -363,12 +377,14 @@ document.body.appendChild(globalThemeSwitcher);
 // });
 
 // Listen for system theme changes
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    if (!localStorage.getItem('xynhtml-theme')) {
-        const systemTheme = getSystemTheme();
-        globalTheme.value = systemTheme;
-    }
-});
+window
+    .matchMedia("(prefers-color-scheme: dark)")
+    .addEventListener("change", () => {
+        if (!localStorage.getItem("xynhtml-theme")) {
+            const systemTheme = getSystemTheme();
+            globalTheme.value = systemTheme;
+        }
+    });
 
 // Lazy loading for examples
 async function loadExamples() {
@@ -376,7 +392,9 @@ async function loadExamples() {
     examples.forEach(async (uri, i) => {
         try {
             const exampleModule = await import(`./${uri}.js`);
-            const example = Object.values(exampleModule).filter(v => typeof v === 'function')[0];
+            const example = Object.values(exampleModule).filter(
+                (v) => typeof v === "function",
+            )[0];
             const { title } = exampleModule;
             addExampleTitle(`example${i + 1}-output`, title);
             addSourceCode(`example${i + 1}-output`, example);
@@ -396,6 +414,6 @@ const loadExamplesOnReady = async () => {
     setTimeout(() => {
         isInitialLoad.value = false;
     }, 100);
-    document.removeEventListener('DOMContentLoaded', loadExamplesOnReady);
-}
-document.addEventListener('DOMContentLoaded', loadExamplesOnReady);
+    document.removeEventListener("DOMContentLoaded", loadExamplesOnReady);
+};
+document.addEventListener("DOMContentLoaded", loadExamplesOnReady);
