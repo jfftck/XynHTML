@@ -10,13 +10,15 @@ export async function example15(output) {
     output("Hover over the box to trigger transitions and track their states:");
     
     const transitionBox = tag`div`;
-    transitionBox.classes.add("transition-box");
+    transitionBox.css.classes`transition-box`;
     transitionBox.children.add(text("Hover Me"));
     
-    const transitionStateSignal = createTransitionState(transitionBox.element);
+    const boxElement = transitionBox.render();
+    const transitionStateSignal = createTransitionState(boxElement);
     
     const stateLog = tag`div`;
-    stateLog.classes.add("state-log");
+    stateLog.css.classes`state-log`;
+    const logElement = stateLog.render();
     
     let logCount = 0;
     transitionStateSignal.subscribe(() => {
@@ -49,22 +51,22 @@ export async function example15(output) {
         output(`${emoji} ${stateMessage}`);
         
         const logEntry = tag`div`;
-        logEntry.classes.add("log-entry");
+        logEntry.css.classes`log-entry`;
         logEntry.children.add(text(`${++logCount}. ${emoji} ${stateMessage}`));
-        mountNext(logEntry, stateLog.element);
+        mountNext(logEntry, logElement);
     });
     
     let isExpanded = false;
-    transitionBox.events.add("mouseenter", () => {
+    transitionBox.event("mouseenter", () => {
         isExpanded = true;
-        transitionBox.element.style.width = "300px";
-        transitionBox.element.style.backgroundColor = "#48bb78";
+        boxElement.style.width = "300px";
+        boxElement.style.backgroundColor = "#48bb78";
     });
     
-    transitionBox.events.add("mouseleave", () => {
+    transitionBox.event("mouseleave", () => {
         isExpanded = false;
-        transitionBox.element.style.width = "200px";
-        transitionBox.element.style.backgroundColor = "#4299e1";
+        boxElement.style.width = "200px";
+        boxElement.style.backgroundColor = "#4299e1";
     });
     
     const style = tag`style`;
@@ -108,7 +110,7 @@ export async function example15(output) {
         }
     `));
     
-    output.append(style.element);
-    output.append(transitionBox.element);
-    output.append(stateLog.element);
+    output.append(style);
+    output.append(transitionBox);
+    output.append(stateLog);
 }

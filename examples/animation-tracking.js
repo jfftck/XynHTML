@@ -10,13 +10,14 @@ export async function example14(output) {
     output("Click the button to trigger an animation and watch the state changes:");
     
     const animatedBox = tag`div`;
-    animatedBox.classes.add("animated-box");
+    animatedBox.css.classes`animated-box`;
     animatedBox.children.add(text("Click to Animate"));
     
-    const animationStateSignal = createAnimationState(animatedBox.element);
+    const boxElement = animatedBox.render();
+    const animationStateSignal = createAnimationState(boxElement);
     
     const stateDisplay = tag`div`;
-    stateDisplay.classes.add("state-display");
+    stateDisplay.css.classes`state-display`;
     
     animationStateSignal.subscribe(() => {
         const stateName = animationStateSignal.value;
@@ -44,10 +45,10 @@ export async function example14(output) {
         stateDisplay.children.add(text(`Current State: ${stateMessage}`));
     });
     
-    animatedBox.events.add("click", () => {
-        animatedBox.element.style.animation = "none";
+    animatedBox.event("click", () => {
+        boxElement.style.animation = "none";
         setTimeout(() => {
-            animatedBox.element.style.animation = "slideAndSpin 2s ease-in-out";
+            boxElement.style.animation = "slideAndSpin 2s ease-in-out";
         }, 10);
     });
     
@@ -89,7 +90,7 @@ export async function example14(output) {
         }
     `));
     
-    output.append(style.element);
-    output.append(animatedBox.element);
-    output.append(stateDisplay.element);
+    output.append(style);
+    output.append(animatedBox);
+    output.append(stateDisplay);
 }

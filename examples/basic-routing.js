@@ -14,25 +14,27 @@ export async function example16(output) {
     const router = XynRouter.create();
     
     const nav = tag`nav`;
-    nav.classes.add("router-nav");
+    nav.css.classes`router-nav`;
+    const navElement = nav.render();
     
     const createNavLink = (label, path) => {
         const link = tag`a`;
         link.attributes.set("href", path);
         link.children.add(text(label));
-        link.events.add("click", (e) => {
+        link.event("click", (e) => {
             e.preventDefault();
             router.pathname = path;
         });
         return link;
     };
     
-    mountNext(createNavLink("Home", "/"), nav.element);
-    mountNext(createNavLink("About", "/about"), nav.element);
-    mountNext(createNavLink("Contact", "/contact"), nav.element);
+    mountNext(createNavLink("Home", "/"), navElement);
+    mountNext(createNavLink("About", "/about"), navElement);
+    mountNext(createNavLink("Contact", "/contact"), navElement);
     
     const contentArea = tag`div`;
-    contentArea.classes.add("route-content");
+    contentArea.css.classes`route-content`;
+    const contentElement = contentArea.render();
     
     const renderRoute = router.routes(
         route(
@@ -51,6 +53,8 @@ export async function example16(output) {
             "contact"
         )
     );
+    
+    renderRoute.subscribe(() => {});
     
     currentRoute.subscribe(() => {
         contentArea.children.clear();
@@ -79,8 +83,8 @@ export async function example16(output) {
                 paragraph.children.add(text("Page not found"));
         }
         
-        mountNext(heading, contentArea.element);
-        mountNext(paragraph, contentArea.element);
+        mountNext(heading, contentElement);
+        mountNext(paragraph, contentElement);
     });
     
     const style = tag`style`;
@@ -129,7 +133,7 @@ export async function example16(output) {
         }
     `));
     
-    output.append(style.element);
-    output.append(nav.element);
-    output.append(contentArea.element);
+    output.append(style);
+    output.append(nav);
+    output.append(contentArea);
 }

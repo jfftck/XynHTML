@@ -14,26 +14,28 @@ export async function example17(output) {
     const router = XynRouter.create();
     
     const nav = tag`nav`;
-    nav.classes.add("advanced-router-nav");
+    nav.css.classes`advanced-router-nav`;
+    const navElement = nav.render();
     
     const createNavLink = (label, path) => {
         const link = tag`a`;
         link.attributes.set("href", path);
         link.children.add(text(label));
-        link.events.add("click", (e) => {
+        link.event("click", (e) => {
             e.preventDefault();
             router.pathname = path;
         });
         return link;
     };
     
-    mountNext(createNavLink("Dashboard", "/dashboard"), nav.element);
-    mountNext(createNavLink("User #42", "/user/42"), nav.element);
-    mountNext(createNavLink("User #123", "/user/123"), nav.element);
-    mountNext(createNavLink("Settings", "/settings"), nav.element);
+    mountNext(createNavLink("Dashboard", "/dashboard"), navElement);
+    mountNext(createNavLink("User #42", "/user/42"), navElement);
+    mountNext(createNavLink("User #123", "/user/123"), navElement);
+    mountNext(createNavLink("Settings", "/settings"), navElement);
     
     const contentArea = tag`div`;
-    contentArea.classes.add("advanced-route-content");
+    contentArea.css.classes`advanced-route-content`;
+    const contentElement = contentArea.render();
     
     const userIdParam = { value: null };
     
@@ -56,6 +58,8 @@ export async function example17(output) {
             "settings"
         )
     );
+    
+    renderRoute.subscribe(() => {});
     
     currentRoute.subscribe(() => {
         contentArea.children.clear();
@@ -84,15 +88,16 @@ export async function example17(output) {
                 paragraph.children.add(text("Click a navigation link above to see routing in action."));
         }
         
-        mountNext(heading, contentArea.element);
-        mountNext(paragraph, contentArea.element);
+        mountNext(heading, contentElement);
+        mountNext(paragraph, contentElement);
     });
     
     const infoBox = tag`div`;
-    infoBox.classes.add("info-box");
+    infoBox.css.classes`info-box`;
+    const infoBoxElement = infoBox.render();
     const infoText = tag`p`;
     infoText.children.add(text("💡 Try navigating to /user/999 by clicking User links above. The path parameter is extracted automatically!"));
-    mountNext(infoText, infoBox.element);
+    mountNext(infoText, infoBoxElement);
     
     const style = tag`style`;
     style.children.add(text(`
@@ -155,8 +160,8 @@ export async function example17(output) {
         }
     `));
     
-    output.append(style.element);
-    output.append(nav.element);
-    output.append(contentArea.element);
-    output.append(infoBox.element);
+    output.append(style);
+    output.append(nav);
+    output.append(contentArea);
+    output.append(infoBox);
 }
