@@ -1,17 +1,14 @@
 // Advanced routing example - demonstrates path parameters and exact matching
 import { signal, derived, tag, text, mountNext } from "../src/xyn_html.js";
-import { setSignal, setDerived, XynRouter, route, pathMatcher, exactRouting } from "../src/xyn_html_extra.js";
+import { XynRouter, route, pathMatcher, exactRouting } from "../src/xyn_html_extra.js";
 
 export const title = "Example 17: Advanced Routing with Path Parameters";
 
 export async function example17(output) {
-    setSignal(signal);
-    setDerived(derived);
-    
     output("Advanced routing with path parameters and exact matching:");
     
     const currentRoute = signal(null);
-    const router = XynRouter.create();
+    const router = XynRouter.create(signal, derived);
     
     const nav = tag`nav`;
     nav.css.classes`advanced-router-nav`;

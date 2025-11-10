@@ -640,7 +640,6 @@ class XynFragment extends XynElement {
      * @description Clears the fragment and removes all children.
      */
     clear() {
-        this.#children.replaceChildren();
         this.#children.splice(0, this.#children.length);
     }
 

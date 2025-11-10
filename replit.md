@@ -17,6 +17,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**November 10, 2025 - v1.0.2 - API Refactoring**
+- **Breaking Changes** to xyn_html_extra.js API for better dependency injection:
+  - **createAnimationState()** and **createTransitionState()** now take `signal` function as first parameter and return `{state, attachToElement}` object instead of signal directly
+  - **XynRouter.create()** now requires `signal` and `derived` functions as parameters: `XynRouter.create(signal, derived)`
+  - **Removed** global `setSignal()` and `setDerived()` functions in favor of explicit dependency injection
+- Updated all four xyn_html_extra.js examples to match new API:
+  - animation-tracking.js, transition-tracking.js, basic-routing.js, advanced-routing.js
+
 **October 28, 2025 - v1.0.1**
 - Added four new examples demonstrating xyn_html_extra.js features:
   - **animation-tracking.js**: Visual demonstration of createAnimationState with CSS animations
@@ -80,36 +88,68 @@ Preferred communication style: Simple, everyday language.
 ### Routing System (Extra Module)
 
 **Client-Side Routing**
-- `XynRouter` class manages browser history and URL changes
+- `XynRouter.create(signal, derived)` creates router instance with explicit dependencies
 - Path matching with parameter extraction
 - Route configuration using declarative route objects
 - Two routing modes:
-  - `basicRouting`: Simple route switching
-  - `exactRouting`: Strict path matching with exact flag
+  - `basicRouting(routeSignal)`: Simple route switching
+  - `exactRouting(routeSignal)`: Strict path matching with exact flag
 
 **Route Matching**
-- `pathMatcher` function handles URL pattern matching
-- Support for path parameters (e.g., `/user/:id`)
-- Automatic parameter extraction into objects
+- `pathMatcher(...path)` function handles URL pattern matching
+- Support for path parameters using mutable objects (e.g., `pathMatcher("", "user", userIdParam)`)
+- Automatic parameter extraction into provided objects
+- Returns `{isMatch, isExact}` for route matching decisions
+
+**Usage Pattern:**
+```javascript
+import { signal, derived } from "./xyn_html.js";
+import { XynRouter, route, pathMatcher, basicRouting } from "./xyn_html_extra.js";
+
+const currentRoute = signal("home");
+const router = XynRouter.create(signal, derived);
+
+const renderRoute = router.routes(
+  route(pathMatcher("", ""), basicRouting(currentRoute), "home"),
+  route(pathMatcher("", "about"), basicRouting(currentRoute), "about")
+);
+
+renderRoute.subscribe(() => {}); // Activate routing
+```
 
 ### Animation & Transition Tracking (Extra Module)
 
 **Animation State Management**
-- `createAnimationState` tracks CSS animation lifecycle events
-- Returns signal that updates on: started, iteration, ended, canceled states
+- `createAnimationState(signal, event?)` creates animation state tracker
+- Returns object with `{state, attachToElement}` where:
+  - `state`: signal tracking animation lifecycle (started, iteration, ended, canceled)
+  - `attachToElement(el)`: attaches animation listeners to DOM element
 - Listens to native browser animation events
 
 **Transition State Management**
-- `createTransitionState` monitors CSS transition lifecycle
-- Tracks: started, running, ended, canceled states
+- `createTransitionState(signal, event?)` creates transition state tracker
+- Returns object with `{state, attachToElement}` where:
+  - `state`: signal tracking transition lifecycle (started, running, ended, canceled)
+  - `attachToElement(el)`: attaches transition listeners to DOM element
 - Integrates with browser's transitionstart/run/end/cancel events
+
+**Usage Pattern:**
+```javascript
+import { signal } from "./xyn_html.js";
+import { createAnimationState } from "./xyn_html_extra.js";
+
+const animState = createAnimationState(signal);
+animState.attachToElement(element);
+animState.state.subscribe(() => console.log(animState.state.value));
+```
 
 ### Extension Architecture
 
 **Extra Features Module (xyn_html_extra.js)**
-- Dependency injection pattern for signal/derived functions via `setSignal` and `setDerived`
+- Dependency injection pattern requiring signal/derived functions as parameters
 - Optional features separated from core to keep main library lightweight
 - Exports advanced components: routing, animation tracking, transition tracking
+- No global state - all dependencies passed explicitly at creation time
 
 ### CSS Integration
 

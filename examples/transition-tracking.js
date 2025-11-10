@@ -1,12 +1,10 @@
 // Transition tracking example - demonstrates createTransitionState  
 import { signal, tag, text, mountNext } from "../src/xyn_html.js";
-import { setSignal, setDerived, createTransitionState } from "../src/xyn_html_extra.js";
+import { createTransitionState } from "../src/xyn_html_extra.js";
 
 export const title = "Example 15: Transition State Tracking";
 
 export async function example15(output) {
-    setSignal(signal);
-    
     output("Hover over the box to trigger transitions and track their states:");
     
     const transitionBox = tag`div`;
@@ -14,15 +12,16 @@ export async function example15(output) {
     transitionBox.children.add(text("Hover Me"));
     
     const boxElement = transitionBox.render();
-    const transitionStateSignal = createTransitionState(boxElement);
+    const transitionState = createTransitionState(signal);
+    transitionState.attachToElement(boxElement);
     
     const stateLog = tag`div`;
     stateLog.css.classes`state-log`;
     const logElement = stateLog.render();
     
     let logCount = 0;
-    transitionStateSignal.subscribe(() => {
-        const stateName = transitionStateSignal.value;
+    transitionState.state.subscribe(() => {
+        const stateName = transitionState.state.value;
         let stateMessage = "";
         let emoji = "";
         

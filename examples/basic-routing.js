@@ -1,17 +1,14 @@
 // Basic routing example - demonstrates XynRouter with simple navigation
 import { signal, derived, tag, text, mountNext } from "../src/xyn_html.js";
-import { setSignal, setDerived, XynRouter, route, pathMatcher, basicRouting } from "../src/xyn_html_extra.js";
+import { XynRouter, route, pathMatcher, basicRouting } from "../src/xyn_html_extra.js";
 
 export const title = "Example 16: Basic Client-Side Routing";
 
 export async function example16(output) {
-    setSignal(signal);
-    setDerived(derived);
-    
     output("Click the navigation links to switch between pages (client-side routing):");
     
     const currentRoute = signal("home");
-    const router = XynRouter.create();
+    const router = XynRouter.create(signal, derived);
     
     const nav = tag`nav`;
     nav.css.classes`router-nav`;

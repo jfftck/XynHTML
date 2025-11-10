@@ -1,59 +1,60 @@
 // Animation tracking example - demonstrates createAnimationState
-import { signal, tag, text, mountNext } from "../src/xyn_html.js";
-import { setSignal, setDerived, createAnimationState } from "../src/xyn_html_extra.js";
+import { effect, signal, tag, text } from "../src/xyn_html.js";
+import { createAnimationState } from "../src/xyn_html_extra.js";
 
 export const title = "Example 14: Animation State Tracking";
 
 export async function example14(output) {
-    setSignal(signal);
-    
-    output("Click the button to trigger an animation and watch the state changes:");
-    
+    output(
+        "Click the button to trigger an animation and watch the state changes:",
+    );
+
+    const stateMessage = signal("⏸️ Animation Unset");
+
     const animatedBox = tag`div`;
     animatedBox.css.classes`animated-box`;
     animatedBox.children.add(text("Click to Animate"));
-    
+
     const boxElement = animatedBox.render();
-    const animationStateSignal = createAnimationState(boxElement);
-    
-    const stateDisplay = tag`div`;
-    stateDisplay.css.classes`state-display`;
-    
-    animationStateSignal.subscribe(() => {
-        const stateName = animationStateSignal.value;
-        let stateMessage = "";
-        
-        switch(stateName) {
-            case "started":
-                stateMessage = "🎬 Animation Started";
-                break;
-            case "iteration":
-                stateMessage = "🔄 Animation Iteration";
-                break;
-            case "ended":
-                stateMessage = "✅ Animation Ended";
-                break;
-            case "canceled":
-                stateMessage = "❌ Animation Canceled";
-                break;
-            default:
-                stateMessage = "⏸️ Animation Unset";
-        }
-        
-        output(`Animation State: ${stateMessage}`);
-        stateDisplay.children.clear();
-        stateDisplay.children.add(text(`Current State: ${stateMessage}`));
-    });
-    
+    const animationState = createAnimationState(signal);
+    animationState.attachToElement(boxElement);
+
+    const stateDisplay = tag`div.state-display { ""Current State: ${stateMessage}"" }`;
+
+    effect(
+        ({ value }) => {
+            switch (value) {
+                case "started":
+                    stateMessage.value = "🎬 Animation Started";
+                    break;
+                case "iteration":
+                    stateMessage.value = "🔄 Animation Iteration";
+                    break;
+                case "ended":
+                    stateMessage.value = "✅ Animation Ended";
+                    break;
+                case "canceled":
+                    stateMessage.value = "❌ Animation Canceled";
+                    break;
+                default:
+                    stateMessage.value = "⏸️ Animation Unset";
+            }
+
+            output(`Animation State: ${stateMessage.value}`);
+        },
+        [animationState.state],
+    );
+
     animatedBox.event("click", () => {
         boxElement.style.animation = "none";
         setTimeout(() => {
             boxElement.style.animation = "slideAndSpin 2s ease-in-out";
         }, 10);
     });
-    
+
     const style = tag`style`;
-    style.children.add(text(`
+    style.children.add(
+        text(`
         .animated-box {
             width: 200px;
             height: 100px;
@@ -88,8 +89,9 @@ export async function example14(output) {
                 transform: translateX(0) rotate(360deg);
             }
         }
-    `));
-    
+    `),
+    );
+
     output.append(style);
     output.append(animatedBox);
     output.append(stateDisplay);
