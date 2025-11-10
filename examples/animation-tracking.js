@@ -1,6 +1,6 @@
 // Animation tracking example - demonstrates createAnimationState
 import { effect, signal, tag, text } from "../src/xyn_html.js";
-import { createAnimationState } from "../src/xyn_html_extra.js";
+import { AnimationState, createAnimationState } from "../src/xyn_html_extra.js";
 
 export const title = "Example 14: Animation State Tracking";
 
@@ -24,7 +24,7 @@ export async function example14(output) {
     effect(
         ({ value }) => {
             switch (value) {
-                case "started":
+                case AnimationState.STARTED:
                     stateMessage.value = "🎬 Animation Started";
                     break;
                 case "iteration":
