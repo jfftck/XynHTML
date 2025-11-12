@@ -482,17 +482,6 @@ function createExamplesNavigation() {
     // Signals to track state
     const activeMainSection = signal(sections[0].id);
     const activeSubSection = signal(sections[0].subSections[0].id);
-    const hoveredMainSection = signal(null);
-
-    // Derived signal for which section's sub-menu to show
-    const visibleMainSection = signal(sections[0].id);
-
-    let hoverTimeout = null;
-
-    // Update visible section based on hover or active state
-    effect(() => {
-        visibleMainSection.value = hoveredMainSection.value || activeMainSection.value;
-    }, [hoveredMainSection, activeMainSection]);
 
     // Create navigation structure
     sections.forEach((section, sectionIndex) => {
@@ -500,34 +489,11 @@ function createExamplesNavigation() {
         mainItem.css.classes`examples-nav__main-item`;
         mainItem.attributes.set("data-section-id", section.id);
 
-        const mainLink = tag`a`;
-        mainLink.attributes.set("href", `#${section.id}`);
-        mainLink.css.classes`examples-nav__link examples-nav__link--main`;
-        mainLink.children.add(text(section.label));
+        const mainLabel = tag`div`;
+        mainLabel.css.classes`examples-nav__link examples-nav__link--main`;
+        mainLabel.children.add(text(section.label));
 
-        const mainLinkElement = mainLink.render();
-
-        // Main section click handler
-        mainLinkElement.addEventListener("click", (e) => {
-            e.preventDefault();
-            const targetElement = document.getElementById(section.id);
-            if (targetElement) {
-                targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
-                activeMainSection.value = section.id;
-                activeSubSection.value = section.subSections[0].id;
-            }
-        });
-
-        // Hover handlers for main section
-        mainLinkElement.addEventListener("mouseenter", () => {
-            if (hoverTimeout) {
-                clearTimeout(hoverTimeout);
-                hoverTimeout = null;
-            }
-            hoveredMainSection.value = section.id;
-        });
-
-        mainItem.children.add(mainLink);
+        mainItem.children.add(mainLabel);
 
         // Create sub-sections container
         const subNav = tag`div`;
@@ -563,34 +529,20 @@ function createExamplesNavigation() {
         mountNext(mainItem, navContainer);
     });
 
-    // Mouse leave handler for entire nav
-    navContainer.addEventListener("mouseleave", () => {
-        hoverTimeout = setTimeout(() => {
-            hoveredMainSection.value = null;
-        }, 200);
-    });
-
     // Effect to update main section active states
     effect(() => {
         const mainItems = navContainer.querySelectorAll(".examples-nav__main-item");
         mainItems.forEach((item) => {
             const sectionId = item.getAttribute("data-section-id");
-            const mainLink = item.querySelector(".examples-nav__link--main");
+            const mainLabel = item.querySelector(".examples-nav__link--main");
 
             if (sectionId === activeMainSection.value) {
-                mainLink.classList.add("examples-nav__link--active");
+                mainLabel.classList.add("examples-nav__link--active");
             } else {
-                mainLink.classList.remove("examples-nav__link--active");
-            }
-
-            // Show/hide sub-nav based on visible section
-            if (sectionId === visibleMainSection.value) {
-                item.classList.add("examples-nav__main-item--expanded");
-            } else {
-                item.classList.remove("examples-nav__main-item--expanded");
+                mainLabel.classList.remove("examples-nav__link--active");
             }
         });
-    }, [activeMainSection, visibleMainSection]);
+    }, [activeMainSection]);
 
     // Effect to update sub-section active states
     effect(() => {

@@ -18,19 +18,20 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 **November 12, 2025 - v1.0.3 - Navigation Enhancement**
-- Added enhanced sticky navigation bar with nested sub-sections:
+- Added enhanced sticky navigation bar with vertical section labels:
   - **Dynamic data extraction** from loaded examples (no hard-coded structure)
   - **Sticky positioning** at top: 60px below theme selector
   - **Blurred glass effect** matching theme selector styling with backdrop-filter
-  - **Side-by-side main sections** (Core Features and Extra Features) centered horizontally
-  - **Vertical sub-sections** stacking below active/hovered main section
-  - **Hover-based expansion** showing sub-sections on hover with 200ms delay
+  - **Vertical text labels** using `writing-mode: vertical-rl` positioned on left side
+  - **Always-visible subsections** displayed next to their section labels
+  - **Height constraint** limited to 1/6 viewport height (max-height: 16.67vh) with minimum of 6rem
+  - **Scrollable overflow** when content exceeds height limit
+  - **Unclickable main sections** - only subsections are interactive links
   - **Dual-signal scroll tracking** for main sections and individual examples
   - **Previous section highlighting** when sections scroll out of view
   - **Theme-aware styling** for both light and dark modes
 - Navigation demonstrates advanced XynHTML reactive patterns:
-  - Three-signal architecture (activeMainSection, activeSubSection, hoveredMainSection)
-  - Derived signal (visibleMainSection) combining hover and scroll state
+  - Two-signal architecture (activeMainSection, activeSubSection)
   - Multiple effects for synchronized UI updates
   - Tag-based DOM creation with XynHTML primitives
   - Dual IntersectionObserver setup for main and sub-section tracking
