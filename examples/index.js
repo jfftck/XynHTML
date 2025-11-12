@@ -309,7 +309,7 @@ function buildCustomDropdown() {
 
     const lightLabel = document.createElement("div");
     lightLabel.className = "theme-group-label";
-    lightLabel.textContent = "Light Themes";
+    lightLabel.textContent = "Light";
     lightThemesGroup.appendChild(lightLabel);
 
     const lightOptions = document.createElement("div");
@@ -338,7 +338,7 @@ function buildCustomDropdown() {
 
     const darkLabel = document.createElement("div");
     darkLabel.className = "theme-group-label";
-    darkLabel.textContent = "Dark Themes";
+    darkLabel.textContent = "Dark";
     darkThemesGroup.appendChild(darkLabel);
 
     const darkOptions = document.createElement("div");

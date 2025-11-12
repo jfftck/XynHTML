@@ -45,6 +45,8 @@ Preferred communication style: Simple, everyday language.
   - **Glass morphism styling** - matching navigation bar with backdrop-filter blur effect
   - **Direct child of container** - dropdown is a direct child of nav-theme-container for proper styling
   - **Responsive height** - uses `max-height: min(400px, calc(100vh - 120px))` to shrink when page height is limited
+  - **Sticky group labels** - "Light" and "Dark" labels use `position: sticky` to remain at top edge when scrolling
+  - **Collapsed sections** - theme options limited to showing one option (48px max-height) when scrolled out of view
 - Navigation demonstrates advanced XynHTML reactive patterns:
   - Two-signal architecture (activeMainSection, activeSubSection) plus menuOpen for mobile
   - **No top-level highlighting** - main sections (Core Features, Extra Features) never highlight, only subsections
