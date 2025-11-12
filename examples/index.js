@@ -278,48 +278,95 @@ globalThemeButton.onclick = () => {
     globalTheme.value = globalTheme.value === "light" ? "dark" : "light";
 };
 
-// Create syntax highlighting theme selector
-const syntaxThemeSelector = document.createElement("select");
-syntaxThemeSelector.className = "syntax-theme-selector";
-syntaxThemeSelector.title = "Select code theme";
+// Create syntax highlighting theme selector with custom dropdown
+const syntaxThemeContainer = document.createElement("div");
+syntaxThemeContainer.className = "syntax-theme-container";
 
-function updateSyntaxThemeDropdown() {
-    syntaxThemeSelector.innerHTML = "";
+const syntaxThemeButton = document.createElement("button");
+syntaxThemeButton.type = "button";
+syntaxThemeButton.className = "syntax-theme-button";
+syntaxThemeButton.title = "Select code theme";
+syntaxThemeButton.innerHTML = `&lt;/&gt;`;
 
-    // Add light themes group
-    const lightGroup = document.createElement("optgroup");
-    lightGroup.label = "Light Themes";
+const syntaxThemeDropdown = document.createElement("div");
+syntaxThemeDropdown.className = "syntax-theme-dropdown";
+
+function buildCustomDropdown() {
+    syntaxThemeDropdown.innerHTML = "";
+
+    // Create light themes group
+    const lightThemesGroup = document.createElement("div");
+    lightThemesGroup.className = "theme-group";
+    
+    const lightLabel = document.createElement("div");
+    lightLabel.className = "theme-group-label";
+    lightLabel.textContent = "Light Themes";
+    lightThemesGroup.appendChild(lightLabel);
+    
+    const lightOptions = document.createElement("div");
+    lightOptions.className = "theme-options";
     highlightThemes.light.forEach((theme) => {
-        const option = document.createElement("option");
-        option.value = theme.value;
+        const option = document.createElement("div");
+        option.className = "theme-option";
         option.textContent = theme.name;
+        option.dataset.value = theme.value;
         if (theme.value === syntaxTheme.value) {
-            option.selected = true;
+            option.classList.add("selected");
         }
-        lightGroup.appendChild(option);
+        option.onclick = () => {
+            syntaxTheme.value = theme.value;
+            localStorage.setItem("xynhtml-syntax-theme", syntaxTheme.value);
+            syntaxThemeDropdown.classList.remove("show");
+        };
+        lightOptions.appendChild(option);
     });
+    lightThemesGroup.appendChild(lightOptions);
+    syntaxThemeDropdown.appendChild(lightThemesGroup);
 
-    // Add dark themes group
-    const darkGroup = document.createElement("optgroup");
-    darkGroup.label = "Dark Themes";
+    // Create dark themes group
+    const darkThemesGroup = document.createElement("div");
+    darkThemesGroup.className = "theme-group";
+    
+    const darkLabel = document.createElement("div");
+    darkLabel.className = "theme-group-label";
+    darkLabel.textContent = "Dark Themes";
+    darkThemesGroup.appendChild(darkLabel);
+    
+    const darkOptions = document.createElement("div");
+    darkOptions.className = "theme-options";
     highlightThemes.dark.forEach((theme) => {
-        const option = document.createElement("option");
-        option.value = theme.value;
+        const option = document.createElement("div");
+        option.className = "theme-option";
         option.textContent = theme.name;
+        option.dataset.value = theme.value;
         if (theme.value === syntaxTheme.value) {
-            option.selected = true;
+            option.classList.add("selected");
         }
-        darkGroup.appendChild(option);
+        option.onclick = () => {
+            syntaxTheme.value = theme.value;
+            localStorage.setItem("xynhtml-syntax-theme", syntaxTheme.value);
+            syntaxThemeDropdown.classList.remove("show");
+        };
+        darkOptions.appendChild(option);
     });
-
-    syntaxThemeSelector.appendChild(lightGroup);
-    syntaxThemeSelector.appendChild(darkGroup);
+    darkThemesGroup.appendChild(darkOptions);
+    syntaxThemeDropdown.appendChild(darkThemesGroup);
 }
 
-syntaxThemeSelector.onchange = (e) => {
-    syntaxTheme.value = e.target.value;
-    localStorage.setItem("xynhtml-syntax-theme", syntaxTheme.value);
+// Toggle dropdown visibility
+syntaxThemeButton.onclick = () => {
+    syntaxThemeDropdown.classList.toggle("show");
 };
+
+// Close dropdown when clicking outside
+document.addEventListener("click", (e) => {
+    if (!syntaxThemeContainer.contains(e.target)) {
+        syntaxThemeDropdown.classList.remove("show");
+    }
+});
+
+syntaxThemeContainer.appendChild(syntaxThemeButton);
+syntaxThemeContainer.appendChild(syntaxThemeDropdown);
 
 // Global theme effect - only triggers on actual changes
 effect(() => {
@@ -336,11 +383,11 @@ effect(() => {
 effect(() => {
     localStorage.setItem("xynhtml-syntax-theme", syntaxTheme.value);
     applySyntaxTheme(syntaxTheme.value, isInitialLoad.value);
-    updateSyntaxThemeDropdown();
+    buildCustomDropdown();
 }, [syntaxTheme]);
 
 globalThemeSwitcher.appendChild(globalThemeButton);
-globalThemeSwitcher.appendChild(syntaxThemeSelector);
+globalThemeSwitcher.appendChild(syntaxThemeContainer);
 
 // Append to theme selector container if it exists, otherwise to body
 const themeContainer = document.getElementById("theme-selector-container");
