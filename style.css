@@ -971,7 +971,7 @@ ul li {
 .examples-nav__link--main {
   font-weight: 600;
   font-size: 15px;
-  writing-mode: vertical-rl;
+  writing-mode: vertical-lr;
   text-orientation: mixed;
   padding: 12px 8px;
   pointer-events: none;
@@ -1003,7 +1003,6 @@ ul li {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  flex: 1;
 }
 
 @media (prefers-color-scheme: dark) {

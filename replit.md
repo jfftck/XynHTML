@@ -22,7 +22,7 @@ Preferred communication style: Simple, everyday language.
   - **Dynamic data extraction** from loaded examples (no hard-coded structure)
   - **Sticky positioning** at top: 60px below theme selector
   - **Blurred glass effect** matching theme selector styling with backdrop-filter
-  - **Vertical text labels** using `writing-mode: vertical-rl` positioned on left side
+  - **Vertical text labels** using `writing-mode: vertical-lr` positioned on left side
   - **Always-visible subsections** displayed next to their section labels
   - **Height constraint** limited to 1/6 viewport height (max-height: 16.67vh) with minimum of 6rem
   - **Scrollable overflow** when content exceeds height limit
