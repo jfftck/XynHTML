@@ -316,13 +316,13 @@ pre code {
   background: rgb(255 255 255 / 0.9);
   backdrop-filter: blur(10px);
   border-radius: 8px;
-  padding: 8px;
+  padding: 6px;
   box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
   border: 1px solid rgb(0 0 0 / 0.1);
   transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
   height: 100%;
 
@@ -340,10 +340,10 @@ pre code {
   background-color: #f1f288;
   color: black;
   border: 1px solid transparent;
-  padding: 10px;
+  padding: 6px;
   border-radius: 6px;
   font-weight: 600;
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -352,6 +352,7 @@ pre code {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0;
 }
 
 .theme-switcher button:hover {
@@ -364,6 +365,7 @@ pre code {
 .syntax-theme-container {
   position: relative;
   width: 100%;
+  margin: 0;
 }
 
 .syntax-theme-button {
@@ -371,10 +373,10 @@ pre code {
   background-color: #f1f288;
   color: black;
   border: 1px solid transparent;
-  padding: 10px;
+  padding: 6px;
   border-radius: 6px;
   font-weight: 600;
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -383,6 +385,7 @@ pre code {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0;
 }
 
 .syntax-theme-button:hover {
