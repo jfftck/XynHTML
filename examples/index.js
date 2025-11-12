@@ -278,15 +278,21 @@ globalThemeButton.onclick = () => {
     globalTheme.value = globalTheme.value === "light" ? "dark" : "light";
 };
 
-// Create syntax highlighting theme selector
-const syntaxThemeSelector = document.createElement("select");
-syntaxThemeSelector.className = "syntax-theme-selector";
-syntaxThemeSelector.title = "Select syntax highlighting theme";
+// Create syntax highlighting theme selector (button + dropdown)
+const syntaxThemeContainer = document.createElement("div");
+syntaxThemeContainer.className = "syntax-theme-container";
+
+const syntaxThemeButton = document.createElement("button");
+syntaxThemeButton.type = "button";
+syntaxThemeButton.className = "syntax-theme-button";
+syntaxThemeButton.title = "Select code theme";
+syntaxThemeButton.innerHTML = `<span class="icon">&lt;/&gt;</span>`;
+
+const syntaxThemeDropdown = document.createElement("select");
+syntaxThemeDropdown.className = "syntax-theme-dropdown";
 
 function updateSyntaxThemeDropdown() {
-    const allThemes = [...highlightThemes.light, ...highlightThemes.dark];
-
-    syntaxThemeSelector.innerHTML = "";
+    syntaxThemeDropdown.innerHTML = "";
 
     // Add light themes group
     const lightGroup = document.createElement("optgroup");
@@ -314,14 +320,30 @@ function updateSyntaxThemeDropdown() {
         darkGroup.appendChild(option);
     });
 
-    syntaxThemeSelector.appendChild(lightGroup);
-    syntaxThemeSelector.appendChild(darkGroup);
+    syntaxThemeDropdown.appendChild(lightGroup);
+    syntaxThemeDropdown.appendChild(darkGroup);
 }
 
-syntaxThemeSelector.onchange = (e) => {
+// Show/hide dropdown on button click
+syntaxThemeButton.onclick = () => {
+    syntaxThemeDropdown.classList.toggle("show");
+};
+
+// Close dropdown when clicking outside
+document.addEventListener("click", (e) => {
+    if (!syntaxThemeContainer.contains(e.target)) {
+        syntaxThemeDropdown.classList.remove("show");
+    }
+});
+
+syntaxThemeDropdown.onchange = (e) => {
     syntaxTheme.value = e.target.value;
     localStorage.setItem("xynhtml-syntax-theme", syntaxTheme.value);
+    syntaxThemeDropdown.classList.remove("show");
 };
+
+syntaxThemeContainer.appendChild(syntaxThemeButton);
+syntaxThemeContainer.appendChild(syntaxThemeDropdown);
 
 // Global theme effect - only triggers on actual changes
 effect(() => {
@@ -342,7 +364,7 @@ effect(() => {
 }, [syntaxTheme]);
 
 globalThemeSwitcher.appendChild(globalThemeButton);
-globalThemeSwitcher.appendChild(syntaxThemeSelector);
+globalThemeSwitcher.appendChild(syntaxThemeContainer);
 
 // Append to theme selector container if it exists, otherwise to body
 const themeContainer = document.getElementById("theme-selector-container");
