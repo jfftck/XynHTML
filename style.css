@@ -361,16 +361,9 @@ pre code {
 }
 
 /* Syntax theme selector styling */
-.syntax-theme-container {
-  position: relative;
-  width: 100%;
-  margin: 0;
-}
-
-.syntax-theme-button {
+.syntax-theme-selector {
   background-image: linear-gradient(in oklab 135deg, var(--theme-button-start) 0%, var(--theme-button-end) 80%, transparent);
   background-color: #f1f288;
-  color: black;
   border: 1px solid transparent;
   padding: 6px;
   border-radius: 6px;
@@ -385,56 +378,40 @@ pre code {
   align-items: center;
   justify-content: center;
   margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  color: transparent;
+  text-indent: -9999px;
+  background-image: 
+    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>'),
+    linear-gradient(in oklab 135deg, var(--theme-button-start) 0%, var(--theme-button-end) 80%, transparent);
+  background-position: center, center;
+  background-repeat: no-repeat, repeat;
+  background-size: 60%, auto;
 }
 
-.syntax-theme-button:hover {
+.syntax-theme-selector::-ms-expand {
+  display: none;
+}
+
+.syntax-theme-selector:hover {
   border-color: #ffffff44;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-.syntax-theme-dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  right: 0;
-  left: 0;
-  background-image: linear-gradient(in oklab 135deg, var(--theme-button-start) 0%, var(--theme-button-end) 80%, transparent);
-  background-color: #f1f288;
-  backdrop-filter: blur(10px);
-  border: 1px solid transparent;
-  border-radius: 6px;
-  padding: 6px;
-  font-size: 1.1rem;
-  font-weight: 600;
+.syntax-theme-selector option {
   color: black;
-  cursor: pointer;
-  max-height: 300px;
-  overflow-y: auto;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-4px);
-  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
-  z-index: 1001;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  text-align: center;
+  background-color: white;
+  font-size: 14px;
+  padding: 8px;
 }
 
-.syntax-theme-dropdown::-ms-expand {
-  display: none;
-}
-
-.syntax-theme-dropdown.show {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-.syntax-theme-dropdown:hover {
-  border-color: #ffffff44;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+.syntax-theme-selector optgroup {
+  color: black;
+  background-color: white;
+  font-weight: bold;
 }
 
 /* Dark theme overrides for syntax highlighting */
@@ -550,16 +527,18 @@ body[data-theme="dark"] .comment,
     }
   }
 
-  body:not([data-theme="light"]) .syntax-theme-button {
+  body:not([data-theme="light"]) .syntax-theme-selector {
     background-color: #764ba2;
-    color: white;
+    background-image: 
+      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>'),
+      linear-gradient(in oklab 135deg, #667eea 0%, #764ba2 80%, transparent);
+    border-color: transparent;
   }
 
-  body:not([data-theme="light"]) .syntax-theme-dropdown {
-    background-color: #764ba2;
-    background-image: linear-gradient(in oklab 135deg, #667eea 0%, #764ba2 80%, transparent);
-    border-color: transparent;
-    color: #ffffff;
+  body:not([data-theme="light"]) .syntax-theme-selector option,
+  body:not([data-theme="light"]) .syntax-theme-selector optgroup {
+    background-color: #2d2d2d;
+    color: white;
   }
 }
 
@@ -583,16 +562,18 @@ body[data-theme="dark"] .theme-switcher {
   }
 }
 
-body[data-theme="dark"] .syntax-theme-button {
+body[data-theme="dark"] .syntax-theme-selector {
   background-color: #764ba2;
-  color: white;
+  background-image: 
+    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>'),
+    linear-gradient(in oklab 135deg, #667eea 0%, #764ba2 80%, transparent);
+  border-color: transparent;
 }
 
-body[data-theme="dark"] .syntax-theme-dropdown {
-  background-color: #764ba2;
-  background-image: linear-gradient(in oklab 135deg, #667eea 0%, #764ba2 80%, transparent);
-  border-color: transparent;
-  color: #ffffff;
+body[data-theme="dark"] .syntax-theme-selector option,
+body[data-theme="dark"] .syntax-theme-selector optgroup {
+  background-color: #2d2d2d;
+  color: white;
 }
 
 /* Example container styling */
