@@ -38,6 +38,13 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
 
+        <!-- CSS Anchor Positioning Polyfill -->
+        <script type="module">
+            if (!("anchorName" in document.documentElement.style)) {
+                import("https://unpkg.com/@oddbird/css-anchor-positioning");
+            }
+        </script>
+
         <link href="style.css" rel="stylesheet" type="text/css" />
         <link
             href="examples/local-theme.css"

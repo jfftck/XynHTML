@@ -360,13 +360,13 @@ syntaxThemeButton.onclick = () => {
 
 // Close dropdown when clicking outside
 document.addEventListener("click", (e) => {
-    if (!syntaxThemeContainer.contains(e.target)) {
+    if (!syntaxThemeContainer.contains(e.target) && !syntaxThemeDropdown.contains(e.target)) {
         syntaxThemeDropdown.classList.remove("show");
     }
 });
 
 syntaxThemeContainer.appendChild(syntaxThemeButton);
-syntaxThemeContainer.appendChild(syntaxThemeDropdown);
+document.body.appendChild(syntaxThemeDropdown);
 
 // Global theme effect - only triggers on actual changes
 effect(() => {

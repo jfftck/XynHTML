@@ -368,6 +368,7 @@ pre code {
 }
 
 .syntax-theme-button {
+  anchor-name: --syntax-theme-button;
   background-image: linear-gradient(in oklab 135deg, var(--theme-button-start) 0%, var(--theme-button-end) 80%, transparent);
   background-color: #f1f288;
   border: 1px solid transparent;
@@ -394,8 +395,10 @@ pre code {
 
 .syntax-theme-dropdown {
   position: absolute;
-  top: calc(100% + 4px);
-  right: 0;
+  position-anchor: --syntax-theme-button;
+  top: anchor(bottom);
+  right: anchor(right);
+  margin-top: 4px;
   background-color: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(0, 0, 0, 0.15);

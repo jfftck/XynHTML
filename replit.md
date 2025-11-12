@@ -17,7 +17,7 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-**November 12, 2025 - v1.0.3 - Navigation and Theme Selector Enhancement**
+**November 12, 2025 - v1.0.3 - Navigation, Theme Selector, and CSS Anchor Positioning**
 - Added enhanced sticky navigation bar with vertical section labels and mobile responsiveness:
   - **Dynamic data extraction** from loaded examples (no hard-coded structure)
   - **Sticky positioning** at top with no margin, integrated with theme selector
@@ -39,8 +39,9 @@ Preferred communication style: Simple, everyday language.
   - **Height matching** - theme selector height matches navigation bar using flex
   - **Button + dropdown** - code theme uses button to trigger dropdown instead of always-visible select
   - **Consistent styling** - both buttons use gradient styling matching the page theme
-  - **Dropdown positioning** - absolute positioned dropdown appears below code theme button
+  - **Dropdown positioning** - uses CSS anchor positioning API with polyfill for browser support
   - **Auto-close behavior** - dropdown closes when selecting a theme or clicking outside
+  - **Anchor positioning polyfill** - @oddbird/css-anchor-positioning loaded via CDN for unsupported browsers
 - Navigation demonstrates advanced XynHTML reactive patterns:
   - Two-signal architecture (activeMainSection, activeSubSection) plus menuOpen for mobile
   - **Conditional highlighting** - main sections only highlight when their subsections are active
