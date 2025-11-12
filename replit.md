@@ -39,13 +39,16 @@ Preferred communication style: Simple, everyday language.
   - **Height matching** - theme selector height matches navigation bar using flex
   - **Button + dropdown** - code theme uses button to trigger dropdown instead of always-visible select
   - **Consistent styling** - both buttons use gradient styling matching the page theme
-  - **Dropdown positioning** - uses CSS anchor positioning API with `position-try-fallbacks: flip-block, flip-inline` for smart positioning
+  - **Dropdown positioning** - uses CSS anchor positioning API with `position-try-fallbacks: flip-inline, flip-block` (left fallback first, then top/bottom)
   - **Auto-close behavior** - dropdown closes when selecting a theme or clicking outside
   - **Anchor positioning polyfill** - @oddbird/css-anchor-positioning loaded via CDN for unsupported browsers
   - **Glass morphism styling** - matching navigation bar with backdrop-filter blur effect
+  - **Direct child of container** - dropdown is a direct child of nav-theme-container for proper styling
 - Navigation demonstrates advanced XynHTML reactive patterns:
   - Two-signal architecture (activeMainSection, activeSubSection) plus menuOpen for mobile
   - **No top-level highlighting** - main sections (Core Features, Extra Features) never highlight, only subsections
+  - **Matching optgroup styling** - top-level sections styled like dropdown optgroups with uppercase text, right-aligned vertical labels, and left borders
+  - **Flipped borders** - navigation uses border-left (2px) while dropdown uses border-right (2px) for mirrored appearance
   - **Background tinting** - all navigation items use alpha blending (5-8% opacity) for visual depth
   - **Glass morphism styling** - matching theme dropdown with backdrop-filter: blur(10px) and rgba backgrounds
   - Multiple effects for synchronized UI updates

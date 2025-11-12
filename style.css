@@ -399,7 +399,7 @@ pre code {
   top: anchor(bottom);
   right: anchor(right);
   margin-top: 4px;
-  position-try-fallbacks: flip-block, flip-inline;
+  position-try-fallbacks: flip-inline, flip-block;
   background-color: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(0, 0, 0, 0.15);
@@ -1167,16 +1167,26 @@ ul li {
 }
 
 .examples-nav__link--main {
-  font-weight: 600;
-  font-size: 15px;
   writing-mode: vertical-lr;
   transform: rotate(180deg);
-  padding: 12px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #666;
+  padding: 4px;
+  border: 0;
+  border-bottom: 1px;
+  border-left: 2px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.1);
+  border-radius: 8px 8px 0 8px;
+  white-space: nowrap;
   pointer-events: none;
   cursor: default;
-  white-space: nowrap;
   flex-shrink: 0;
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: transparent;
+  text-align: right;
 }
 
 .examples-nav__link--sub {
@@ -1227,7 +1237,9 @@ ul li {
   }
 
   body:not([data-theme="light"]) .examples-nav__link--main {
-    background-color: rgba(255, 255, 255, 0.08);
+    color: #aaa;
+    border-color: rgba(255, 255, 255, 0.15);
+    background-color: transparent;
   }
 
   body:not([data-theme="light"]) .examples-nav__link--sub {
@@ -1265,7 +1277,9 @@ body[data-theme="dark"] .examples-nav__link:hover {
 }
 
 body[data-theme="dark"] .examples-nav__link--main {
-  background-color: rgba(0, 0, 0, 0.08);
+  color: #aaa;
+  border-color: rgba(255, 255, 255, 0.15);
+  background-color: transparent;
 }
 
 body[data-theme="dark"] .examples-nav__link--sub {
@@ -1342,9 +1356,12 @@ body[data-theme="dark"] .examples-nav__link--active:hover {
   .examples-nav__link--main {
     writing-mode: horizontal-tb;
     text-orientation: unset;
+    text-align: left;
     padding: 12px 16px;
-    font-size: 18px;
-    border-bottom: 2px solid color-mix(in oklab, currentColor 20%, var(--color-background));
+    font-size: 16px;
+    border: 0;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0;
   }
 
   .examples-nav__subnav {
