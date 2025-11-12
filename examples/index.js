@@ -343,7 +343,14 @@ effect(() => {
 
 globalThemeSwitcher.appendChild(globalThemeButton);
 globalThemeSwitcher.appendChild(syntaxThemeSelector);
-document.body.appendChild(globalThemeSwitcher);
+
+// Append to theme selector container if it exists, otherwise to body
+const themeContainer = document.getElementById("theme-selector-container");
+if (themeContainer) {
+    themeContainer.appendChild(globalThemeSwitcher);
+} else {
+    document.body.appendChild(globalThemeSwitcher);
+}
 
 // // Observer to apply theme to newly created example containers
 // const observer = new MutationObserver((mutations) => {
@@ -413,6 +420,38 @@ async function loadExamples() {
             }
         })
     );
+}
+
+// Hamburger menu functionality
+function setupHamburgerMenu() {
+    const hamburger = document.getElementById("hamburger-menu");
+    const nav = document.getElementById("examples-nav");
+    
+    if (!hamburger || !nav) return;
+    
+    const menuOpen = signal(false);
+    
+    hamburger.addEventListener("click", () => {
+        menuOpen.value = !menuOpen.value;
+    });
+    
+    // Effect to toggle classes based on menu state
+    effect(() => {
+        if (menuOpen.value) {
+            hamburger.classList.add("active");
+            nav.classList.add("mobile-open");
+        } else {
+            hamburger.classList.remove("active");
+            nav.classList.remove("mobile-open");
+        }
+    }, [menuOpen]);
+    
+    // Close menu when clicking a navigation link
+    nav.addEventListener("click", (e) => {
+        if (e.target.classList.contains("examples-nav__link--sub")) {
+            menuOpen.value = false;
+        }
+    });
 }
 
 // Build sticky navigation bar with scroll-based highlighting
@@ -558,9 +597,11 @@ function createExamplesNavigation() {
     }, [activeSubSection]);
 
     // Setup IntersectionObserver for main sections
+    // Middle of page detection: use 37.5% top and 37.5% bottom margins
+    // This creates a 25% (1/4) band in the middle of the viewport
     const mainObserverOptions = {
         root: null,
-        rootMargin: "-10% 0px -80% 0px",
+        rootMargin: "-37.5% 0px -37.5% 0px",
         threshold: 0,
     };
 
@@ -574,9 +615,10 @@ function createExamplesNavigation() {
     }, mainObserverOptions);
 
     // Setup IntersectionObserver for sub-sections
+    // Middle of page detection with 1/4 height threshold
     const subObserverOptions = {
         root: null,
-        rootMargin: "-15% 0px -70% 0px",
+        rootMargin: "-37.5% 0px -37.5% 0px",
         threshold: 0,
     };
 
@@ -635,6 +677,9 @@ const loadExamplesOnReady = async () => {
     
     // Now that all examples are loaded and titles are in DOM, create navigation
     createExamplesNavigation();
+    
+    // Setup hamburger menu
+    setupHamburgerMenu();
     
     // Mark initial load as complete to enable transitions for future changes
     setTimeout(() => {

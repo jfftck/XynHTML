@@ -313,10 +313,6 @@ pre code {
 
 /* Theme switcher button styling */
 .theme-switcher {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  z-index: 1000;
   background: rgb(255 255 255 / 0.9);
   backdrop-filter: blur(10px);
   border-radius: 8px;
@@ -327,6 +323,7 @@ pre code {
   display: flex;
   gap: 8px;
   align-items: center;
+  height: 100%;
 
   @supports(backdrop-filter: blur(10px)) {
     & {
@@ -911,27 +908,75 @@ ul li {
   }
 }
 
+/* Navigation and theme container */
+#nav-theme-container {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  gap: 12px;
+  margin: 0 0 16px;
+  align-items: stretch;
+}
+
+/* Hamburger menu button */
+.hamburger-menu {
+  display: none;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 3rem;
+  height: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 12px 8px;
+  z-index: 101;
+}
+
+.hamburger-menu span {
+  width: 2rem;
+  height: 3px;
+  background: currentColor;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+.hamburger-menu.active span:nth-child(1) {
+  transform: rotate(45deg) translateY(10px);
+}
+
+.hamburger-menu.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-menu.active span:nth-child(3) {
+  transform: rotate(-45deg) translateY(-10px);
+}
+
 /* Examples navigation */
 #examples-nav {
-  position: sticky;
-  top: 60px;
-  z-index: 99;
+  flex: 1;
   background: rgb(255 255 255 / 0.9);
   backdrop-filter: blur(10px);
   border-bottom: 2px solid color-mix(in oklab, currentColor 15%, var(--color-background));
   border-radius: 8px;
   padding: 12px 16px;
-  margin: 24px 0 16px;
   display: flex;
   gap: 24px;
   justify-content: center;
   align-items: flex-start;
   flex-wrap: wrap;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   max-height: 16.67vh;
   min-height: 6rem;
   overflow-y: auto;
+}
+
+#theme-selector-container {
+  display: flex;
+  align-items: stretch;
 }
 
 @supports(backdrop-filter: blur(10px)) {
@@ -1071,5 +1116,72 @@ body[data-theme="dark"] .examples-nav__link--active:hover {
   to {
     transform: translateX(100%);
     opacity: 0;
+  }
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .hamburger-menu {
+    display: flex;
+  }
+
+  #examples-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    transform: translateX(-100%);
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    border-radius: 0;
+    padding: 60px 20px 20px;
+    overflow-y: auto;
+    z-index: 100;
+  }
+
+  #examples-nav.mobile-open {
+    transform: translateX(0);
+  }
+
+  .examples-nav__main-item {
+    width: 100%;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .examples-nav__link--main {
+    writing-mode: horizontal-tb;
+    text-orientation: unset;
+    padding: 12px 16px;
+    font-size: 18px;
+    border-bottom: 2px solid color-mix(in oklab, currentColor 20%, var(--color-background));
+  }
+
+  .examples-nav__subnav {
+    padding-left: 16px;
+  }
+
+  .examples-nav__link--sub {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  #theme-selector-container {
+    margin-left: auto;
+  }
+}
+
+/* Tablet responsive styles */
+@media (max-width: 1024px) and (min-width: 769px) {
+  #examples-nav {
+    gap: 16px;
+  }
+
+  .examples-nav__link--sub {
+    font-size: 12px;
+    padding: 4px 10px;
   }
 }
