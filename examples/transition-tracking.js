@@ -1,75 +1,77 @@
-// Transition tracking example - demonstrates createTransitionState  
-import { signal, tag, text, mountNext } from "../src/xyn_html.js";
+// Transition tracking example - demonstrates createTransitionState
+import { effect, signal, tag, text, mountNext, xyn } from "../src/xyn_html.js";
 import { createTransitionState } from "../src/xyn_html_extra.js";
 
 export const title = "Example 15: Transition State Tracking";
 
 export async function example15(output) {
     output("Hover over the box to trigger transitions and track their states:");
-    
-    const transitionBox = tag`div`;
-    transitionBox.css.classes`transition-box`;
-    transitionBox.children.add(text("Hover Me"));
-    
-    const boxElement = transitionBox.render();
+
+    const boxWidth = signal("200px");
+    const boxBgColor = signal("#4299e1");
+    const currentState = signal("");
+
+    const transitionBox = xyn`div.transition-box { ""Hover Me"" }`;
+    transitionBox.get(0).css.styles({
+        width: boxWidth,
+        "background-color": boxBgColor,
+    });
+
     const transitionState = createTransitionState(signal);
-    transitionState.attachToElement(boxElement);
-    
-    const stateLog = tag`div`;
-    stateLog.css.classes`state-log`;
+    transitionBox.extend(transitionState);
+
+    const stateDisplay = xyn`div.state-display {
+        ""Current State: ${currentState}""
+    }`;
+
+    const stateLog = tag`div.state-log`;
     const logElement = stateLog.render();
-    
-    let logCount = 0;
-    transitionState.state.subscribe(() => {
+
+    effect(() => {
         const stateName = transitionState.state.value;
         let stateMessage = "";
         let emoji = "";
-        
-        switch(stateName) {
+
+        switch (stateName) {
             case "started":
                 stateMessage = "Transition Started";
-                emoji = "▶️";
+                emoji = "🎬";
                 break;
             case "running":
                 stateMessage = "Transition Running";
-                emoji = "⏩";
+                emoji = "🔄";
                 break;
             case "ended":
                 stateMessage = "Transition Ended";
-                emoji = "⏹️";
+                emoji = "✅";
                 break;
             case "canceled":
                 stateMessage = "Transition Canceled";
-                emoji = "⏸️";
+                emoji = "❌";
                 break;
             default:
                 stateMessage = "Transition Unset";
                 emoji = "⏸️";
         }
-        
-        output(`${emoji} ${stateMessage}`);
-        
-        const logEntry = tag`div`;
-        logEntry.css.classes`log-entry`;
-        logEntry.children.add(text(`${++logCount}. ${emoji} ${stateMessage}`));
+
+        const logEntry = xyn`div.log-entry { ""${emoji} ${stateMessage}"" }`;
+        currentState.value = `${emoji} ${stateMessage}`;
         mountNext(logEntry, logElement);
-    });
-    
-    let isExpanded = false;
+    }, [transitionState.state]);
+
     transitionBox.event("mouseenter", () => {
-        isExpanded = true;
-        boxElement.style.width = "300px";
-        boxElement.style.backgroundColor = "#48bb78";
+        boxWidth.value = "300px";
+        boxBgColor.value = "#48bb78";
     });
-    
+
     transitionBox.event("mouseleave", () => {
-        isExpanded = false;
-        boxElement.style.width = "200px";
-        boxElement.style.backgroundColor = "#4299e1";
+        boxWidth.value = "200px";
+        boxBgColor.value = "#4299e1";
     });
-    
+
     const style = tag`style`;
-    style.children.add(text(`
+    style.children.add(
+        text(`
         .transition-box {
             width: 200px;
             height: 100px;
@@ -93,6 +95,14 @@ export async function example15(output) {
             border-radius: 5px;
             padding: 10px;
             margin: 10px 0;
+
+            counter-reset: log-count 0;
+        }
+
+        .state-display {
+            padding: 10px;
+            background: rgba(66, 153, 225, 0.1);
+            border-radius: 5px;
         }
         
         .log-entry {
@@ -101,15 +111,22 @@ export async function example15(output) {
             background: white;
             border-radius: 3px;
             font-size: 14px;
+
+            &::before {
+                counter-increment: log-count;
+                content: counter(log-count) ". ";
+            }
         }
         
         [data-theme="dark"] .log-entry {
             background: #2d3748;
             color: #e2e8f0;
         }
-    `));
-    
+    `),
+    );
+
     output.append(style);
     output.append(transitionBox);
+    output.append(stateDisplay);
     output.append(stateLog);
 }

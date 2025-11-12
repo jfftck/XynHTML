@@ -1,5 +1,5 @@
 // Animation tracking example - demonstrates createAnimationState
-import { effect, signal, tag, text } from "../src/xyn_html.js";
+import { effect, signal, tag, text, xyn } from "../src/xyn_html.js";
 import { AnimationState, createAnimationState } from "../src/xyn_html_extra.js";
 
 export const title = "Example 14: Animation State Tracking";
@@ -10,16 +10,20 @@ export async function example14(output) {
     );
 
     const stateMessage = signal("⏸️ Animation Unset");
+    const animatedBoxStyle = signal("none");
 
-    const animatedBox = tag`div`;
-    animatedBox.css.classes`animated-box`;
+    const animatedBox = tag`div.animated-box`;
     animatedBox.children.add(text("Click to Animate"));
+    animatedBox.css.styles({ animation: animatedBoxStyle });
 
-    const boxElement = animatedBox.render();
     const animationState = createAnimationState(signal);
-    animationState.attachToElement(boxElement);
+    animatedBox.extend(animationState);
 
-    const stateDisplay = tag`div.state-display { ""Current State: ${stateMessage}"" }`;
+    console.info(stateMessage);
+
+    const stateDisplay = xyn`div.state-display {
+        ""Current State: ${stateMessage}""
+    }`;
 
     effect(
         ({ value }) => {
@@ -27,17 +31,18 @@ export async function example14(output) {
                 case AnimationState.STARTED:
                     stateMessage.value = "🎬 Animation Started";
                     break;
-                case "iteration":
+                case AnimationState.ITERATION:
                     stateMessage.value = "🔄 Animation Iteration";
                     break;
-                case "ended":
+                case AnimationState.ENDED:
                     stateMessage.value = "✅ Animation Ended";
                     break;
-                case "canceled":
+                case AnimationState.CANCELED:
                     stateMessage.value = "❌ Animation Canceled";
                     break;
                 default:
                     stateMessage.value = "⏸️ Animation Unset";
+                    return;
             }
 
             output(`Animation State: ${stateMessage.value}`);
@@ -46,9 +51,9 @@ export async function example14(output) {
     );
 
     animatedBox.event("click", () => {
-        boxElement.style.animation = "none";
+        animatedBoxStyle.value = "none";
         setTimeout(() => {
-            boxElement.style.animation = "slideAndSpin 2s ease-in-out";
+            animatedBoxStyle.value = "slideAndSpin 2s ease-in-out";
         }, 10);
     });
 

@@ -207,17 +207,28 @@ function selectorsToTreeNode(selector, ...values) {
     for (match of selector.matchAll(nodesParser)) {
         const { tag, textnode, children } = match.groups;
 
-        console.info(selector, tag, textnode, children, childrenGroups);
-
         if (tag) {
             tags.push(selectorToXynTag(tag, ...values));
         }
 
         if (textnode) {
-            if (textnode.startsWith("/*") && textnode.endsWith("*/")) {
-                tags.push(text`${values[getIndex(textnode)]}`);
-            } else {
-                tags.push(text(textnode));
+            let i = 0;
+            let start = 0;
+            let end = 0;
+            while (i < textnode.length) {
+                start = textnode.indexOf("/*", i);
+                end = textnode.indexOf("*/", start);
+                if (start === -1 || end === -1) {
+                    tags.push(text(textnode.slice(i)));
+                    break;
+                }
+                if (i < start) {
+                    tags.push(text(textnode.slice(i, start)));
+                }
+                tags.push(
+                    text`${values[getIndex(textnode.slice(start, end + 2))]}`,
+                );
+                i = end + 2;
             }
         }
 
@@ -643,6 +654,44 @@ class XynFragment extends XynElement {
         this.#children.splice(0, this.#children.length);
     }
 
+    extend({
+        attachToElement = (_) => {},
+        attachToCSS = (_) => {},
+        attachToAttributes = (_) => {},
+    }) {
+        for (const child of this.#children) {
+            child.extend({ attachToElement, attachToCSS, attachToAttributes });
+        }
+    }
+
+    /**
+     * @param {function(XynElement): void} callback
+     * @returns {void}
+     * @description Iterates over the children of the fragment.
+     */
+    event(eventName, func, options) {
+        for (const child of this.#children) {
+            child.event(eventName, func, options);
+        }
+    }
+
+    /**
+     * @returns {int}
+     * @description Gets the number of children in the fragment.
+     */
+    get length() {
+        return this.#children.length;
+    }
+
+    /**
+     * @param {int} index
+     * @returns {XynElement}
+     * @description Gets a child at the specified index.
+     */
+    get(index) {
+        return this.#children[index];
+    }
+
     /**
      * @param {XynElement} child
      * @param {int} index
@@ -853,6 +902,25 @@ class XynTag extends XynElement {
      */
     event(eventName, func, options) {
         return new XynEvent(this.#self, eventName, func, options);
+    }
+
+    /**
+     * @method extend
+     * @param {Object} options
+     * @param {function(HTMLElement): void} options.attachToElement
+     * @param {function(XynCSS): void} options.attachToCSS
+     * @param {function(XynAttributes): void} options.attachToAttributes
+     * @returns {void}
+     * @description Extends the element with additional functionality.
+     */
+    extend({
+        attachToElement = (_) => {},
+        attachToCSS = (_) => {},
+        attachToAttributes = (_) => {},
+    }) {
+        attachToElement(this.#self);
+        attachToCSS(this.#css);
+        attachToAttributes(this.#attributes);
     }
 
     /**
@@ -1530,7 +1598,7 @@ class XynHTML {
     /**
      * @param {(TemplateStringArray | string)} parts
      * @param {...(XynSignal | Object.<string, any>)} values
-     * @returns {XynTag}
+     * @returns {XynFragment}
      * @description Creates a tree of XynTags from selector strings.
      * @example
      * // Creates a div with id "container", containing a div with class "row"

@@ -12,11 +12,25 @@
  * @description AnimationState is a class for tracking the state of an animation.
  */
 export class AnimationState {
-  UNSET = "unset";
-  STARTED = "started";
-  ENDED = "ended";
-  CANCELED = "canceled";
-  ITERATION = "iteration";
+  static get UNSET() {
+    return "unset";
+  }
+
+  static get STARTED() {
+    return "started";
+  }
+
+  static get ENDED() {
+    return "ended";
+  }
+
+  static get CANCELED() {
+    return "canceled";
+  }
+
+  static get ITERATION() {
+    return "iteration";
+  }
 
   /**
    * @returns {AnimationState}
@@ -32,11 +46,25 @@ export class AnimationState {
  * @description TransitionState is a class for tracking the state of a transition.
  */
 export class TransitionState {
-  UNSET = "unset";
-  STARTED = "started";
-  ENDED = "ended";
-  CANCELED = "canceled";
-  RUNNING = "running";
+  static get UNSET() {
+    return "unset";
+  }
+
+  static get STARTED() {
+    return "started";
+  }
+
+  static get ENDED() {
+    return "ended";
+  }
+
+  static get CANCELED() {
+    return "canceled";
+  }
+
+  static get RUNNING() {
+    return "running";
+  }
 
   /**
    * @returns {TransitionState}
@@ -80,6 +108,10 @@ const animationState = (el, state, event = null) => {
  */
 const transitionState = (el, state, event = null) => {
   el.addEventListener("transitionstart", (e) => {
+    if (state.value === TransitionState.RUNNING) {
+      return;
+    }
+
     state.value = TransitionState.STARTED;
     if (event) event.value = e;
   });
@@ -92,6 +124,9 @@ const transitionState = (el, state, event = null) => {
     if (event) event.value = e;
   });
   el.addEventListener("transitionrun", (e) => {
+    if (state.value !== TransitionState.STARTED) {
+      return;
+    }
     state.value = TransitionState.RUNNING;
     if (event) event.value = e;
   });

@@ -1,19 +1,19 @@
 import { xyn, signal, tag, text } from "../src/xyn_html.js";
 
-export const title = "Example 10: DOM Creation with xyn";
+export const title = "Example 10: DOM Creation with Xyn";
 
 export async function example10(output) {
-    const buttonText = signal("Click me!");
+    const buttonText = signal(" me!");
     const clickCount = signal(0);
 
     // Create a button with reactive text
     const container = xyn`div.example-container {
         button@click=${() => {
-            buttonText.value = `Clicked ${++clickCount.value} times`;
-        }} { ""${buttonText}"" }
+            buttonText.value = `ed ${++clickCount.value} times`;
+        }} { ""Click${buttonText}"" }
         button@click=${() => {
             clickCount.value = 0;
-            buttonText.value = "Click me!";
+            buttonText.value = " me!";
         }} { ""Reset"" }
     }`;
 
