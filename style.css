@@ -1157,7 +1157,7 @@ ul li {
 .examples-nav__link--main {
   font-weight: 600;
   font-size: 15px;
-  writing-mode: vertical-lr;
+  writing-mode: vertical-rl;
   text-orientation: mixed;
   padding: 12px 8px;
   pointer-events: none;
