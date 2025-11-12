@@ -406,11 +406,94 @@ async function loadExamples() {
     });
 }
 
+// Build sticky navigation bar with scroll-based highlighting
+function createExamplesNavigation() {
+    const navContainer = document.getElementById("examples-nav");
+    if (!navContainer) return;
+
+    // Define navigation sections
+    const sections = [
+        { id: "core-features", label: "Core Features" },
+        { id: "extra-features", label: "Extra Features" },
+    ];
+
+    // Signal to track currently active section
+    const activeSection = signal(sections[0].id);
+
+    // Create navigation links using XynHTML
+    sections.forEach((section) => {
+        const link = tag`a`;
+        link.attributes.set("href", `#${section.id}`);
+        link.css.classes`examples-nav__link`;
+        link.children.add(text(section.label));
+
+        // Click handler for smooth scrolling
+        const linkElement = link.render();
+        linkElement.addEventListener("click", (e) => {
+            e.preventDefault();
+            const targetElement = document.getElementById(section.id);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
+                activeSection.value = section.id;
+            }
+        });
+
+        mountNext(link, navContainer);
+    });
+
+    // Use effect to update active link classes when activeSection changes
+    effect(() => {
+        const links = navContainer.querySelectorAll(".examples-nav__link");
+        links.forEach((link, index) => {
+            if (sections[index].id === activeSection.value) {
+                link.classList.add("examples-nav__link--active");
+            } else {
+                link.classList.remove("examples-nav__link--active");
+            }
+        });
+    }, [activeSection]);
+
+    // Setup IntersectionObserver to detect visible sections
+    const observerOptions = {
+        root: null,
+        rootMargin: "-20% 0px -70% 0px",
+        threshold: 0,
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                activeSection.value = entry.target.id;
+            }
+        });
+    }, observerOptions);
+
+    // Observe each section heading
+    sections.forEach((section) => {
+        const element = document.getElementById(section.id);
+        if (element) {
+            observer.observe(element);
+        }
+    });
+
+    // Cleanup function (if needed)
+    return () => {
+        sections.forEach((section) => {
+            const element = document.getElementById(section.id);
+            if (element) {
+                observer.unobserve(element);
+            }
+        });
+    };
+}
+
 // Start loading examples when DOM is ready and then clean up the event listener
 const loadExamplesOnReady = async () => {
     addSourceCode("output-helper", createOutput);
     // Load examples on initial page load
     await loadExamples();
+    // Create navigation after examples are loaded
+    createExamplesNavigation();
     // Mark initial load as complete to enable transitions for future changes
     setTimeout(() => {
         isInitialLoad.value = false;

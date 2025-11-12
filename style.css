@@ -911,6 +911,84 @@ ul li {
   }
 }
 
+/* Examples navigation */
+#examples-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: color-mix(in oklab, currentColor 5%, var(--color-background));
+  backdrop-filter: blur(10px);
+  border-bottom: 2px solid color-mix(in oklab, currentColor 15%, var(--color-background));
+  padding: 12px 0;
+  margin: 24px 0 16px;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.examples-nav__link {
+  padding: 8px 16px;
+  text-decoration: none;
+  color: color-mix(in oklab, currentColor 70%, var(--color-background));
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.examples-nav__link:hover {
+  background-color: color-mix(in oklab, currentColor 10%, var(--color-background));
+  color: currentColor;
+}
+
+.examples-nav__link--active {
+  background-color: #007acc;
+  color: white;
+  border-color: #005999;
+  box-shadow: 0 2px 4px rgba(0, 122, 204, 0.3);
+}
+
+.examples-nav__link--active:hover {
+  background-color: #005999;
+  color: white;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme="light"]) #examples-nav {
+    background: color-mix(in oklab, currentColor 8%, var(--color-background));
+    border-bottom-color: color-mix(in oklab, currentColor 20%, var(--color-background));
+  }
+
+  body:not([data-theme="light"]) .examples-nav__link--active {
+    background-color: #4a9eff;
+    border-color: #3a8eef;
+  }
+
+  body:not([data-theme="light"]) .examples-nav__link--active:hover {
+    background-color: #3a8eef;
+  }
+}
+
+body[data-theme="dark"] #examples-nav {
+  background: color-mix(in oklab, currentColor 8%, var(--color-background));
+  border-bottom-color: color-mix(in oklab, currentColor 20%, var(--color-background));
+}
+
+body[data-theme="dark"] .examples-nav__link--active {
+  background-color: #4a9eff;
+  border-color: #3a8eef;
+}
+
+body[data-theme="dark"] .examples-nav__link--active:hover {
+  background-color: #3a8eef;
+}
+
 /* Animations for theme notification */
 @keyframes slideInRight {
   from {
