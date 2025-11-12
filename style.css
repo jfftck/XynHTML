@@ -440,8 +440,6 @@ pre code {
 }
 
 .theme-group-label {
-  position: sticky;
-  top: 0;
   writing-mode: vertical-lr;
   transform: rotate(180deg);
   font-size: 11px;
@@ -458,9 +456,6 @@ pre code {
   border-radius: 8px 8px 8px 0;
   white-space: nowrap;
   flex-shrink: 0;
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  z-index: 1;
 }
 
 .theme-options {
@@ -468,12 +463,6 @@ pre code {
   flex-direction: column;
   gap: 4px;
   flex: 1;
-  max-height: 48px;
-  overflow: hidden;
-}
-
-.theme-group:first-child .theme-options {
-  padding-bottom: 8px;
 }
 
 .theme-option {
@@ -633,7 +622,6 @@ body[data-theme="dark"] .comment,
   body:not([data-theme="light"]) .theme-group-label {
     color: #aaa;
     border-color: rgba(255, 255, 255, 0.15);
-    background-color: rgba(26, 26, 26, 0.95);
   }
 
   body:not([data-theme="light"]) .theme-option {
@@ -695,7 +683,6 @@ body[data-theme="dark"] .syntax-theme-dropdown {
 body[data-theme="dark"] .theme-group-label {
   color: #aaa;
   border-right-color: rgba(255, 255, 255, 0.15);
-  background-color: rgba(26, 26, 26, 0.95);
 }
 
 body[data-theme="dark"] .theme-option {
