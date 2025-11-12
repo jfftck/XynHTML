@@ -17,6 +17,19 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**November 12, 2025 - v1.0.3 - Navigation Enhancement**
+- Added sticky navigation bar to examples page:
+  - **Sticky positioning** above "XynHTML Features" section
+  - **Scroll-based highlighting** using IntersectionObserver API
+  - **Reactive implementation** using XynHTML signals and effects
+  - **Smooth scrolling** between Core and Extra Features sections
+  - **Theme-aware styling** with light/dark mode support
+- Navigation component demonstrates XynHTML reactive patterns:
+  - Signal to track active section
+  - Effect to update CSS classes on scroll
+  - Tag-based DOM element creation
+  - IntersectionObserver for scroll detection
+
 **November 10, 2025 - v1.0.2 - API Refactoring**
 - **Breaking Changes** to xyn_html_extra.js API for better dependency injection:
   - **createAnimationState()** and **createTransitionState()** now take `signal` function as first parameter and return `{state, attachToElement}` object instead of signal directly
