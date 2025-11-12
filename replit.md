@@ -18,17 +18,23 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 **November 12, 2025 - v1.0.3 - Navigation Enhancement**
-- Added sticky navigation bar to examples page:
-  - **Sticky positioning** above "XynHTML Features" section
-  - **Scroll-based highlighting** using IntersectionObserver API
-  - **Reactive implementation** using XynHTML signals and effects
-  - **Smooth scrolling** between Core and Extra Features sections
-  - **Theme-aware styling** with light/dark mode support
-- Navigation component demonstrates XynHTML reactive patterns:
-  - Signal to track active section
-  - Effect to update CSS classes on scroll
-  - Tag-based DOM element creation
-  - IntersectionObserver for scroll detection
+- Added enhanced sticky navigation bar with nested sub-sections:
+  - **Dynamic data extraction** from loaded examples (no hard-coded structure)
+  - **Sticky positioning** at top: 60px below theme selector
+  - **Blurred glass effect** matching theme selector styling with backdrop-filter
+  - **Horizontal sub-sections** with flex-wrap layout
+  - **Hover-based expansion** showing sub-sections on hover with 200ms delay
+  - **Dual-signal scroll tracking** for main sections and individual examples
+  - **Previous section highlighting** when sections scroll out of view
+  - **Theme-aware styling** for both light and dark modes
+- Navigation demonstrates advanced XynHTML reactive patterns:
+  - Three-signal architecture (activeMainSection, activeSubSection, hoveredMainSection)
+  - Derived signal (visibleMainSection) combining hover and scroll state
+  - Multiple effects for synchronized UI updates
+  - Tag-based DOM creation with XynHTML primitives
+  - Dual IntersectionObserver setup for main and sub-section tracking
+  - lastSeenSubSection tracking for scroll-out-of-view behavior
+  - Proper cleanup function for observer memory management
 
 **November 10, 2025 - v1.0.2 - API Refactoring**
 - **Breaking Changes** to xyn_html_extra.js API for better dependency injection:

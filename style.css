@@ -914,19 +914,34 @@ ul li {
 /* Examples navigation */
 #examples-nav {
   position: sticky;
-  top: 0;
-  z-index: 100;
-  background: color-mix(in oklab, currentColor 5%, var(--color-background));
+  top: 60px;
+  z-index: 99;
+  background: rgb(255 255 255 / 0.9);
   backdrop-filter: blur(10px);
   border-bottom: 2px solid color-mix(in oklab, currentColor 15%, var(--color-background));
-  padding: 12px 0;
+  border-radius: 8px;
+  padding: 12px 16px;
   margin: 24px 0 16px;
   display: flex;
-  gap: 8px;
+  gap: 12px;
   justify-content: center;
+  align-items: flex-start;
   flex-wrap: wrap;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
+}
+
+@supports(backdrop-filter: blur(10px)) {
+  #examples-nav {
+    background: rgb(255 255 255 / 0.2);
+    border: 1px solid rgb(255 255 255 / 0.5);
+  }
+}
+
+.examples-nav__main-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .examples-nav__link {
@@ -940,11 +955,25 @@ ul li {
   border: 1px solid transparent;
   background-color: transparent;
   cursor: pointer;
+  display: block;
+  white-space: nowrap;
 }
 
 .examples-nav__link:hover {
   background-color: color-mix(in oklab, currentColor 10%, var(--color-background));
   color: currentColor;
+}
+
+.examples-nav__link--main {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.examples-nav__link--sub {
+  padding: 6px 12px;
+  font-size: 13px;
+  margin-left: 8px;
+  opacity: 0.9;
 }
 
 .examples-nav__link--active {
@@ -959,10 +988,29 @@ ul li {
   color: white;
 }
 
+.examples-nav__subnav {
+  display: none;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.examples-nav__main-item--expanded .examples-nav__subnav {
+  display: flex;
+}
+
 @media (prefers-color-scheme: dark) {
   body:not([data-theme="light"]) #examples-nav {
-    background: color-mix(in oklab, currentColor 8%, var(--color-background));
-    border-bottom-color: color-mix(in oklab, currentColor 20%, var(--color-background));
+    background: rgb(45 45 45 / 0.9);
+    border-color: rgb(255 255 255 / 0.2);
+  }
+
+  @supports(backdrop-filter: blur(10px)) {
+    body:not([data-theme="light"]) #examples-nav {
+      background: rgb(45 45 45 / 0.2);
+      backdrop-filter: blur(10px);
+    }
   }
 
   body:not([data-theme="light"]) .examples-nav__link--active {
@@ -976,8 +1024,15 @@ ul li {
 }
 
 body[data-theme="dark"] #examples-nav {
-  background: color-mix(in oklab, currentColor 8%, var(--color-background));
-  border-bottom-color: color-mix(in oklab, currentColor 20%, var(--color-background));
+  background: rgb(45 45 45 / 0.9);
+  border-color: rgb(255 255 255 / 0.2);
+}
+
+@supports(backdrop-filter: blur(10px)) {
+  body[data-theme="dark"] #examples-nav {
+    background: rgb(45 45 45 / 0.2);
+    backdrop-filter: blur(10px);
+  }
 }
 
 body[data-theme="dark"] .examples-nav__link--active {

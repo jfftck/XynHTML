@@ -58,6 +58,9 @@ function addExampleTitle(containerId, title) {
         const parent = container.parentElement;
         const h3 = document.createElement("h3");
         h3.textContent = title;
+        // Extract example number from containerId (e.g., "example1-output" -> "example1-title")
+        const exampleId = containerId.replace("-output", "-title");
+        h3.id = exampleId;
         parent.insertBefore(h3, container);
     }
 }
@@ -390,20 +393,26 @@ window
 async function loadExamples() {
     const examples = getExamples();
     const timestamp = Date.now();
-    examples.forEach(async (uri, i) => {
-        try {
-            const exampleModule = await import(`./${uri}.js?v=${timestamp}`);
-            const example = Object.values(exampleModule).filter(
-                (v) => typeof v === "function",
-            )[0];
-            const { title } = exampleModule;
-            addExampleTitle(`example${i + 1}-output`, title);
-            addSourceCode(`example${i + 1}-output`, example);
-            await example(createOutput(`example${i + 1}-output`));
-        } catch (err) {
-            console.error(`Error loading example ${uri}:`, err);
-        }
-    });
+    
+    // Use Promise.all to wait for all examples to load
+    await Promise.all(
+        examples.map(async (uri, i) => {
+            try {
+                const exampleModule = await import(`./${uri}.js?v=${timestamp}`);
+                const example = Object.values(exampleModule).filter(
+                    (v) => typeof v === "function",
+                )[0];
+                const { title } = exampleModule;
+                addExampleTitle(`example${i + 1}-output`, title);
+                addSourceCode(`example${i + 1}-output`, example);
+                await example(createOutput(`example${i + 1}-output`));
+            } catch (err) {
+                console.error(`Error loading example ${uri}:`, err);
+                console.error(`Error message: ${err.message}`);
+                console.error(`Error stack: ${err.stack}`);
+            }
+        })
+    );
 }
 
 // Build sticky navigation bar with scroll-based highlighting
@@ -411,78 +420,257 @@ function createExamplesNavigation() {
     const navContainer = document.getElementById("examples-nav");
     if (!navContainer) return;
 
-    // Define navigation sections
-    const sections = [
-        { id: "core-features", label: "Core Features" },
-        { id: "extra-features", label: "Extra Features" },
-    ];
+    // Dynamically extract sections from the DOM
+    const sections = [];
+    
+    // Find main section headers
+    const coreFeaturesHeader = document.getElementById("core-features");
+    const extraFeaturesHeader = document.getElementById("extra-features");
+    
+    if (coreFeaturesHeader) {
+        const coreSubSections = [];
+        // Find all h3 elements between core-features and extra-features
+        let currentElement = coreFeaturesHeader.nextElementSibling;
+        while (currentElement && currentElement !== extraFeaturesHeader) {
+            if (currentElement.tagName === "H3" && currentElement.id) {
+                coreSubSections.push({
+                    id: currentElement.id,
+                    label: currentElement.textContent.replace(/^Example \d+:\s*/, ""),
+                });
+            }
+            currentElement = currentElement.nextElementSibling;
+        }
+        
+        if (coreSubSections.length > 0) {
+            sections.push({
+                id: "core-features",
+                label: "Core Features",
+                subSections: coreSubSections,
+            });
+        }
+    }
+    
+    if (extraFeaturesHeader) {
+        const extraSubSections = [];
+        // Find all h3 elements after extra-features
+        let currentElement = extraFeaturesHeader.nextElementSibling;
+        while (currentElement) {
+            if (currentElement.tagName === "H3" && currentElement.id) {
+                extraSubSections.push({
+                    id: currentElement.id,
+                    label: currentElement.textContent.replace(/^Example \d+:\s*/, ""),
+                });
+            }
+            currentElement = currentElement.nextElementSibling;
+        }
+        
+        if (extraSubSections.length > 0) {
+            sections.push({
+                id: "extra-features",
+                label: "Extra Features",
+                subSections: extraSubSections,
+            });
+        }
+    }
+    
+    // If no sections found, bail out
+    if (sections.length === 0) {
+        console.warn("No navigation sections found in DOM");
+        return;
+    }
 
-    // Signal to track currently active section
-    const activeSection = signal(sections[0].id);
+    // Signals to track state
+    const activeMainSection = signal(sections[0].id);
+    const activeSubSection = signal(sections[0].subSections[0].id);
+    const hoveredMainSection = signal(null);
 
-    // Create navigation links using XynHTML
-    sections.forEach((section) => {
-        const link = tag`a`;
-        link.attributes.set("href", `#${section.id}`);
-        link.css.classes`examples-nav__link`;
-        link.children.add(text(section.label));
+    // Derived signal for which section's sub-menu to show
+    const visibleMainSection = signal(sections[0].id);
 
-        // Click handler for smooth scrolling
-        const linkElement = link.render();
-        linkElement.addEventListener("click", (e) => {
+    let hoverTimeout = null;
+
+    // Update visible section based on hover or active state
+    effect(() => {
+        visibleMainSection.value = hoveredMainSection.value || activeMainSection.value;
+    }, [hoveredMainSection, activeMainSection]);
+
+    // Create navigation structure
+    sections.forEach((section, sectionIndex) => {
+        const mainItem = tag`div`;
+        mainItem.css.classes`examples-nav__main-item`;
+        mainItem.attributes.set("data-section-id", section.id);
+
+        const mainLink = tag`a`;
+        mainLink.attributes.set("href", `#${section.id}`);
+        mainLink.css.classes`examples-nav__link examples-nav__link--main`;
+        mainLink.children.add(text(section.label));
+
+        const mainLinkElement = mainLink.render();
+
+        // Main section click handler
+        mainLinkElement.addEventListener("click", (e) => {
             e.preventDefault();
             const targetElement = document.getElementById(section.id);
             if (targetElement) {
                 targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
-                activeSection.value = section.id;
+                activeMainSection.value = section.id;
+                activeSubSection.value = section.subSections[0].id;
             }
         });
 
-        mountNext(link, navContainer);
+        // Hover handlers for main section
+        mainLinkElement.addEventListener("mouseenter", () => {
+            if (hoverTimeout) {
+                clearTimeout(hoverTimeout);
+                hoverTimeout = null;
+            }
+            hoveredMainSection.value = section.id;
+        });
+
+        mainItem.children.add(mainLink);
+
+        // Create sub-sections container
+        const subNav = tag`div`;
+        subNav.css.classes`examples-nav__subnav`;
+
+        section.subSections.forEach((subSection) => {
+            const subLink = tag`a`;
+            subLink.attributes.set("href", `#${subSection.id}`);
+            subLink.css.classes`examples-nav__link examples-nav__link--sub`;
+            subLink.attributes.set("data-subsection-id", subSection.id);
+            subLink.children.add(text(subSection.label));
+
+            const subLinkElement = subLink.render();
+
+            // Sub-section click handler
+            subLinkElement.addEventListener("click", (e) => {
+                e.preventDefault();
+                const targetElement = document.getElementById(subSection.id);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                    });
+                    activeMainSection.value = section.id;
+                    activeSubSection.value = subSection.id;
+                }
+            });
+
+            subNav.children.add(subLink);
+        });
+
+        mainItem.children.add(subNav);
+        mountNext(mainItem, navContainer);
     });
 
-    // Use effect to update active link classes when activeSection changes
+    // Mouse leave handler for entire nav
+    navContainer.addEventListener("mouseleave", () => {
+        hoverTimeout = setTimeout(() => {
+            hoveredMainSection.value = null;
+        }, 200);
+    });
+
+    // Effect to update main section active states
     effect(() => {
-        const links = navContainer.querySelectorAll(".examples-nav__link");
-        links.forEach((link, index) => {
-            if (sections[index].id === activeSection.value) {
+        const mainItems = navContainer.querySelectorAll(".examples-nav__main-item");
+        mainItems.forEach((item) => {
+            const sectionId = item.getAttribute("data-section-id");
+            const mainLink = item.querySelector(".examples-nav__link--main");
+
+            if (sectionId === activeMainSection.value) {
+                mainLink.classList.add("examples-nav__link--active");
+            } else {
+                mainLink.classList.remove("examples-nav__link--active");
+            }
+
+            // Show/hide sub-nav based on visible section
+            if (sectionId === visibleMainSection.value) {
+                item.classList.add("examples-nav__main-item--expanded");
+            } else {
+                item.classList.remove("examples-nav__main-item--expanded");
+            }
+        });
+    }, [activeMainSection, visibleMainSection]);
+
+    // Effect to update sub-section active states
+    effect(() => {
+        const subLinks = navContainer.querySelectorAll(".examples-nav__link--sub");
+        subLinks.forEach((link) => {
+            const subSectionId = link.getAttribute("data-subsection-id");
+            if (subSectionId === activeSubSection.value) {
                 link.classList.add("examples-nav__link--active");
             } else {
                 link.classList.remove("examples-nav__link--active");
             }
         });
-    }, [activeSection]);
+    }, [activeSubSection]);
 
-    // Setup IntersectionObserver to detect visible sections
-    const observerOptions = {
+    // Setup IntersectionObserver for main sections
+    const mainObserverOptions = {
         root: null,
-        rootMargin: "-20% 0px -70% 0px",
+        rootMargin: "-10% 0px -80% 0px",
         threshold: 0,
     };
 
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-                activeSection.value = entry.target.id;
-            }
-        });
-    }, observerOptions);
+    const mainObserver = new IntersectionObserver((entries) => {
+        const intersecting = entries.filter((e) => e.isIntersecting);
+        if (intersecting.length > 0) {
+            // Sort by position and take the first one
+            intersecting.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+            activeMainSection.value = intersecting[0].target.id;
+        }
+    }, mainObserverOptions);
 
-    // Observe each section heading
+    // Setup IntersectionObserver for sub-sections
+    const subObserverOptions = {
+        root: null,
+        rootMargin: "-15% 0px -70% 0px",
+        threshold: 0,
+    };
+
+    let lastSeenSubSection = sections[0].subSections[0].id;
+
+    const subObserver = new IntersectionObserver((entries) => {
+        const intersecting = entries.filter((e) => e.isIntersecting);
+        if (intersecting.length > 0) {
+            intersecting.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+            const targetId = intersecting[0].target.id;
+            activeSubSection.value = targetId;
+            lastSeenSubSection = targetId;
+        } else if (entries.length > 0) {
+            // All sections scrolled out of view, keep last seen
+            activeSubSection.value = lastSeenSubSection;
+        }
+    }, subObserverOptions);
+
+    // Observe main section headings
     sections.forEach((section) => {
         const element = document.getElementById(section.id);
         if (element) {
-            observer.observe(element);
+            mainObserver.observe(element);
         }
     });
 
-    // Cleanup function (if needed)
+    // Observe sub-section headings that were found in the DOM
+    sections.forEach((section) => {
+        section.subSections.forEach((subSection) => {
+            const element = document.getElementById(subSection.id);
+            if (element) {
+                subObserver.observe(element);
+            }
+        });
+    });
+
+    // Cleanup function
     return () => {
         sections.forEach((section) => {
-            const element = document.getElementById(section.id);
-            if (element) {
-                observer.unobserve(element);
-            }
+            const mainElement = document.getElementById(section.id);
+            if (mainElement) mainObserver.unobserve(mainElement);
+
+            section.subSections.forEach((subSection) => {
+                const subElement = document.getElementById(subSection.id);
+                if (subElement) subObserver.unobserve(subElement);
+            });
         });
     };
 }
@@ -490,10 +678,12 @@ function createExamplesNavigation() {
 // Start loading examples when DOM is ready and then clean up the event listener
 const loadExamplesOnReady = async () => {
     addSourceCode("output-helper", createOutput);
-    // Load examples on initial page load
+    // Load examples on initial page load and wait for all to complete
     await loadExamples();
-    // Create navigation after examples are loaded
+    
+    // Now that all examples are loaded and titles are in DOM, create navigation
     createExamplesNavigation();
+    
     // Mark initial load as complete to enable transitions for future changes
     setTimeout(() => {
         isInitialLoad.value = false;
