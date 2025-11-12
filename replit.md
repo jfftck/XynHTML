@@ -18,25 +18,30 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 **November 12, 2025 - v1.0.3 - Navigation Enhancement**
-- Added enhanced sticky navigation bar with vertical section labels:
+- Added enhanced sticky navigation bar with vertical section labels and mobile responsiveness:
   - **Dynamic data extraction** from loaded examples (no hard-coded structure)
-  - **Sticky positioning** at top: 60px below theme selector
+  - **Sticky positioning** at top with no margin, integrated with theme selector
+  - **Side-by-side layout** with navigation and theme selector matching heights
   - **Blurred glass effect** matching theme selector styling with backdrop-filter
   - **Vertical text labels** using `writing-mode: vertical-lr` positioned on left side
   - **Always-visible subsections** displayed next to their section labels
   - **Height constraint** limited to 1/6 viewport height (max-height: 16.67vh) with minimum of 6rem
   - **Scrollable overflow** when content exceeds height limit
   - **Unclickable main sections** - only subsections are interactive links
-  - **Dual-signal scroll tracking** for main sections and individual examples
+  - **Middle-of-page scroll tracking** using 37.5% margins for 25% (1/4 height) detection band
   - **Previous section highlighting** when sections scroll out of view
   - **Theme-aware styling** for both light and dark modes
+  - **Mobile responsive** with hamburger menu for screens ≤768px
+  - **Hamburger menu** opens full-page overlay with horizontal text and single column layout
+  - **Automatic menu close** when clicking navigation links on mobile
 - Navigation demonstrates advanced XynHTML reactive patterns:
-  - Two-signal architecture (activeMainSection, activeSubSection)
+  - Two-signal architecture (activeMainSection, activeSubSection) plus menuOpen for mobile
   - Multiple effects for synchronized UI updates
   - Tag-based DOM creation with XynHTML primitives
-  - Dual IntersectionObserver setup for main and sub-section tracking
+  - Dual IntersectionObserver setup with middle-of-page detection (±37.5% margins)
   - lastSeenSubSection tracking for scroll-out-of-view behavior
   - Proper cleanup function for observer memory management
+  - Hamburger menu state management using signal and effect
 
 **November 10, 2025 - v1.0.2 - API Refactoring**
 - **Breaking Changes** to xyn_html_extra.js API for better dependency injection:
