@@ -39,11 +39,12 @@ Preferred communication style: Simple, everyday language.
   - **Height matching** - theme selector height matches navigation bar using flex
   - **Button + dropdown** - code theme uses button to trigger dropdown instead of always-visible select
   - **Consistent styling** - both buttons use gradient styling matching the page theme
-  - **Dropdown positioning** - uses CSS anchor positioning API with `position-try-fallbacks: flip-inline, flip-block` (left fallback first, then top/bottom)
+  - **Dropdown positioning** - uses CSS anchor positioning API with custom `@position-try --fallback-left-top` rule (fallbacks to left side, aligned to top of button)
   - **Auto-close behavior** - dropdown closes when selecting a theme or clicking outside
   - **Anchor positioning polyfill** - @oddbird/css-anchor-positioning loaded via CDN for unsupported browsers
   - **Glass morphism styling** - matching navigation bar with backdrop-filter blur effect
   - **Direct child of container** - dropdown is a direct child of nav-theme-container for proper styling
+  - **Responsive height** - uses `max-height: min(400px, calc(100vh - 120px))` to shrink when page height is limited
 - Navigation demonstrates advanced XynHTML reactive patterns:
   - Two-signal architecture (activeMainSection, activeSubSection) plus menuOpen for mobile
   - **No top-level highlighting** - main sections (Core Features, Extra Features) never highlight, only subsections

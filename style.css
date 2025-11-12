@@ -393,13 +393,20 @@ pre code {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
+@position-try --fallback-left-top {
+  top: anchor(top);
+  right: anchor(left);
+  margin-top: 0;
+  margin-right: 4px;
+}
+
 .syntax-theme-dropdown {
   position: absolute;
   position-anchor: --syntax-theme-button;
   top: anchor(bottom);
   right: anchor(right);
   margin-top: 4px;
-  position-try-fallbacks: flip-inline, flip-block;
+  position-try-fallbacks: --fallback-left-top;
   background-color: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(0, 0, 0, 0.15);
@@ -412,7 +419,7 @@ pre code {
   transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
   z-index: 1001;
   min-width: 250px;
-  max-height: 400px;
+  max-height: min(400px, calc(100vh - 120px));
   overflow-y: auto;
 }
 
