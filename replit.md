@@ -39,19 +39,22 @@ Preferred communication style: Simple, everyday language.
   - **Height matching** - theme selector height matches navigation bar using flex
   - **Button + dropdown** - code theme uses button to trigger dropdown instead of always-visible select
   - **Consistent styling** - both buttons use gradient styling matching the page theme
-  - **Dropdown positioning** - uses CSS anchor positioning API with polyfill for browser support
+  - **Dropdown positioning** - uses CSS anchor positioning API with `position-try-fallbacks: flip-block, flip-inline` for smart positioning
   - **Auto-close behavior** - dropdown closes when selecting a theme or clicking outside
   - **Anchor positioning polyfill** - @oddbird/css-anchor-positioning loaded via CDN for unsupported browsers
+  - **Glass morphism styling** - matching navigation bar with backdrop-filter blur effect
 - Navigation demonstrates advanced XynHTML reactive patterns:
   - Two-signal architecture (activeMainSection, activeSubSection) plus menuOpen for mobile
-  - **Conditional highlighting** - main sections only highlight when their subsections are active
-  - **Background tinting** - all navigation items use alpha blending (~5-8% opacity) for visual depth
+  - **No top-level highlighting** - main sections (Core Features, Extra Features) never highlight, only subsections
+  - **Background tinting** - all navigation items use alpha blending (5-8% opacity) for visual depth
+  - **Glass morphism styling** - matching theme dropdown with backdrop-filter: blur(10px) and rgba backgrounds
   - Multiple effects for synchronized UI updates
   - Tag-based DOM creation with XynHTML primitives
   - Dual IntersectionObserver setup with middle-of-page detection (±37.5% margins)
   - lastSeenSubSection tracking for scroll-out-of-view behavior
   - Proper cleanup function for observer memory management
   - Hamburger menu state management using signal and effect
+- Fixed Highlight.js security warning by properly resetting code content before re-highlighting during theme changes
 
 **November 10, 2025 - v1.0.2 - API Refactoring**
 - **Breaking Changes** to xyn_html_extra.js API for better dependency injection:

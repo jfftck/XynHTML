@@ -76,7 +76,10 @@ function addSourceCode(containerId, func) {
         code.textContent = func.toString();
         pre.appendChild(code);
         parent.insertBefore(pre, container);
-        hljs.highlightElement(code);
+        // Only highlight if not already highlighted
+        if (!code.classList.contains('hljs')) {
+            hljs.highlightElement(code);
+        }
     }
 }
 
@@ -143,10 +146,16 @@ function applySyntaxTheme(themeName, skipTransition = false) {
     // Function to re-highlight and fade back in
     const reHighlightAndFadeIn = () => {
         codeBlocks.forEach((block) => {
-            // Clear existing highlighting classes and data-highlighted attribute
-            block.className = block.className.replace(/hljs-\S+/g, "");
+            // Store the original text content before clearing
+            const originalText = block.textContent;
+            
+            // Clear existing highlighting by resetting content
+            block.textContent = originalText;
+            block.className = "language-javascript";
             block.removeAttribute("data-highlighted");
             delete block.dataset.highlighted;
+            
+            // Re-highlight the clean content
             hljs.highlightElement(block);
         });
 
@@ -360,13 +369,13 @@ syntaxThemeButton.onclick = () => {
 
 // Close dropdown when clicking outside
 document.addEventListener("click", (e) => {
-    if (!syntaxThemeContainer.contains(e.target) && !syntaxThemeDropdown.contains(e.target)) {
+    if (!syntaxThemeContainer.contains(e.target)) {
         syntaxThemeDropdown.classList.remove("show");
     }
 });
 
 syntaxThemeContainer.appendChild(syntaxThemeButton);
-document.body.appendChild(syntaxThemeDropdown);
+syntaxThemeContainer.appendChild(syntaxThemeDropdown);
 
 // Global theme effect - only triggers on actual changes
 effect(() => {
@@ -612,22 +621,6 @@ function createExamplesNavigation() {
         mainItem.children.add(subNav);
         mountNext(mainItem, navContainer);
     });
-
-    // Effect to update main section active states - only highlight when subsection is active
-    effect(() => {
-        const mainItems = navContainer.querySelectorAll(".examples-nav__main-item");
-        mainItems.forEach((item) => {
-            const sectionId = item.getAttribute("data-section-id");
-            const mainLabel = item.querySelector(".examples-nav__link--main");
-
-            // Only highlight main section if it matches AND there's an active subsection
-            if (sectionId === activeMainSection.value && activeSubSection.value) {
-                mainLabel.classList.add("examples-nav__link--active");
-            } else {
-                mainLabel.classList.remove("examples-nav__link--active");
-            }
-        });
-    }, [activeMainSection, activeSubSection]);
 
     // Effect to update sub-section active states
     effect(() => {
