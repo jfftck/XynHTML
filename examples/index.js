@@ -613,20 +613,21 @@ function createExamplesNavigation() {
         mountNext(mainItem, navContainer);
     });
 
-    // Effect to update main section active states
+    // Effect to update main section active states - only highlight when subsection is active
     effect(() => {
         const mainItems = navContainer.querySelectorAll(".examples-nav__main-item");
         mainItems.forEach((item) => {
             const sectionId = item.getAttribute("data-section-id");
             const mainLabel = item.querySelector(".examples-nav__link--main");
 
-            if (sectionId === activeMainSection.value) {
+            // Only highlight main section if it matches AND there's an active subsection
+            if (sectionId === activeMainSection.value && activeSubSection.value) {
                 mainLabel.classList.add("examples-nav__link--active");
             } else {
                 mainLabel.classList.remove("examples-nav__link--active");
             }
         });
-    }, [activeMainSection]);
+    }, [activeMainSection, activeSubSection]);
 
     // Effect to update sub-section active states
     effect(() => {

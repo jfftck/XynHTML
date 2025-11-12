@@ -1143,14 +1143,14 @@ ul li {
   font-size: 14px;
   transition: all 0.2s ease;
   border: 1px solid transparent;
-  background-color: transparent;
+  background-color: rgba(0, 0, 0, 0.05);
   cursor: pointer;
   display: block;
   white-space: nowrap;
 }
 
 .examples-nav__link:hover {
-  background-color: color-mix(in oklab, currentColor 10%, var(--color-background));
+  background-color: rgba(0, 0, 0, 0.15);
   color: currentColor;
 }
 
@@ -1163,6 +1163,7 @@ ul li {
   cursor: default;
   white-space: nowrap;
   flex-shrink: 0;
+  background-color: rgba(0, 0, 0, 0.08);
 }
 
 .examples-nav__link--sub {
@@ -1170,6 +1171,7 @@ ul li {
   font-size: 13px;
   margin-left: 8px;
   opacity: 0.9;
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .examples-nav__link--active {
@@ -1203,6 +1205,22 @@ ul li {
     }
   }
 
+  body:not([data-theme="light"]) .examples-nav__link {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  body:not([data-theme="light"]) .examples-nav__link:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  body:not([data-theme="light"]) .examples-nav__link--main {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  body:not([data-theme="light"]) .examples-nav__link--sub {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
   body:not([data-theme="light"]) .examples-nav__link--active {
     background-color: #4a9eff;
     border-color: #3a8eef;
@@ -1223,6 +1241,22 @@ body[data-theme="dark"] #examples-nav {
     background: rgb(45 45 45 / 0.2);
     backdrop-filter: blur(10px);
   }
+}
+
+body[data-theme="dark"] .examples-nav__link {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+body[data-theme="dark"] .examples-nav__link:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+body[data-theme="dark"] .examples-nav__link--main {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+body[data-theme="dark"] .examples-nav__link--sub {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 body[data-theme="dark"] .examples-nav__link--active {

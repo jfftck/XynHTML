@@ -43,6 +43,8 @@ Preferred communication style: Simple, everyday language.
   - **Auto-close behavior** - dropdown closes when selecting a theme or clicking outside
 - Navigation demonstrates advanced XynHTML reactive patterns:
   - Two-signal architecture (activeMainSection, activeSubSection) plus menuOpen for mobile
+  - **Conditional highlighting** - main sections only highlight when their subsections are active
+  - **Background tinting** - all navigation items use alpha blending (~5-8% opacity) for visual depth
   - Multiple effects for synchronized UI updates
   - Tag-based DOM creation with XynHTML primitives
   - Dual IntersectionObserver setup with middle-of-page detection (±37.5% margins)
