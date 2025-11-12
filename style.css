@@ -324,7 +324,6 @@ pre code {
   flex-direction: column;
   gap: 6px;
   justify-content: center;
-  height: 100%;
 
   @supports(backdrop-filter: blur(10px)) {
     & {
@@ -945,12 +944,13 @@ ul li {
 /* Navigation and theme container */
 #nav-theme-container {
   position: sticky;
-  top: 0;
-  z-index: 100;
+  top: 1rem;
   display: flex;
   gap: 12px;
   margin: 0 0 16px;
   align-items: stretch;
+  max-height: 16.67vh;
+  min-height: 10rem;
 }
 
 /* Hamburger menu button */
@@ -1003,8 +1003,6 @@ ul li {
   flex-wrap: wrap;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  max-height: 16.67vh;
-  min-height: 6rem;
   overflow-y: auto;
 }
 
@@ -1021,6 +1019,7 @@ ul li {
 }
 
 .examples-nav__main-item {
+  flex: 1;
   display: flex;
   flex-direction: row;
   gap: 8px;
