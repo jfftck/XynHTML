@@ -77,7 +77,7 @@ function addSourceCode(containerId, func) {
         pre.appendChild(code);
         parent.insertBefore(pre, container);
         // Only highlight if not already highlighted
-        if (!code.classList.contains('hljs')) {
+        if (!code.classList.contains("hljs")) {
             hljs.highlightElement(code);
         }
     }
@@ -148,13 +148,13 @@ function applySyntaxTheme(themeName, skipTransition = false) {
         codeBlocks.forEach((block) => {
             // Store the original text content before clearing
             const originalText = block.textContent;
-            
+
             // Clear existing highlighting by resetting content
             block.textContent = originalText;
             block.className = "language-javascript";
             block.removeAttribute("data-highlighted");
             delete block.dataset.highlighted;
-            
+
             // Re-highlight the clean content
             hljs.highlightElement(block);
         });
@@ -306,12 +306,12 @@ function buildCustomDropdown() {
     // Create light themes group
     const lightThemesGroup = document.createElement("div");
     lightThemesGroup.className = "theme-group";
-    
+
     const lightLabel = document.createElement("div");
     lightLabel.className = "theme-group-label";
     lightLabel.textContent = "Light Themes";
     lightThemesGroup.appendChild(lightLabel);
-    
+
     const lightOptions = document.createElement("div");
     lightOptions.className = "theme-options";
     highlightThemes.light.forEach((theme) => {
@@ -335,12 +335,12 @@ function buildCustomDropdown() {
     // Create dark themes group
     const darkThemesGroup = document.createElement("div");
     darkThemesGroup.className = "theme-group";
-    
+
     const darkLabel = document.createElement("div");
     darkLabel.className = "theme-group-label";
     darkLabel.textContent = "Dark Themes";
     darkThemesGroup.appendChild(darkLabel);
-    
+
     const darkOptions = document.createElement("div");
     darkOptions.className = "theme-options";
     highlightThemes.dark.forEach((theme) => {
@@ -375,7 +375,7 @@ document.addEventListener("click", (e) => {
 });
 
 syntaxThemeContainer.appendChild(syntaxThemeButton);
-syntaxThemeContainer.appendChild(syntaxThemeDropdown);
+document.getElementById("nav-theme-container").appendChild(syntaxThemeDropdown);
 
 // Global theme effect - only triggers on actual changes
 effect(() => {
@@ -454,12 +454,14 @@ window
 async function loadExamples() {
     const examples = getExamples();
     const timestamp = Date.now();
-    
+
     // Use Promise.all to wait for all examples to load
     await Promise.all(
         examples.map(async (uri, i) => {
             try {
-                const exampleModule = await import(`./${uri}.js?v=${timestamp}`);
+                const exampleModule = await import(
+                    `./${uri}.js?v=${timestamp}`
+                );
                 const example = Object.values(exampleModule).filter(
                     (v) => typeof v === "function",
                 )[0];
@@ -472,7 +474,7 @@ async function loadExamples() {
                 console.error(`Error message: ${err.message}`);
                 console.error(`Error stack: ${err.stack}`);
             }
-        })
+        }),
     );
 }
 
@@ -480,15 +482,15 @@ async function loadExamples() {
 function setupHamburgerMenu() {
     const hamburger = document.getElementById("hamburger-menu");
     const nav = document.getElementById("examples-nav");
-    
+
     if (!hamburger || !nav) return;
-    
+
     const menuOpen = signal(false);
-    
+
     hamburger.addEventListener("click", () => {
         menuOpen.value = !menuOpen.value;
     });
-    
+
     // Effect to toggle classes based on menu state
     effect(() => {
         if (menuOpen.value) {
@@ -499,7 +501,7 @@ function setupHamburgerMenu() {
             nav.classList.remove("mobile-open");
         }
     }, [menuOpen]);
-    
+
     // Close menu when clicking a navigation link
     nav.addEventListener("click", (e) => {
         if (e.target.classList.contains("examples-nav__link--sub")) {
@@ -515,11 +517,11 @@ function createExamplesNavigation() {
 
     // Dynamically extract sections from the DOM
     const sections = [];
-    
+
     // Find main section headers
     const coreFeaturesHeader = document.getElementById("core-features");
     const extraFeaturesHeader = document.getElementById("extra-features");
-    
+
     if (coreFeaturesHeader) {
         const coreSubSections = [];
         // Find all h3 elements between core-features and extra-features
@@ -528,12 +530,15 @@ function createExamplesNavigation() {
             if (currentElement.tagName === "H3" && currentElement.id) {
                 coreSubSections.push({
                     id: currentElement.id,
-                    label: currentElement.textContent.replace(/^Example \d+:\s*/, ""),
+                    label: currentElement.textContent.replace(
+                        /^Example \d+:\s*/,
+                        "",
+                    ),
                 });
             }
             currentElement = currentElement.nextElementSibling;
         }
-        
+
         if (coreSubSections.length > 0) {
             sections.push({
                 id: "core-features",
@@ -542,7 +547,7 @@ function createExamplesNavigation() {
             });
         }
     }
-    
+
     if (extraFeaturesHeader) {
         const extraSubSections = [];
         // Find all h3 elements after extra-features
@@ -551,12 +556,15 @@ function createExamplesNavigation() {
             if (currentElement.tagName === "H3" && currentElement.id) {
                 extraSubSections.push({
                     id: currentElement.id,
-                    label: currentElement.textContent.replace(/^Example \d+:\s*/, ""),
+                    label: currentElement.textContent.replace(
+                        /^Example \d+:\s*/,
+                        "",
+                    ),
                 });
             }
             currentElement = currentElement.nextElementSibling;
         }
-        
+
         if (extraSubSections.length > 0) {
             sections.push({
                 id: "extra-features",
@@ -565,7 +573,7 @@ function createExamplesNavigation() {
             });
         }
     }
-    
+
     // If no sections found, bail out
     if (sections.length === 0) {
         console.warn("No navigation sections found in DOM");
@@ -624,7 +632,9 @@ function createExamplesNavigation() {
 
     // Effect to update sub-section active states
     effect(() => {
-        const subLinks = navContainer.querySelectorAll(".examples-nav__link--sub");
+        const subLinks = navContainer.querySelectorAll(
+            ".examples-nav__link--sub",
+        );
         subLinks.forEach((link) => {
             const subSectionId = link.getAttribute("data-subsection-id");
             if (subSectionId === activeSubSection.value) {
@@ -648,7 +658,9 @@ function createExamplesNavigation() {
         const intersecting = entries.filter((e) => e.isIntersecting);
         if (intersecting.length > 0) {
             // Sort by position and take the first one
-            intersecting.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+            intersecting.sort(
+                (a, b) => a.boundingClientRect.top - b.boundingClientRect.top,
+            );
             activeMainSection.value = intersecting[0].target.id;
         }
     }, mainObserverOptions);
@@ -666,7 +678,9 @@ function createExamplesNavigation() {
     const subObserver = new IntersectionObserver((entries) => {
         const intersecting = entries.filter((e) => e.isIntersecting);
         if (intersecting.length > 0) {
-            intersecting.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+            intersecting.sort(
+                (a, b) => a.boundingClientRect.top - b.boundingClientRect.top,
+            );
             const targetId = intersecting[0].target.id;
             activeSubSection.value = targetId;
             lastSeenSubSection = targetId;
@@ -713,13 +727,13 @@ const loadExamplesOnReady = async () => {
     addSourceCode("output-helper", createOutput);
     // Load examples on initial page load and wait for all to complete
     await loadExamples();
-    
+
     // Now that all examples are loaded and titles are in DOM, create navigation
     createExamplesNavigation();
-    
+
     // Setup hamburger menu
     setupHamburgerMenu();
-    
+
     // Mark initial load as complete to enable transitions for future changes
     setTimeout(() => {
         isInitialLoad.value = false;
