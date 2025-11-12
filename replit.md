@@ -22,7 +22,8 @@ Preferred communication style: Simple, everyday language.
   - **Dynamic data extraction** from loaded examples (no hard-coded structure)
   - **Sticky positioning** at top: 60px below theme selector
   - **Blurred glass effect** matching theme selector styling with backdrop-filter
-  - **Horizontal sub-sections** with flex-wrap layout
+  - **Side-by-side main sections** (Core Features and Extra Features) centered horizontally
+  - **Vertical sub-sections** stacking below active/hovered main section
   - **Hover-based expansion** showing sub-sections on hover with 200ms delay
   - **Dual-signal scroll tracking** for main sections and individual examples
   - **Previous section highlighting** when sections scroll out of view

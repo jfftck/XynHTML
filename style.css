@@ -942,6 +942,7 @@ ul li {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 0 1 280px;
 }
 
 .examples-nav__link {
@@ -990,10 +991,10 @@ ul li {
 
 .examples-nav__subnav {
   display: none;
-  flex-direction: row;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 6px;
   margin-top: 4px;
+  width: 100%;
 }
 
 .examples-nav__main-item--expanded .examples-nav__subnav {
