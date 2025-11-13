@@ -1078,11 +1078,19 @@ ul li {
 /* Navigation and theme container */
 #nav-theme-container {
   position: sticky;
-  top: 1rem;
+  top: -4rem;
   display: flex;
   gap: 12px;
   margin: 0 0 16px;
+  padding-top: 1rem;
   align-items: stretch;
+  transition: top 0.3s ease;
+  z-index: 100;
+
+  &:hover,
+  &:focus-within {
+    top: 0rem;
+  }
 }
 
 /* Hamburger menu button */
