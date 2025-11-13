@@ -60,6 +60,9 @@ Preferred communication style: Simple, everyday language.
   - Edge-based, direction-aware detection:
     - **Scrolling down**: activates when section's top edge crosses zone's bottom boundary (87.5vh)
     - **Scrolling up**: activates when section's bottom edge crosses zone's top boundary (12.5vh)
+    - **Dead zone detection**: sections in top/bottom dead zones highlight if viewport center is inside them
+      - Top dead zone: section top < 12.5vh AND viewport center inside section
+      - Bottom dead zone: section bottom > 87.5vh AND viewport center inside section
     - **First section exception**: deactivates when its top edge scrolls out of viewport bottom (scrolling down)
     - **Top of page**: no section highlighted if first section is outside detection zone
   - Scroll direction tracking via scrollY delta in rAF handler

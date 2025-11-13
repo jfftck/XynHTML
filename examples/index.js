@@ -666,13 +666,41 @@ function createExamplesNavigation() {
         lastScrollY = currentScrollY;
 
         const viewportHeight = window.innerHeight;
+        const viewportCenter = viewportHeight / 2;
         const zoneTop = viewportHeight / 8;      // 12.5vh
         const zoneBottom = viewportHeight * 7 / 8; // 87.5vh
 
         let selectedSubSection = null;
 
-        // SCROLLING DOWN: detect top edge crossing zone bottom
-        if (scrollDirection === 'down') {
+        // Check for sections in dead zones with viewport center inside them
+        for (let i = 0; i < allSubSections.length; i++) {
+            const { sectionId, subSectionId } = allSubSections[i];
+            const element = document.getElementById(subSectionId);
+            if (!element) continue;
+
+            const rect = element.getBoundingClientRect();
+            const elementTop = rect.top;
+            const elementBottom = rect.bottom;
+
+            // Check if viewport center is inside this section
+            if (elementTop <= viewportCenter && viewportCenter <= elementBottom) {
+                // Top dead zone: section top is in top 1/8th
+                if (elementTop < zoneTop) {
+                    selectedSubSection = { sectionId, subSectionId };
+                    break;
+                }
+                // Bottom dead zone: section bottom is in bottom 1/8th
+                if (elementBottom > zoneBottom) {
+                    selectedSubSection = { sectionId, subSectionId };
+                    break;
+                }
+            }
+        }
+
+        // If we found a section in dead zone with center inside, use it
+        if (!selectedSubSection) {
+            // SCROLLING DOWN: detect top edge crossing zone bottom
+            if (scrollDirection === 'down') {
             // Find the LAST section whose top has crossed the zone bottom
             for (let i = 0; i < allSubSections.length; i++) {
                 const { sectionId, subSectionId } = allSubSections[i];
@@ -715,6 +743,7 @@ function createExamplesNavigation() {
                     if (selectedSubSection) break;
                 }
             }
+        }
         }
 
         // At the very top: clear selection if first section is outside the active zone
