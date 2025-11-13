@@ -705,8 +705,8 @@ function createExamplesNavigation() {
         for (let i = 0; i < allSubSections.length; i++) {
             const { sectionId, subSectionId } = allSubSections[i];
             
-            // Extract the example number from the subsection ID
-            const exampleNumber = subSectionId.replace('example', '').replace('-section', '');
+            // Extract the example number from the subsection ID (e.g., "example1-title" -> "1")
+            const exampleNumber = subSectionId.match(/\d+/)[0];
             const wrapper = document.getElementById(`example${exampleNumber}`);
             
             if (!wrapper) continue;
