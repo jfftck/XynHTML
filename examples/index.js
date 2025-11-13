@@ -716,8 +716,12 @@ function createExamplesNavigation() {
             const elementTop = rect.top;
             const elementBottom = rect.bottom;
 
-            // Check if section is visible in viewport
-            if (elementBottom >= 0 && elementTop <= viewportHeight) {
+            // Check if either edge is inside viewport, or section spans entire viewport
+            const topEdgeInViewport = elementTop >= 0 && elementTop <= viewportHeight;
+            const bottomEdgeInViewport = elementBottom >= 0 && elementBottom <= viewportHeight;
+            const spansViewport = elementTop < 0 && elementBottom > viewportHeight;
+            
+            if (topEdgeInViewport || bottomEdgeInViewport || spansViewport) {
                 // Calculate section center
                 const sectionCenter = (elementTop + elementBottom) / 2;
                 const distance = Math.abs(sectionCenter - viewportCenter);
