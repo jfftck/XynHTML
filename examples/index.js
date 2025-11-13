@@ -466,8 +466,38 @@ async function loadExamples() {
                     (v) => typeof v === "function",
                 )[0];
                 const { title } = exampleModule;
-                addExampleTitle(`example${i + 1}-output`, title);
-                addSourceCode(`example${i + 1}-output`, example);
+                
+                const outputDiv = document.getElementById(`example${i + 1}-output`);
+                if (outputDiv && !outputDiv.parentElement.classList.contains('example-section')) {
+                    // Create wrapper section element
+                    const wrapper = document.createElement('section');
+                    wrapper.id = `example${i + 1}`;
+                    wrapper.className = 'example-section';
+                    
+                    // Create and add title
+                    const h3 = document.createElement('h3');
+                    h3.id = `example${i + 1}-title`;
+                    h3.textContent = title;
+                    wrapper.appendChild(h3);
+                    
+                    // Create and add source code
+                    const pre = document.createElement('pre');
+                    const code = document.createElement('code');
+                    code.className = 'language-javascript';
+                    code.textContent = example.toString();
+                    pre.appendChild(code);
+                    wrapper.appendChild(pre);
+                    
+                    // Insert wrapper before output div
+                    outputDiv.parentElement.insertBefore(wrapper, outputDiv);
+                    
+                    // Move output div into wrapper
+                    wrapper.appendChild(outputDiv);
+                    
+                    // Highlight the code
+                    hljs.highlightElement(code);
+                }
+                
                 await example(createOutput(`example${i + 1}-output`));
             } catch (err) {
                 console.error(`Error loading example ${uri}:`, err);
@@ -524,17 +554,20 @@ function createExamplesNavigation() {
 
     if (coreFeaturesHeader) {
         const coreSubSections = [];
-        // Find all h3 elements between core-features and extra-features
+        // Find all section wrappers between core-features and extra-features
         let currentElement = coreFeaturesHeader.nextElementSibling;
         while (currentElement && currentElement !== extraFeaturesHeader) {
-            if (currentElement.tagName === "H3" && currentElement.id) {
-                coreSubSections.push({
-                    id: currentElement.id,
-                    label: currentElement.textContent.replace(
-                        /^Example \d+:\s*/,
-                        "",
-                    ),
-                });
+            if (currentElement.classList && currentElement.classList.contains('example-section')) {
+                const h3 = currentElement.querySelector('h3[id]');
+                if (h3) {
+                    coreSubSections.push({
+                        id: h3.id,
+                        label: h3.textContent.replace(
+                            /^Example \d+:\s*/,
+                            "",
+                        ),
+                    });
+                }
             }
             currentElement = currentElement.nextElementSibling;
         }
@@ -550,17 +583,20 @@ function createExamplesNavigation() {
 
     if (extraFeaturesHeader) {
         const extraSubSections = [];
-        // Find all h3 elements after extra-features
+        // Find all section wrappers after extra-features
         let currentElement = extraFeaturesHeader.nextElementSibling;
         while (currentElement) {
-            if (currentElement.tagName === "H3" && currentElement.id) {
-                extraSubSections.push({
-                    id: currentElement.id,
-                    label: currentElement.textContent.replace(
-                        /^Example \d+:\s*/,
-                        "",
-                    ),
-                });
+            if (currentElement.classList && currentElement.classList.contains('example-section')) {
+                const h3 = currentElement.querySelector('h3[id]');
+                if (h3) {
+                    extraSubSections.push({
+                        id: h3.id,
+                        label: h3.textContent.replace(
+                            /^Example \d+:\s*/,
+                            "",
+                        ),
+                    });
+                }
             }
             currentElement = currentElement.nextElementSibling;
         }
@@ -675,16 +711,14 @@ function createExamplesNavigation() {
             
             // Extract the example number from the subsection ID
             const exampleNumber = subSectionId.replace('example', '').replace('-section', '');
-            const titleElement = document.getElementById(`example${exampleNumber}-title`);
-            const outputElement = document.getElementById(`example${exampleNumber}-output`);
+            const wrapper = document.getElementById(`example${exampleNumber}`);
             
-            if (!titleElement || !outputElement) continue;
+            if (!wrapper) continue;
 
-            // Calculate bounds from title (top edge) to output (bottom edge)
-            const titleRect = titleElement.getBoundingClientRect();
-            const outputRect = outputElement.getBoundingClientRect();
-            const elementTop = titleRect.top;
-            const elementBottom = outputRect.bottom;
+            // Get wrapper bounds
+            const rect = wrapper.getBoundingClientRect();
+            const elementTop = rect.top;
+            const elementBottom = rect.bottom;
 
             // Check if section is visible in viewport at all
             if (elementBottom >= 0 && elementTop <= viewportHeight) {
