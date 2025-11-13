@@ -60,7 +60,7 @@ Preferred communication style: Simple, everyday language.
   - Edge-based, direction-aware detection:
     - **Scrolling down**: activates when section's top edge crosses zone's bottom boundary (87.5vh)
     - **Scrolling up**: activates when section's bottom edge crosses zone's top boundary (12.5vh)
-    - **First section exception**: deactivates when its bottom edge drops below zone bottom (scrolling down)
+    - **First section exception**: deactivates when its top edge scrolls out of viewport bottom (scrolling down)
     - **Top of page**: no section highlighted if first section is outside detection zone
   - Scroll direction tracking via scrollY delta in rAF handler
   - Sections processed in DOM order (down) or reverse order (up) for correct priority

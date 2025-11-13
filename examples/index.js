@@ -683,9 +683,9 @@ function createExamplesNavigation() {
                 const elementTop = rect.top;
                 const elementBottom = rect.bottom;
 
-                // Special case: first section - deactivate when bottom drops below zone bottom
+                // Special case: first section - deactivate when top scrolls out of viewport bottom
                 if (i === 0) {
-                    if (elementBottom >= zoneBottom) {
+                    if (elementTop <= viewportHeight) {
                         selectedSubSection = { sectionId, subSectionId };
                     }
                 } else {
