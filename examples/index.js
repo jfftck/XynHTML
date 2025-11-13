@@ -645,70 +645,116 @@ function createExamplesNavigation() {
         });
     }, [activeSubSection]);
 
-    // Scroll-based detection with dynamic zone calculation
+    // Edge-based, direction-aware scroll detection
     // For each section with height H, detection zone is 3/4 * H centered on viewport
     // Zone top = 50vh - 3/8*H, Zone bottom = 50vh + 3/8*H
     
-    let lastSeenSubSection = sections[0].subSections[0].id;
+    let lastScrollY = window.scrollY;
     let animationFrameId = null;
 
+    // Get all subsections in order
+    const allSubSections = [];
+    sections.forEach(section => {
+        section.subSections.forEach(subSection => {
+            allSubSections.push({ sectionId: section.id, subSectionId: subSection.id });
+        });
+    });
+
     function checkSectionVisibility() {
+        const currentScrollY = window.scrollY;
+        const scrollDirection = currentScrollY > lastScrollY ? 'down' : 'up';
+        lastScrollY = currentScrollY;
+
         const viewportHeight = window.innerHeight;
         const viewportCenter = viewportHeight / 2;
 
-        // Check sub-sections - first pass: sections in their zones
-        let closestInZone = null;
-        let closestInZoneDistance = Infinity;
-        
-        // Second pass: all sections (fallback)
-        let closestOverall = null;
-        let closestOverallDistance = Infinity;
+        let selectedSubSection = null;
 
-        sections.forEach((section) => {
-            section.subSections.forEach((subSection) => {
-                const element = document.getElementById(subSection.id);
-                if (!element) return;
+        // SCROLLING DOWN: detect top edge crossing zone bottom
+        if (scrollDirection === 'down') {
+            // Process sections in DOM order
+            for (let i = 0; i < allSubSections.length; i++) {
+                const { sectionId, subSectionId } = allSubSections[i];
+                const element = document.getElementById(subSectionId);
+                if (!element) continue;
 
                 const rect = element.getBoundingClientRect();
                 const elementHeight = rect.height;
-                const elementMiddle = rect.top + elementHeight / 2;
+                const elementTop = rect.top;
+                const elementBottom = rect.bottom;
 
-                // Detection zone is 3/4 of element height, centered on viewport
+                // Detection zone for this section
                 const zoneHeight = (3 / 4) * elementHeight;
                 const zoneTop = viewportCenter - zoneHeight / 2;
                 const zoneBottom = viewportCenter + zoneHeight / 2;
 
-                const distanceFromCenter = Math.abs(elementMiddle - viewportCenter);
-
-                // Track closest section overall (fallback)
-                if (distanceFromCenter < closestOverallDistance) {
-                    closestOverallDistance = distanceFromCenter;
-                    closestOverall = subSection.id;
-                }
-
-                // Check if element's middle is in the detection zone
-                if (elementMiddle >= zoneTop && elementMiddle <= zoneBottom) {
-                    if (distanceFromCenter < closestInZoneDistance) {
-                        closestInZoneDistance = distanceFromCenter;
-                        closestInZone = subSection.id;
+                // Special case: first section - deactivate when bottom drops below zone bottom
+                if (i === 0) {
+                    if (elementBottom < zoneBottom) {
+                        // First section scrolled out of view at bottom
+                        continue;
+                    } else if (elementTop <= zoneBottom) {
+                        // First section still in range
+                        selectedSubSection = { sectionId, subSectionId };
+                        break;
+                    }
+                } else {
+                    // Regular sections: activate when top crosses zone bottom
+                    if (elementTop <= zoneBottom) {
+                        selectedSubSection = { sectionId, subSectionId };
+                        break;
                     }
                 }
-            });
-        });
+            }
+        } 
+        // SCROLLING UP: detect bottom edge crossing zone top
+        else {
+            // Process sections in reverse order
+            for (let i = allSubSections.length - 1; i >= 0; i--) {
+                const { sectionId, subSectionId } = allSubSections[i];
+                const element = document.getElementById(subSectionId);
+                if (!element) continue;
 
-        // Prefer section in zone, fall back to closest overall
-        const selectedSection = closestInZone || closestOverall;
+                const rect = element.getBoundingClientRect();
+                const elementHeight = rect.height;
+                const elementBottom = rect.bottom;
 
-        if (selectedSection) {
-            activeSubSection.value = selectedSection;
-            lastSeenSubSection = selectedSection;
+                // Detection zone for this section
+                const zoneHeight = (3 / 4) * elementHeight;
+                const zoneTop = viewportCenter - zoneHeight / 2;
 
-            // Find and set the main section for this subsection
-            sections.forEach((section) => {
-                if (section.subSections.some(sub => sub.id === selectedSection)) {
-                    activeMainSection.value = section.id;
+                // Activate when bottom edge crosses zone top
+                if (elementBottom >= zoneTop) {
+                    selectedSubSection = { sectionId, subSectionId };
+                    break;
                 }
-            });
+            }
+        }
+
+        // At the very top: clear selection if first section is outside its zone
+        if (currentScrollY <= 0) {
+            const firstElement = document.getElementById(allSubSections[0].subSectionId);
+            if (firstElement) {
+                const rect = firstElement.getBoundingClientRect();
+                const elementHeight = rect.height;
+                const zoneHeight = (3 / 4) * elementHeight;
+                const zoneBottom = viewportCenter + zoneHeight / 2;
+                
+                // If first section's top is below zone bottom, clear active state
+                if (rect.top > zoneBottom) {
+                    selectedSubSection = null;
+                }
+            }
+        }
+
+        // Update signals
+        if (selectedSubSection) {
+            activeSubSection.value = selectedSubSection.subSectionId;
+            activeMainSection.value = selectedSubSection.sectionId;
+        } else {
+            // Clear active states
+            activeSubSection.value = null;
+            activeMainSection.value = null;
         }
     }
 

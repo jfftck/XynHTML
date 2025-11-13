@@ -56,9 +56,13 @@ Preferred communication style: Simple, everyday language.
   - Tag-based DOM creation with XynHTML primitives
   - Scroll-based detection using requestAnimationFrame for performance
   - Dynamic detection zone: 3/4 of each section's height, centered on viewport (e.g., 100vh section = 1/8 from top to 1/8 from bottom)
-  - Closest-to-center algorithm: prefers sections in their zones, falls back to closest section overall when no section is in zone
-  - Bi-directional scroll support: properly detects sections entering from top (scrolling up) or bottom (scrolling down)
-  - lastSeenSubSection tracking for scroll-out-of-view behavior
+  - Edge-based, direction-aware detection:
+    - **Scrolling down**: activates when section's top edge crosses zone's bottom boundary
+    - **Scrolling up**: activates when section's bottom edge crosses zone's top boundary
+    - **First section exception**: deactivates when its bottom edge drops below zone bottom (scrolling down)
+    - **Top of page**: no section highlighted if first section is outside detection zone
+  - Scroll direction tracking via scrollY delta in rAF handler
+  - Sections processed in DOM order (down) or reverse order (up) for correct priority
   - Proper cleanup function for observer memory management
   - Hamburger menu state management using signal and effect
 - Fixed Highlight.js security warning by properly resetting code content before re-highlighting during theme changes
