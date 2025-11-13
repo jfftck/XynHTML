@@ -55,14 +55,12 @@ Preferred communication style: Simple, everyday language.
   - Multiple effects for synchronized UI updates
   - Tag-based DOM creation with XynHTML primitives
   - Scroll-based detection using requestAnimationFrame for performance
-  - Fixed detection zone: middle 75% of viewport (12.5vh to 87.5vh)
-  - Proximity-based detection logic:
+  - Viewport-based proximity detection:
     - **Section bounds**: Calculated from section wrapper element (contains title, code, and output)
-    - **First priority**: Highlight section that contains viewport center (50vh)
-    - **Second priority**: If no section contains center, highlight section closest to viewport center
-    - **Zone filtering**: Only sections with any part in detection zone (12.5vh to 87.5vh) are considered
-    - **Visibility check**: If no sections are visible in viewport, none are highlighted
-  - Simplified algorithm eliminates direction tracking and edge-crossing complexity
+    - **Visibility check**: Sections must have any part visible in viewport (0vh to 100vh)
+    - **Selection logic**: Highlights section whose center is closest to viewport center (50vh)
+    - **No highlighting**: When no sections are visible in viewport
+  - Ultra-simplified algorithm: single loop, pure distance-based selection
   - Proper cleanup function for observer memory management
   - Hamburger menu state management using signal and effect
 - Fixed Highlight.js security warning by properly resetting code content before re-highlighting during theme changes

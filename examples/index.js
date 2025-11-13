@@ -681,8 +681,8 @@ function createExamplesNavigation() {
         });
     }, [activeSubSection]);
 
-    // Simplified scroll detection with fixed zone
-    // Active zone: 1/8 from top to 7/8 from top (middle 75% of viewport)
+    // Viewport-based scroll detection
+    // Highlights section closest to viewport center among all visible sections
     
     let animationFrameId = null;
 
@@ -697,15 +697,11 @@ function createExamplesNavigation() {
     function checkSectionVisibility() {
         const viewportHeight = window.innerHeight;
         const viewportCenter = viewportHeight / 2;
-        const zoneTop = viewportHeight / 8;      // 12.5vh
-        const zoneBottom = viewportHeight * 7 / 8; // 87.5vh
 
         let selectedSubSection = null;
-        let hasVisibleSection = false;
+        let closestDistance = Infinity;
 
-        // Find sections within the detection zone
-        const sectionsInZone = [];
-        
+        // Find all visible sections and select the one closest to viewport center
         for (let i = 0; i < allSubSections.length; i++) {
             const { sectionId, subSectionId } = allSubSections[i];
             
@@ -720,57 +716,16 @@ function createExamplesNavigation() {
             const elementTop = rect.top;
             const elementBottom = rect.bottom;
 
-            // Check if section is visible in viewport at all
+            // Check if section is visible in viewport
             if (elementBottom >= 0 && elementTop <= viewportHeight) {
-                hasVisibleSection = true;
-            }
-
-            // Check if any part of section is within the detection zone
-            if (elementBottom >= zoneTop && elementTop <= zoneBottom) {
-                sectionsInZone.push({
-                    sectionId,
-                    subSectionId,
-                    top: elementTop,
-                    bottom: elementBottom,
-                    containsCenter: elementTop <= viewportCenter && viewportCenter <= elementBottom
-                });
-            }
-        }
-
-        // If no sections visible in viewport, clear selection
-        if (!hasVisibleSection) {
-            selectedSubSection = null;
-        }
-        // If we have sections in the zone
-        else if (sectionsInZone.length > 0) {
-            // First priority: find section that contains viewport center
-            const sectionWithCenter = sectionsInZone.find(s => s.containsCenter);
-            
-            if (sectionWithCenter) {
-                selectedSubSection = {
-                    sectionId: sectionWithCenter.sectionId,
-                    subSectionId: sectionWithCenter.subSectionId
-                };
-            } else {
-                // Second priority: find closest section to viewport center
-                let closestSection = null;
-                let closestDistance = Infinity;
-
-                sectionsInZone.forEach(section => {
-                    const sectionCenter = (section.top + section.bottom) / 2;
-                    const distance = Math.abs(sectionCenter - viewportCenter);
-                    
-                    if (distance < closestDistance) {
-                        closestDistance = distance;
-                        closestSection = section;
-                    }
-                });
-
-                if (closestSection) {
-                    selectedSubSection = {
-                        sectionId: closestSection.sectionId,
-                        subSectionId: closestSection.subSectionId
-                    };
+                // Calculate section center
+                const sectionCenter = (elementTop + elementBottom) / 2;
+                const distance = Math.abs(sectionCenter - viewportCenter);
+                
+                // Track closest section to viewport center
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    selectedSubSection = { sectionId, subSectionId };
                 }
             }
         }
@@ -780,7 +735,7 @@ function createExamplesNavigation() {
             activeSubSection.value = selectedSubSection.subSectionId;
             activeMainSection.value = selectedSubSection.sectionId;
         } else {
-            // Clear active states
+            // Clear active states if no sections visible
             activeSubSection.value = null;
             activeMainSection.value = null;
         }
