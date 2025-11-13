@@ -672,7 +672,7 @@ function createExamplesNavigation() {
 
         // SCROLLING DOWN: detect top edge crossing zone bottom
         if (scrollDirection === 'down') {
-            // Process sections in DOM order
+            // Find the LAST section whose top has crossed the zone bottom
             for (let i = 0; i < allSubSections.length; i++) {
                 const { sectionId, subSectionId } = allSubSections[i];
                 const element = document.getElementById(subSectionId);
@@ -685,31 +685,27 @@ function createExamplesNavigation() {
 
                 // Detection zone for this section
                 const zoneHeight = (3 / 4) * elementHeight;
-                const zoneTop = viewportCenter - zoneHeight / 2;
                 const zoneBottom = viewportCenter + zoneHeight / 2;
 
                 // Special case: first section - deactivate when bottom drops below zone bottom
                 if (i === 0) {
-                    if (elementBottom < zoneBottom) {
-                        // First section scrolled out of view at bottom
-                        continue;
-                    } else if (elementTop <= zoneBottom) {
-                        // First section still in range
+                    if (elementBottom >= zoneBottom) {
+                        // First section still visible in zone
                         selectedSubSection = { sectionId, subSectionId };
-                        break;
                     }
+                    // If bottom < zoneBottom, first section scrolled out, don't select it
                 } else {
                     // Regular sections: activate when top crosses zone bottom
                     if (elementTop <= zoneBottom) {
+                        // Keep updating to get the LAST matching section
                         selectedSubSection = { sectionId, subSectionId };
-                        break;
                     }
                 }
             }
         } 
         // SCROLLING UP: detect bottom edge crossing zone top
         else {
-            // Process sections in reverse order
+            // Find the FIRST section (from end) whose bottom has crossed the zone top
             for (let i = allSubSections.length - 1; i >= 0; i--) {
                 const { sectionId, subSectionId } = allSubSections[i];
                 const element = document.getElementById(subSectionId);
@@ -723,10 +719,13 @@ function createExamplesNavigation() {
                 const zoneHeight = (3 / 4) * elementHeight;
                 const zoneTop = viewportCenter - zoneHeight / 2;
 
-                // Activate when bottom edge crosses zone top
+                // Activate when bottom edge is at or above zone top
                 if (elementBottom >= zoneTop) {
                     selectedSubSection = { sectionId, subSectionId };
-                    break;
+                    // Don't break - continue to find the first section (highest on page)
+                } else {
+                    // Once we find a section whose bottom is below zone top, we've found our match
+                    if (selectedSubSection) break;
                 }
             }
         }
