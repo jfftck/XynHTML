@@ -656,9 +656,13 @@ function createExamplesNavigation() {
         const viewportHeight = window.innerHeight;
         const viewportCenter = viewportHeight / 2;
 
-        // Check sub-sections
-        let closestSubSection = null;
-        let closestDistance = Infinity;
+        // Check sub-sections - first pass: sections in their zones
+        let closestInZone = null;
+        let closestInZoneDistance = Infinity;
+        
+        // Second pass: all sections (fallback)
+        let closestOverall = null;
+        let closestOverallDistance = Infinity;
 
         sections.forEach((section) => {
             section.subSections.forEach((subSection) => {
@@ -674,30 +678,37 @@ function createExamplesNavigation() {
                 const zoneTop = viewportCenter - zoneHeight / 2;
                 const zoneBottom = viewportCenter + zoneHeight / 2;
 
+                const distanceFromCenter = Math.abs(elementMiddle - viewportCenter);
+
+                // Track closest section overall (fallback)
+                if (distanceFromCenter < closestOverallDistance) {
+                    closestOverallDistance = distanceFromCenter;
+                    closestOverall = subSection.id;
+                }
+
                 // Check if element's middle is in the detection zone
                 if (elementMiddle >= zoneTop && elementMiddle <= zoneBottom) {
-                    const distanceFromCenter = Math.abs(elementMiddle - viewportCenter);
-                    if (distanceFromCenter < closestDistance) {
-                        closestDistance = distanceFromCenter;
-                        closestSubSection = subSection.id;
+                    if (distanceFromCenter < closestInZoneDistance) {
+                        closestInZoneDistance = distanceFromCenter;
+                        closestInZone = subSection.id;
                     }
                 }
             });
         });
 
-        if (closestSubSection) {
-            activeSubSection.value = closestSubSection;
-            lastSeenSubSection = closestSubSection;
+        // Prefer section in zone, fall back to closest overall
+        const selectedSection = closestInZone || closestOverall;
+
+        if (selectedSection) {
+            activeSubSection.value = selectedSection;
+            lastSeenSubSection = selectedSection;
 
             // Find and set the main section for this subsection
             sections.forEach((section) => {
-                if (section.subSections.some(sub => sub.id === closestSubSection)) {
+                if (section.subSections.some(sub => sub.id === selectedSection)) {
                     activeMainSection.value = section.id;
                 }
             });
-        } else {
-            // No section in zone, keep last seen
-            activeSubSection.value = lastSeenSubSection;
         }
     }
 

@@ -56,7 +56,8 @@ Preferred communication style: Simple, everyday language.
   - Tag-based DOM creation with XynHTML primitives
   - Scroll-based detection using requestAnimationFrame for performance
   - Dynamic detection zone: 3/4 of each section's height, centered on viewport (e.g., 100vh section = 1/8 from top to 1/8 from bottom)
-  - Closest-to-center algorithm when multiple sections are in their respective zones
+  - Closest-to-center algorithm: prefers sections in their zones, falls back to closest section overall when no section is in zone
+  - Bi-directional scroll support: properly detects sections entering from top (scrolling up) or bottom (scrolling down)
   - lastSeenSubSection tracking for scroll-out-of-view behavior
   - Proper cleanup function for observer memory management
   - Hamburger menu state management using signal and effect
