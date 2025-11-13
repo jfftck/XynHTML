@@ -1144,7 +1144,7 @@ ul li {
 
 @supports(backdrop-filter: blur(10px)) {
   #examples-nav {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.85);
   }
 }
 
@@ -1175,7 +1175,6 @@ ul li {
   font-size: 14px;
   transition: all 0.2s ease;
   border: 1px solid transparent;
-  background-color: rgba(255, 255, 255, 0.05);
   cursor: pointer;
   display: block;
   white-space: nowrap;
@@ -1251,13 +1250,9 @@ ul li {
 
   @supports(backdrop-filter: blur(10px)) {
     body:not([data-theme="light"]) #examples-nav {
-      background: rgba(45, 45, 45, 0.95);
+      background: rgba(45, 45, 45, 0.85);
       backdrop-filter: blur(10px);
     }
-  }
-
-  body:not([data-theme="light"]) .examples-nav__link {
-    background-color: rgba(255, 255, 255, 0.05);
   }
 
   body:not([data-theme="light"]) .examples-nav__link:hover {
@@ -1268,10 +1263,6 @@ ul li {
     color: #aaa;
     border-color: rgba(255, 255, 255, 0.15);
     background-color: transparent;
-  }
-
-  body:not([data-theme="light"]) .examples-nav__link--sub {
-    background-color: rgba(255, 255, 255, 0.05);
   }
 
   body:not([data-theme="light"]) .examples-nav__link--active {
@@ -1291,13 +1282,9 @@ body[data-theme="dark"] #examples-nav {
 
 @supports(backdrop-filter: blur(10px)) {
   body[data-theme="dark"] #examples-nav {
-    background: rgba(45, 45, 45, 0.95);
+    background: rgba(45, 45, 45, 0.85);
     backdrop-filter: blur(10px);
   }
-}
-
-body[data-theme="dark"] .examples-nav__link {
-  background-color: rgba(0, 0, 0, 0.05);
 }
 
 body[data-theme="dark"] .examples-nav__link:hover {
@@ -1308,10 +1295,6 @@ body[data-theme="dark"] .examples-nav__link--main {
   color: #aaa;
   border-color: rgba(255, 255, 255, 0.15);
   background-color: transparent;
-}
-
-body[data-theme="dark"] .examples-nav__link--sub {
-  background-color: rgba(0, 0, 0, 0.05);
 }
 
 body[data-theme="dark"] .examples-nav__link--active {
