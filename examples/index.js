@@ -672,12 +672,19 @@ function createExamplesNavigation() {
         
         for (let i = 0; i < allSubSections.length; i++) {
             const { sectionId, subSectionId } = allSubSections[i];
-            const element = document.getElementById(subSectionId);
-            if (!element) continue;
+            
+            // Extract the example number from the subsection ID
+            const exampleNumber = subSectionId.replace('example', '').replace('-section', '');
+            const titleElement = document.getElementById(`example${exampleNumber}-title`);
+            const outputElement = document.getElementById(`example${exampleNumber}-output`);
+            
+            if (!titleElement || !outputElement) continue;
 
-            const rect = element.getBoundingClientRect();
-            const elementTop = rect.top;
-            const elementBottom = rect.bottom;
+            // Calculate bounds from title (top edge) to output (bottom edge)
+            const titleRect = titleElement.getBoundingClientRect();
+            const outputRect = outputElement.getBoundingClientRect();
+            const elementTop = titleRect.top;
+            const elementBottom = outputRect.bottom;
 
             // Check if section is visible in viewport at all
             if (elementBottom >= 0 && elementTop <= viewportHeight) {

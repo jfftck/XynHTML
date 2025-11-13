@@ -57,6 +57,7 @@ Preferred communication style: Simple, everyday language.
   - Scroll-based detection using requestAnimationFrame for performance
   - Fixed detection zone: middle 75% of viewport (12.5vh to 87.5vh)
   - Proximity-based detection logic:
+    - **Section bounds**: Calculated from h3 title element (top edge) to div output element (bottom edge)
     - **First priority**: Highlight section that contains viewport center (50vh)
     - **Second priority**: If no section contains center, highlight section closest to viewport center
     - **Zone filtering**: Only sections with any part in detection zone (12.5vh to 87.5vh) are considered
