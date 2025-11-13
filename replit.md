@@ -55,19 +55,13 @@ Preferred communication style: Simple, everyday language.
   - Multiple effects for synchronized UI updates
   - Tag-based DOM creation with XynHTML primitives
   - Scroll-based detection using requestAnimationFrame for performance
-  - Fixed detection zone: middle 75% of viewport (1/8 from top to 7/8 from top)
-  - Dead zones: top 12.5vh and bottom 12.5vh of viewport
-  - Edge-based, direction-aware detection:
-    - **Scrolling down**: activates when section's top edge crosses zone's bottom boundary (87.5vh)
-    - **Scrolling up**: activates when section's bottom edge crosses zone's top boundary (12.5vh)
-    - **Dead zone detection**: sections in top/bottom dead zones highlight if viewport center is inside them
-      - Top dead zone: section top < 12.5vh AND viewport center inside section
-      - Bottom dead zone: section bottom > 87.5vh AND viewport center inside section
-    - **First section exception**: deactivates when its top edge scrolls out of viewport bottom (scrolling down)
-    - **Top of page**: no section highlighted if first section is outside detection zone
-  - Scroll direction tracking via scrollY delta in rAF handler
-  - Sections processed in DOM order (down) or reverse order (up) for correct priority
-  - Simplified zone calculation eliminates flickering from varying section heights
+  - Fixed detection zone: middle 75% of viewport (12.5vh to 87.5vh)
+  - Proximity-based detection logic:
+    - **First priority**: Highlight section that contains viewport center (50vh)
+    - **Second priority**: If no section contains center, highlight section closest to viewport center
+    - **Zone filtering**: Only sections with any part in detection zone (12.5vh to 87.5vh) are considered
+    - **Visibility check**: If no sections are visible in viewport, none are highlighted
+  - Simplified algorithm eliminates direction tracking and edge-crossing complexity
   - Proper cleanup function for observer memory management
   - Hamburger menu state management using signal and effect
 - Fixed Highlight.js security warning by properly resetting code content before re-highlighting during theme changes
