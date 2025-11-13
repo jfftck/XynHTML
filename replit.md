@@ -55,14 +55,16 @@ Preferred communication style: Simple, everyday language.
   - Multiple effects for synchronized UI updates
   - Tag-based DOM creation with XynHTML primitives
   - Scroll-based detection using requestAnimationFrame for performance
-  - Dynamic detection zone: 3/4 of each section's height, centered on viewport (e.g., 100vh section = 1/8 from top to 1/8 from bottom)
+  - Fixed detection zone: middle 75% of viewport (1/8 from top to 7/8 from top)
+  - Dead zones: top 12.5vh and bottom 12.5vh of viewport
   - Edge-based, direction-aware detection:
-    - **Scrolling down**: activates when section's top edge crosses zone's bottom boundary
-    - **Scrolling up**: activates when section's bottom edge crosses zone's top boundary
+    - **Scrolling down**: activates when section's top edge crosses zone's bottom boundary (87.5vh)
+    - **Scrolling up**: activates when section's bottom edge crosses zone's top boundary (12.5vh)
     - **First section exception**: deactivates when its bottom edge drops below zone bottom (scrolling down)
     - **Top of page**: no section highlighted if first section is outside detection zone
   - Scroll direction tracking via scrollY delta in rAF handler
   - Sections processed in DOM order (down) or reverse order (up) for correct priority
+  - Simplified zone calculation eliminates flickering from varying section heights
   - Proper cleanup function for observer memory management
   - Hamburger menu state management using signal and effect
 - Fixed Highlight.js security warning by properly resetting code content before re-highlighting during theme changes

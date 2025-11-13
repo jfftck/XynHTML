@@ -645,9 +645,9 @@ function createExamplesNavigation() {
         });
     }, [activeSubSection]);
 
-    // Edge-based, direction-aware scroll detection
-    // For each section with height H, detection zone is 3/4 * H centered on viewport
-    // Zone top = 50vh - 3/8*H, Zone bottom = 50vh + 3/8*H
+    // Edge-based, direction-aware scroll detection with fixed zone
+    // Active zone: 1/8 from top to 7/8 from top (middle 75% of viewport)
+    // Dead zones: top 1/8 and bottom 1/8 of viewport
     
     let lastScrollY = window.scrollY;
     let animationFrameId = null;
@@ -666,7 +666,8 @@ function createExamplesNavigation() {
         lastScrollY = currentScrollY;
 
         const viewportHeight = window.innerHeight;
-        const viewportCenter = viewportHeight / 2;
+        const zoneTop = viewportHeight / 8;      // 12.5vh
+        const zoneBottom = viewportHeight * 7 / 8; // 87.5vh
 
         let selectedSubSection = null;
 
@@ -679,25 +680,17 @@ function createExamplesNavigation() {
                 if (!element) continue;
 
                 const rect = element.getBoundingClientRect();
-                const elementHeight = rect.height;
                 const elementTop = rect.top;
                 const elementBottom = rect.bottom;
-
-                // Detection zone for this section
-                const zoneHeight = (3 / 4) * elementHeight;
-                const zoneBottom = viewportCenter + zoneHeight / 2;
 
                 // Special case: first section - deactivate when bottom drops below zone bottom
                 if (i === 0) {
                     if (elementBottom >= zoneBottom) {
-                        // First section still visible in zone
                         selectedSubSection = { sectionId, subSectionId };
                     }
-                    // If bottom < zoneBottom, first section scrolled out, don't select it
                 } else {
                     // Regular sections: activate when top crosses zone bottom
                     if (elementTop <= zoneBottom) {
-                        // Keep updating to get the LAST matching section
                         selectedSubSection = { sectionId, subSectionId };
                     }
                 }
@@ -712,17 +705,11 @@ function createExamplesNavigation() {
                 if (!element) continue;
 
                 const rect = element.getBoundingClientRect();
-                const elementHeight = rect.height;
                 const elementBottom = rect.bottom;
-
-                // Detection zone for this section
-                const zoneHeight = (3 / 4) * elementHeight;
-                const zoneTop = viewportCenter - zoneHeight / 2;
 
                 // Activate when bottom edge is at or above zone top
                 if (elementBottom >= zoneTop) {
                     selectedSubSection = { sectionId, subSectionId };
-                    // Don't break - continue to find the first section (highest on page)
                 } else {
                     // Once we find a section whose bottom is below zone top, we've found our match
                     if (selectedSubSection) break;
@@ -730,15 +717,11 @@ function createExamplesNavigation() {
             }
         }
 
-        // At the very top: clear selection if first section is outside its zone
+        // At the very top: clear selection if first section is outside the active zone
         if (currentScrollY <= 0) {
             const firstElement = document.getElementById(allSubSections[0].subSectionId);
             if (firstElement) {
                 const rect = firstElement.getBoundingClientRect();
-                const elementHeight = rect.height;
-                const zoneHeight = (3 / 4) * elementHeight;
-                const zoneBottom = viewportCenter + zoneHeight / 2;
-                
                 // If first section's top is below zone bottom, clear active state
                 if (rect.top > zoneBottom) {
                     selectedSubSection = null;
