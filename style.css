@@ -456,7 +456,12 @@ pre code {
   border-radius: 8px 8px 8px 0;
   white-space: nowrap;
   flex-shrink: 0;
-  
+
+  & * {
+    position: sticky;
+    top: 0;
+    bottom: 0;
+  }
 }
 
 .theme-options {
@@ -1078,8 +1083,6 @@ ul li {
   gap: 12px;
   margin: 0 0 16px;
   align-items: stretch;
-  max-height: 16.67vh;
-  min-height: 10rem;
 }
 
 /* Hamburger menu button */
@@ -1132,7 +1135,6 @@ ul li {
   flex-wrap: wrap;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: all 0.3s ease;
-  overflow-y: auto;
 }
 
 #theme-selector-container {
@@ -1152,6 +1154,16 @@ ul li {
   flex-direction: row;
   gap: 8px;
   align-items: flex-start;
+  height: 100%;
+  max-height: 5rem;
+  min-height: 5rem;
+  transition: min-height 0.3s ease;
+
+  :hover>&,
+  :focus-within>& {
+    max-height: 16.67vh;
+    min-height: 10rem;
+  }
 }
 
 .examples-nav__link {
@@ -1184,25 +1196,26 @@ ul li {
   color: #666;
   padding: 4px;
   border: 0;
-  border-bottom: 1px;
-  border-left: 2px;
+  border-top: 1px;
+  border-right: 2px;
   border-style: solid;
   border-color: rgba(0, 0, 0, 0.1);
-  border-radius: 8px 8px 0 8px;
+  border-radius: 0 8px 8px 8px;
   white-space: nowrap;
   pointer-events: none;
   cursor: default;
   flex-shrink: 0;
+  height: 100%;
   background-color: transparent;
   text-align: right;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .examples-nav__link--sub {
   padding: 6px 12px;
   font-size: 13px;
   margin-left: 8px;
-  opacity: 0.9;
-  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .examples-nav__link--active {
@@ -1210,6 +1223,10 @@ ul li {
   color: white;
   border-color: #005999;
   box-shadow: 0 2px 4px rgba(0, 122, 204, 0.3);
+  position: sticky;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
 }
 
 .examples-nav__link--active:hover {
@@ -1221,6 +1238,9 @@ ul li {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  overflow: auto;
+  flex: 1;
+  height: 100%;
 }
 
 @media (prefers-color-scheme: dark) {
