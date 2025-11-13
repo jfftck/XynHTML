@@ -645,80 +645,81 @@ function createExamplesNavigation() {
         });
     }, [activeSubSection]);
 
-    // Setup IntersectionObserver for main sections
-    // Middle of page detection: use 37.5% top and 37.5% bottom margins
-    // This creates a 25% (1/4) band in the middle of the viewport
-    const mainObserverOptions = {
-        root: null,
-        rootMargin: "-37.5% 0px -37.5% 0px",
-        threshold: 0,
-    };
-
-    const mainObserver = new IntersectionObserver((entries) => {
-        const intersecting = entries.filter((e) => e.isIntersecting);
-        if (intersecting.length > 0) {
-            // Sort by position and take the first one
-            intersecting.sort(
-                (a, b) => a.boundingClientRect.top - b.boundingClientRect.top,
-            );
-            activeMainSection.value = intersecting[0].target.id;
-        }
-    }, mainObserverOptions);
-
-    // Setup IntersectionObserver for sub-sections
-    // Middle of page detection with 1/4 height threshold
-    const subObserverOptions = {
-        root: null,
-        rootMargin: "-37.5% 0px -37.5% 0px",
-        threshold: 0,
-    };
-
+    // Scroll-based detection with dynamic zone calculation
+    // For each section with height H, detection zone is 3/4 * H centered on viewport
+    // Zone top = 50vh - 3/8*H, Zone bottom = 50vh + 3/8*H
+    
     let lastSeenSubSection = sections[0].subSections[0].id;
+    let animationFrameId = null;
 
-    const subObserver = new IntersectionObserver((entries) => {
-        const intersecting = entries.filter((e) => e.isIntersecting);
-        if (intersecting.length > 0) {
-            intersecting.sort(
-                (a, b) => a.boundingClientRect.top - b.boundingClientRect.top,
-            );
-            const targetId = intersecting[0].target.id;
-            activeSubSection.value = targetId;
-            lastSeenSubSection = targetId;
-        } else if (entries.length > 0) {
-            // All sections scrolled out of view, keep last seen
+    function checkSectionVisibility() {
+        const viewportHeight = window.innerHeight;
+        const viewportCenter = viewportHeight / 2;
+
+        // Check sub-sections
+        let closestSubSection = null;
+        let closestDistance = Infinity;
+
+        sections.forEach((section) => {
+            section.subSections.forEach((subSection) => {
+                const element = document.getElementById(subSection.id);
+                if (!element) return;
+
+                const rect = element.getBoundingClientRect();
+                const elementHeight = rect.height;
+                const elementMiddle = rect.top + elementHeight / 2;
+
+                // Detection zone is 3/4 of element height, centered on viewport
+                const zoneHeight = (3 / 4) * elementHeight;
+                const zoneTop = viewportCenter - zoneHeight / 2;
+                const zoneBottom = viewportCenter + zoneHeight / 2;
+
+                // Check if element's middle is in the detection zone
+                if (elementMiddle >= zoneTop && elementMiddle <= zoneBottom) {
+                    const distanceFromCenter = Math.abs(elementMiddle - viewportCenter);
+                    if (distanceFromCenter < closestDistance) {
+                        closestDistance = distanceFromCenter;
+                        closestSubSection = subSection.id;
+                    }
+                }
+            });
+        });
+
+        if (closestSubSection) {
+            activeSubSection.value = closestSubSection;
+            lastSeenSubSection = closestSubSection;
+
+            // Find and set the main section for this subsection
+            sections.forEach((section) => {
+                if (section.subSections.some(sub => sub.id === closestSubSection)) {
+                    activeMainSection.value = section.id;
+                }
+            });
+        } else {
+            // No section in zone, keep last seen
             activeSubSection.value = lastSeenSubSection;
         }
-    }, subObserverOptions);
+    }
 
-    // Observe main section headings
-    sections.forEach((section) => {
-        const element = document.getElementById(section.id);
-        if (element) {
-            mainObserver.observe(element);
+    function onScroll() {
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
         }
-    });
+        animationFrameId = requestAnimationFrame(checkSectionVisibility);
+    }
 
-    // Observe sub-section headings that were found in the DOM
-    sections.forEach((section) => {
-        section.subSections.forEach((subSection) => {
-            const element = document.getElementById(subSection.id);
-            if (element) {
-                subObserver.observe(element);
-            }
-        });
-    });
+    // Initial check
+    checkSectionVisibility();
+
+    // Listen for scroll events
+    window.addEventListener('scroll', onScroll, { passive: true });
 
     // Cleanup function
     return () => {
-        sections.forEach((section) => {
-            const mainElement = document.getElementById(section.id);
-            if (mainElement) mainObserver.unobserve(mainElement);
-
-            section.subSections.forEach((subSection) => {
-                const subElement = document.getElementById(subSection.id);
-                if (subElement) subObserver.unobserve(subElement);
-            });
-        });
+        window.removeEventListener('scroll', onScroll);
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
     };
 }
 

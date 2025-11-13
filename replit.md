@@ -54,7 +54,9 @@ Preferred communication style: Simple, everyday language.
   - **Glass morphism styling** - matching theme dropdown with backdrop-filter: blur(10px) and rgba backgrounds
   - Multiple effects for synchronized UI updates
   - Tag-based DOM creation with XynHTML primitives
-  - Dual IntersectionObserver setup with middle-of-page detection (±37.5% margins)
+  - Scroll-based detection using requestAnimationFrame for performance
+  - Dynamic detection zone: 3/4 of each section's height, centered on viewport (e.g., 100vh section = 1/8 from top to 1/8 from bottom)
+  - Closest-to-center algorithm when multiple sections are in their respective zones
   - lastSeenSubSection tracking for scroll-out-of-view behavior
   - Proper cleanup function for observer memory management
   - Hamburger menu state management using signal and effect
