@@ -2,14 +2,7 @@
 
 ## Overview
 
-XynHTML is a lightweight, reactive JavaScript library for building web applications using a declarative syntax. The library provides a signal-based reactivity system inspired by modern frameworks like React and Vue, but focuses on simplicity, performance, and zero build-step operation. It runs directly in browsers using ES modules.
-
-The core philosophy centers on:
-- **Reactive signals** for state management with automatic UI updates
-- **Declarative component creation** using tagged template literals
-- **Minimal API surface** to reduce learning curve
-- **Performance optimization** through efficient change detection and subscription management
-- **No build tooling required** - works directly in browsers
+XynHTML is a lightweight, reactive JavaScript library for building web applications using a declarative syntax. It features a signal-based reactivity system for automatic UI updates, declarative component creation with tagged template literals, and a minimal API. Designed for simplicity and performance, XynHTML operates directly in browsers using ES modules, requiring no build tooling. Its core purpose is to offer an efficient, easy-to-use alternative for reactive web development, focusing on signal-based state management, declarative UI, and zero build-step operation.
 
 ## User Preferences
 
@@ -17,227 +10,108 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-**November 12, 2025 - v1.0.3 - Navigation, Theme Selector, and CSS Anchor Positioning**
-- Added enhanced sticky navigation bar with vertical section labels and mobile responsiveness:
-  - **Dynamic data extraction** from loaded examples (no hard-coded structure)
-  - **Sticky positioning** at top with no margin, integrated with theme selector
-  - **Side-by-side layout** with navigation and theme selector matching heights
-  - **Blurred glass effect** matching theme selector styling with backdrop-filter
-  - **Vertical text labels** using `writing-mode: vertical-lr` positioned on left side
-  - **Always-visible subsections** displayed next to their section labels
-  - **Height constraint** limited to 1/6 viewport height (max-height: 16.67vh) with minimum of 6rem
-  - **Scrollable overflow** when content exceeds height limit
-  - **Unclickable main sections** - only subsections are interactive links
-  - **Middle-of-page scroll tracking** using 37.5% margins for 25% (1/4 height) detection band
-  - **Previous section highlighting** when sections scroll out of view
-  - **Theme-aware styling** for both light and dark modes
-  - **Mobile responsive** with hamburger menu for screens ≤768px
-  - **Hamburger menu** opens full-page overlay with horizontal text and single column layout
-  - **Automatic menu close** when clicking navigation links on mobile
-- Redesigned theme selector with stacked buttons:
-  - **Vertical layout** - page theme and code theme buttons stacked using flexbox
-  - **Height matching** - theme selector height matches navigation bar using flex
-  - **Button + dropdown** - code theme uses button to trigger dropdown instead of always-visible select
-  - **Consistent styling** - both buttons use gradient styling matching the page theme
-  - **Dropdown positioning** - uses CSS anchor positioning API with custom `@position-try --fallback-left-top` rule (fallbacks to left side, aligned to top of button)
-  - **Auto-close behavior** - dropdown closes when selecting a theme or clicking outside
-  - **Anchor positioning polyfill** - @oddbird/css-anchor-positioning loaded via CDN for unsupported browsers
-  - **Glass morphism styling** - matching navigation bar with backdrop-filter blur effect
-  - **Direct child of container** - dropdown is a direct child of nav-theme-container for proper styling
-  - **Responsive height** - uses `max-height: min(400px, calc(100vh - 120px))` to shrink when page height is limited
-- Navigation demonstrates advanced XynHTML reactive patterns:
-  - Two-signal architecture (activeMainSection, activeSubSection) plus menuOpen for mobile
-  - **No top-level highlighting** - main sections (Core Features, Extra Features) never highlight, only subsections
-  - **Matching optgroup styling** - top-level sections styled like dropdown optgroups with uppercase text, right-aligned vertical labels, and left borders
-  - **Flipped borders** - navigation uses border-left (2px) while dropdown uses border-right (2px) for mirrored appearance
-  - **Background tinting** - all navigation items use alpha blending (5-8% opacity) for visual depth
-  - **Glass morphism styling** - matching theme dropdown with backdrop-filter: blur(10px) and rgba backgrounds
-  - Multiple effects for synchronized UI updates
-  - Tag-based DOM creation with XynHTML primitives
-  - Scroll-based detection using requestAnimationFrame for performance
-  - Viewport-based proximity detection:
-    - **Section bounds**: Calculated from section wrapper element (contains title, code, and output)
-    - **Visibility check**: Sections must have any part visible in viewport (0vh to 100vh)
-    - **Selection logic**: Highlights section whose center is closest to viewport center (50vh)
-    - **No highlighting**: When no sections are visible in viewport
-  - Ultra-simplified algorithm: single loop, pure distance-based selection
-  - Proper cleanup function for observer memory management
-  - Hamburger menu state management using signal and effect
-- Fixed Highlight.js security warning by properly resetting code content before re-highlighting during theme changes
-
-**November 10, 2025 - v1.0.2 - API Refactoring**
-- **Breaking Changes** to xyn_html_extra.js API for better dependency injection:
-  - **createAnimationState()** and **createTransitionState()** now take `signal` function as first parameter and return `{state, attachToElement}` object instead of signal directly
-  - **XynRouter.create()** now requires `signal` and `derived` functions as parameters: `XynRouter.create(signal, derived)`
-  - **Removed** global `setSignal()` and `setDerived()` functions in favor of explicit dependency injection
-- Updated all four xyn_html_extra.js examples to match new API:
-  - animation-tracking.js, transition-tracking.js, basic-routing.js, advanced-routing.js
-
-**October 28, 2025 - v1.0.1**
-- Added four new examples demonstrating xyn_html_extra.js features:
-  - **animation-tracking.js**: Visual demonstration of createAnimationState with CSS animations
-  - **transition-tracking.js**: Interactive hover example showing createTransitionState
-  - **basic-routing.js**: Simple client-side navigation using XynRouter
-  - **advanced-routing.js**: Path parameters and exact routing patterns
-- Fixed three critical bugs in xyn_html_extra.js:
-  - **route() function**: Changed return value from `{matcher, ...}` to `{match: matcher, ...}` to match router expectations
-  - **pathMatcher()**: Fixed parameter extraction to check for undefined path segments, ensuring exact routing works correctly
-  - **animationState() and transitionState()**: Replaced invalid optional chaining assignments (`event?.value = e`) with proper null checks (`if (event) event.value = e`)
-- Added cache-busting timestamps to example module loading in index.js
-- Organized examples into "Core Features" and "Extra Features" sections in index.html
+**January 10, 2026 - v1.1.0 - XynSignal Module Examples and Tests**
+- Added new "XynSignal Features" section with four examples demonstrating the new createSignal API:
+  - **signal-comparison.js**: Side-by-side comparison of legacy `signal()` vs new `createSignal()` 
+  - **object-signal.js**: Object reactivity with direct property assignment and deletion
+  - **array-signal.js**: Array reactivity with push/pop/shift/unshift/splice method interception
+  - **collection-signal.js**: Map and Set signal reactivity demonstrations
+- Created comprehensive test suite in `src/__tests__/xyn_signal.test.js`:
+  - Primitive signal tests (value access, updates, subscriber notifications, unsubscribe)
+  - Object signal tests (property assignment, deletion, change metadata)
+  - Array signal tests (mutator method interception)
+  - Map/Set signal tests (collection operations)
+  - Regression test for `createSignal({}).value.a = 1` API pattern
+- Fixed bugs in xyn_signal.js:
+  - Changed `new Symbol()` to `Symbol()` (Symbol cannot be used as constructor)
+  - Changed `VALUE_DELETE` to `CollectionValue.DELETE` (undefined variable reference)
+- Updated replit.md with comprehensive XynSignal module documentation
 
 ## System Architecture
 
 ### Core Reactivity System
 
 **Signal-Based State Management**
-- Implements a pub-sub pattern where signals hold reactive values that notify subscribers on changes
-- Signals only trigger updates when values actually change (performance optimization through equality checks)
-- Supports direct subscription management with subscribe/unsubscribe methods
-- Effects system provides automatic cleanup and debouncing capabilities for side effects
+- Implements a pub-sub pattern where signals hold reactive values that notify subscribers on changes.
+- Updates only trigger when values change (equality checks for performance).
+- Supports direct subscription management with subscribe/unsubscribe methods.
+- Effects system provides automatic cleanup and debouncing for side effects.
 
 **Derived Values (Computed State)**
-- Derived signals automatically recompute when their dependencies change
-- Supports chained derivations where one derived value depends on another
-- Includes cleanup mechanisms to prevent memory leaks (unsubscribeDerived method)
-- Implements lazy evaluation - only recalculates when accessed
+- Derived signals automatically recompute when dependencies change, supporting chained derivations.
+- Includes cleanup mechanisms to prevent memory leaks.
+- Implements lazy evaluation, recalculating only when accessed.
 
 ### Component Architecture
 
 **DOM Element Creation**
-- `XynTag` class provides declarative element creation using CSS selector-like syntax
-- `tag` template literal function (`xyn`) for creating elements with inline syntax
-- `text` function creates reactive text nodes that update when signals change
-- `XynSwitch` provides conditional rendering based on signal values
+- `XynTag` class and `tag` template literal function (`xyn`) provide declarative element creation.
+- `text` function creates reactive text nodes.
+- `XynSwitch` provides conditional rendering based on signal values.
 
 **Template System**
-- Tagged template literals for element creation: `tag\`div.class#id@event\``
-- Supports attributes, classes, IDs, and event handlers in selector syntax
-- Reactive text interpolation using `""${signal}""` syntax
-- Fragment support for efficient batch DOM updates
+- Uses tagged template literals for element creation with CSS selector-like syntax for attributes, classes, IDs, and event handlers.
+- Supports reactive text interpolation and fragment support for efficient DOM updates.
 
 **Mounting Strategy**
-- `mountNext` function appends elements to containers
-- `createMount` (referenced but implementation focuses on direct DOM manipulation)
-- Components render to real DOM elements, not virtual DOM
+- `mountNext` function appends elements to containers.
+- Components render directly to real DOM elements.
 
 ### Rendering Optimization
 
 **Change Detection**
-- Equality-based updates prevent unnecessary re-renders
-- Debounced effects batch multiple rapid changes
-- Direct DOM manipulation avoids virtual DOM overhead
+- Equality-based updates prevent unnecessary re-renders.
+- Debounced effects batch rapid changes.
+- Direct DOM manipulation avoids virtual DOM overhead.
 
 **Subscription Management**
-- Manual subscription cleanup to prevent memory leaks
-- Effect cleanup functions returned for explicit resource management
-- Derived values track their own subscriptions separately
+- Manual subscription cleanup and effect cleanup functions for explicit resource management.
 
 ### Routing System (Extra Module)
 
 **Client-Side Routing**
-- `XynRouter.create(signal, derived)` creates router instance with explicit dependencies
-- Path matching with parameter extraction
-- Route configuration using declarative route objects
-- Two routing modes:
-  - `basicRouting(routeSignal)`: Simple route switching
-  - `exactRouting(routeSignal)`: Strict path matching with exact flag
+- `XynRouter.create(signal, derived)` creates a router instance for client-side navigation.
+- Supports path matching with parameter extraction and declarative route configuration.
+- Offers `basicRouting` for simple switching and `exactRouting` for strict path matching.
 
 **Route Matching**
-- `pathMatcher(...path)` function handles URL pattern matching
-- Support for path parameters using mutable objects (e.g., `pathMatcher("", "user", userIdParam)`)
-- Automatic parameter extraction into provided objects
-- Returns `{isMatch, isExact}` for route matching decisions
-
-**Usage Pattern:**
-```javascript
-import { signal, derived } from "./xyn_html.js";
-import { XynRouter, route, pathMatcher, basicRouting } from "./xyn_html_extra.js";
-
-const currentRoute = signal("home");
-const router = XynRouter.create(signal, derived);
-
-const renderRoute = router.routes(
-  route(pathMatcher("", ""), basicRouting(currentRoute), "home"),
-  route(pathMatcher("", "about"), basicRouting(currentRoute), "about")
-);
-
-renderRoute.subscribe(() => {}); // Activate routing
-```
+- `pathMatcher(...path)` handles URL pattern matching and parameter extraction.
 
 ### Animation & Transition Tracking (Extra Module)
 
-**Animation State Management**
-- `createAnimationState(signal, event?)` creates animation state tracker
-- Returns object with `{state, attachToElement}` where:
-  - `state`: signal tracking animation lifecycle (started, iteration, ended, canceled)
-  - `attachToElement(el)`: attaches animation listeners to DOM element
-- Listens to native browser animation events
+**State Management**
+- `createAnimationState(signal)` and `createTransitionState(signal)` track native browser animation and transition lifecycles.
+- Returns an object with a `state` signal and an `attachToElement` function to bind listeners to DOM elements.
 
-**Transition State Management**
-- `createTransitionState(signal, event?)` creates transition state tracker
-- Returns object with `{state, attachToElement}` where:
-  - `state`: signal tracking transition lifecycle (started, running, ended, canceled)
-  - `attachToElement(el)`: attaches transition listeners to DOM element
-- Integrates with browser's transitionstart/run/end/cancel events
+### XynSignal Module (xyn_signal.js)
 
-**Usage Pattern:**
-```javascript
-import { signal } from "./xyn_html.js";
-import { createAnimationState } from "./xyn_html_extra.js";
-
-const animState = createAnimationState(signal);
-animState.attachToElement(element);
-animState.state.subscribe(() => console.log(animState.state.value));
-```
+- Provides an enhanced `createSignal` function for reactive support across various data types (primitives, objects, arrays, Map, Set).
+- All signal types offer a `.value` property and a `.subscribe(callback)` method that returns an unsubscribe function.
+- Object and Array signals intercept mutations for fine-grained reactivity.
+- Map/Set signals intercept their respective methods (`set`, `add`, `delete`, `clear`) for reactive updates.
 
 ### Extension Architecture
 
 **Extra Features Module (xyn_html_extra.js)**
-- Dependency injection pattern requiring signal/derived functions as parameters
-- Optional features separated from core to keep main library lightweight
-- Exports advanced components: routing, animation tracking, transition tracking
-- No global state - all dependencies passed explicitly at creation time
+- Separates optional features (routing, animation, transition tracking) from the core library.
+- Uses dependency injection, requiring `signal` and `derived` functions as parameters, to maintain a lightweight core.
 
 ### CSS Integration
 
 **Styling Approach**
-- CSS custom properties for themeable components
-- Class-based styling with reactive class management
-- Inline styles supported through element properties
-- Theme switching via global signals (light/dark mode support)
-
-### Example System Design
-
-**Modular Examples**
-- Each example as separate ES module with title export
-- Common output utility function for consistent rendering
-- Signal update tracking for debugging
-- Progressive complexity from basic signals to advanced routing
+- Utilizes CSS custom properties for themeable components and class-based styling.
+- Supports reactive class management and inline styles.
+- Theme switching is managed via global signals (e.g., light/dark mode).
 
 ## External Dependencies
 
 ### Browser APIs
-- **DOM API**: Core element creation, manipulation, and event handling
-- **ES Modules**: Native browser module system (no bundler required)
-- **MutationObserver**: Potentially used for DOM change detection (not explicit in codebase)
-- **History API**: Used by XynRouter for client-side navigation
-- **Animation/Transition Events**: Native browser events for animation state tracking
+- **DOM API**: For core element manipulation and event handling.
+- **ES Modules**: Native module system for direct browser execution.
+- **History API**: Utilized by `XynRouter` for client-side navigation.
+- **Animation/Transition Events**: Native browser events for state tracking.
 
 ### Third-Party Libraries (Examples/Documentation Only)
-- **Highlight.js** (v11.9.0): Syntax highlighting for code examples in documentation
-  - CDN: cdnjs.cloudflare.com
-  - Languages: JavaScript support
-- **Theme Toggles** (v4.10.1): UI component for theme switching demo
-  - CDN: cdn.jsdelivr.net
-
-### Development Tools
-- No build tools required (runs directly in browser)
-- No transpilation needed (uses native ES6+ features)
-- No package manager dependencies for core library
-
-### Deployment Considerations
-- Static file hosting sufficient (no server-side rendering)
-- Single JavaScript file distribution model
-- ES module imports require proper MIME types from server
-- CORS headers may be needed for CDN resources in examples
+- **Highlight.js**: For syntax highlighting in code examples.
+- **Theme Toggles**: UI component for theme switching demonstrations.
+- **@oddbird/css-anchor-positioning**: Polyfill for CSS Anchor Positioning API.
