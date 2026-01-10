@@ -28,6 +28,8 @@
 /** @type {string} */
 let defaultTag = "div";
 
+let dom = document;
+
 /**
  * @type {() => void}
  * @description A no-op function.
@@ -35,7 +37,7 @@ let defaultTag = "div";
  */
 const NoOp = () => {};
 
-const UndefinedChange = {
+const UndefinedChange = Object.freeze({
     value: undefined,
     previousValue: undefined,
     operation: undefined,
@@ -45,7 +47,7 @@ const UndefinedChange = {
     previousEntry: undefined,
     previousValues: undefined,
     values: undefined,
-};
+});
 
 /**
  * @template T
@@ -631,7 +633,7 @@ class XynFragment extends XynElement {
      */
     constructor(...children) {
         super();
-        this.#fragment = document.createDocumentFragment();
+        this.#fragment = dom.createDocumentFragment();
         if (children) {
             this.#children = children;
         }
@@ -826,7 +828,7 @@ class XynTag extends XynElement {
      */
     constructor(name, ...childrenOrAttributes) {
         super();
-        this.#self = document.createElement(name);
+        this.#self = dom.createElement(name);
         if (childrenOrAttributes.length > 0) {
             for (const childOrAttribute of childrenOrAttributes) {
                 if (childOrAttribute instanceof XynElement) {
@@ -1001,7 +1003,7 @@ class XynText extends XynElement {
     /**
      * @type {TextNode}
      */
-    #el = document.createTextNode("");
+    #el = dom.createTextNode("");
 
     /**
      * @param {TemplateStringsArray | string} text
@@ -1073,7 +1075,7 @@ class XynSwitch extends XynElement {
             defaultValue = {
                 id: uuidv4(),
                 render() {
-                    return document.createComment(`Placeholder ${this.id}`);
+                    return dom.createComment(`Placeholder ${this.id}`);
                 },
             };
         }
@@ -1447,7 +1449,7 @@ class XynHTML {
         const el =
             element instanceof HTMLElement
                 ? element
-                : document.querySelector(element);
+                : dom.querySelector(element);
 
         if (el) {
             el.appendChild(xynElement.render(el));
@@ -1469,7 +1471,7 @@ class XynHTML {
         const el =
             element instanceof HTMLElement
                 ? element
-                : document.querySelector(element);
+                : dom.querySelector(element);
 
         if (el) {
             el.innerHTML = "";
@@ -1660,6 +1662,16 @@ class XynHTML {
      */
     static set defaultTag(tag = "div") {
         defaultTag = tag;
+    }
+
+    /**
+     * @param {Document} newDom
+     * @returns {void}
+     * @description Sets the DOM to use for creating elements.
+     * This is useful for testing and server-side rendering.
+     */
+    static set dom(newDom) {
+        dom = newDom;
     }
 }
 
