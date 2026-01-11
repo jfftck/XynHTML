@@ -59,7 +59,10 @@ class XynChange {
         }
 
         get values() {
-                return { value: this.#value, previousValue: this.#previousValue };
+                return {
+                        value: this.#value,
+                        previousValue: this.#previousValue,
+                };
         }
 }
 
@@ -149,28 +152,11 @@ export function createSignal(value) {
                 return createObjectSignal(value);
         }
         const subscribers = new Set();
-        const signalProxy = new Proxy(
-                { value },
-                {
-                        get(target, prop) {
-                                return Reflect.get(target, prop);
-                        },
-                        set(target, prop, newValue) {
-                                if (prop === "value") {
-                                        const previousValue = target.value;
-                                        Reflect.set(target, prop, newValue);
-                                        subscribers.forEach((subscriber) =>
-                                                subscriber(XynChange.create(newValue, previousValue)),
-                                        );
-                                        return true;
-                                }
-                        },
-                },
-        );
 
         /**
-         * @param {function({value: any, previousValue: any}): void} subscriber
-         * @returns {function(): void}
+         * @type {Object}
+         * @property {T} value
+         * @property {function(function({value: any, previousValue: any}): void): function(): void} subscribe
          * @description Subscribes to the signal and returns a function to unsubscribe.
          * The subscriber function is called with the current value and the previous value.
          * The subscriber function is called immediately with the current value.
@@ -180,12 +166,44 @@ export function createSignal(value) {
          * console.log(`Value changed from ${previousValue} to ${value}`)
          * );
          */
-        function subscribe(subscriber) {
-                subscribers.add(subscriber);
-                return () => subscribers.delete(subscriber);
-        }
+        const signalProxy = new Proxy(
+                {
+                        value,
+                        subscribe(subscriber) {
+                                subscribers.add(subscriber);
+                                return () => subscribers.delete(subscriber);
+                        },
+                },
+                {
+                        get(target, prop) {
+                                return Reflect.get(target, prop);
+                        },
+                        set(target, prop, newValue) {
+                                if (prop === "value") {
+                                        const previousValue = Reflect.get(
+                                                target,
+                                                prop,
+                                        );
+                                        Reflect.set(target, prop, newValue);
+                                        subscribers.forEach((subscriber) =>
+                                                subscriber(
+                                                        XynChange.create(
+                                                                newValue,
+                                                                previousValue,
+                                                        ),
+                                                ),
+                                        );
+                                        return true;
+                                }
+                                return Reflect.set(target, prop, newValue);
+                        },
+                        apply(target, thisArg, args) {
+                                return Reflect.apply(target, thisArg, args);
+                        },
+                },
+        );
 
-        return Object.assign(signalProxy, { subscribe });
+        return signalProxy;
 }
 
 function createObjectSignal(obj) {
@@ -196,7 +214,11 @@ function createObjectSignal(obj) {
                         Reflect.set(target, prop, newValue);
                         subscribers.forEach((subscriber) =>
                                 subscriber(
-                                        XynCollectionChange.create(prop, newValue, previousValue),
+                                        XynCollectionChange.create(
+                                                prop,
+                                                newValue,
+                                                previousValue,
+                                        ),
                                 ),
                         );
                 },
@@ -230,46 +252,59 @@ function createListSignal(list) {
                         const value = Reflect.get(target, prop, receiver);
                         if (typeof value === "function") {
                                 return (...args) => {
-                                        const result = value.apply(target, args);
-                                        if (prop === "push" || prop === "unshift") {
-                                                subscribers.forEach((subscriber) =>
-                                                        subscriber(
-                                                                XynCollectionChange.create(
-                                                                        args[0],
-                                                                        result,
-                                                                        CollectionValue.INSERT,
+                                        const result = value.apply(
+                                                target,
+                                                args,
+                                        );
+                                        if (
+                                                prop === "push" ||
+                                                prop === "unshift"
+                                        ) {
+                                                subscribers.forEach(
+                                                        (subscriber) =>
+                                                                subscriber(
+                                                                        XynCollectionChange.create(
+                                                                                args[0],
+                                                                                result,
+                                                                                CollectionValue.INSERT,
+                                                                        ),
                                                                 ),
-                                                        ),
                                                 );
-                                        } else if (prop === "pop" || prop === "shift") {
-                                                subscribers.forEach((subscriber) =>
-                                                        subscriber(
-                                                                XynCollectionChange.create(
-                                                                        target.length,
-                                                                        CollectionValue.DELETE,
-                                                                        CollectionValue.DELETE,
+                                        } else if (
+                                                prop === "pop" ||
+                                                prop === "shift"
+                                        ) {
+                                                subscribers.forEach(
+                                                        (subscriber) =>
+                                                                subscriber(
+                                                                        XynCollectionChange.create(
+                                                                                target.length,
+                                                                                CollectionValue.DELETE,
+                                                                                CollectionValue.DELETE,
+                                                                        ),
                                                                 ),
-                                                        ),
                                                 );
                                         } else if (prop === "splice") {
-                                                subscribers.forEach((subscriber) =>
-                                                        subscriber(
-                                                                XynCollectionChange.create(
-                                                                        args[0],
-                                                                        args[2],
-                                                                        CollectionValue.DELETE,
+                                                subscribers.forEach(
+                                                        (subscriber) =>
+                                                                subscriber(
+                                                                        XynCollectionChange.create(
+                                                                                args[0],
+                                                                                args[2],
+                                                                                CollectionValue.DELETE,
+                                                                        ),
                                                                 ),
-                                                        ),
                                                 );
                                         } else {
-                                                subscribers.forEach((subscriber) =>
-                                                        subscriber(
-                                                                XynCollectionChange.create(
-                                                                        prop,
-                                                                        value,
-                                                                        CollectionValue.DELETE,
+                                                subscribers.forEach(
+                                                        (subscriber) =>
+                                                                subscriber(
+                                                                        XynCollectionChange.create(
+                                                                                prop,
+                                                                                value,
+                                                                                CollectionValue.DELETE,
+                                                                        ),
                                                                 ),
-                                                        ),
                                                 );
                                         }
                                 };
@@ -293,36 +328,46 @@ function createCollectionSignal(collection) {
 
                         if (typeof value === "function") {
                                 return (...args) => {
-                                        const result = value.apply(target, args);
+                                        const result = value.apply(
+                                                target,
+                                                args,
+                                        );
                                         if (prop === "set" || prop === "add") {
-                                                subscribers.forEach((subscriber) =>
-                                                        subscriber(
-                                                                XynCollectionChange.create(
-                                                                        args[0],
-                                                                        args[1],
-                                                                        target.get(args[0]),
+                                                subscribers.forEach(
+                                                        (subscriber) =>
+                                                                subscriber(
+                                                                        XynCollectionChange.create(
+                                                                                args[0],
+                                                                                args[1],
+                                                                                target.get(
+                                                                                        args[0],
+                                                                                ),
+                                                                        ),
                                                                 ),
-                                                        ),
                                                 );
                                         } else if (prop === "delete") {
-                                                subscribers.forEach((subscriber) =>
-                                                        subscriber(
-                                                                XynCollectionChange.create(
-                                                                        args[0],
-                                                                        CollectionValue.DELETE,
-                                                                        target.get(args[0]),
+                                                subscribers.forEach(
+                                                        (subscriber) =>
+                                                                subscriber(
+                                                                        XynCollectionChange.create(
+                                                                                args[0],
+                                                                                CollectionValue.DELETE,
+                                                                                target.get(
+                                                                                        args[0],
+                                                                                ),
+                                                                        ),
                                                                 ),
-                                                        ),
                                                 );
                                         } else if (prop === "clear") {
-                                                subscribers.forEach((subscriber) =>
-                                                        subscriber(
-                                                                XynCollectionChange.create(
-                                                                        target.length,
-                                                                        CollectionValue.DELETE,
-                                                                        CollectionValue.DELETE,
+                                                subscribers.forEach(
+                                                        (subscriber) =>
+                                                                subscriber(
+                                                                        XynCollectionChange.create(
+                                                                                target.length,
+                                                                                CollectionValue.DELETE,
+                                                                                CollectionValue.DELETE,
+                                                                        ),
                                                                 ),
-                                                        ),
                                                 );
                                         }
                                         return result;
