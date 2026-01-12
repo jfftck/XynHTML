@@ -512,32 +512,25 @@ async function loadExamples() {
 function setupSidebar() {
     const toggleBtn = document.getElementById("sidebar-toggle");
     const nav = document.getElementById("examples-nav");
+    const container = document.getElementById("nav-theme-container");
 
-    if (!toggleBtn || !nav) return;
+    if (!toggleBtn || !nav || !container) return;
 
     const sidebarOpen = signal(window.innerWidth > 900);
     const isWideScreen = signal(window.innerWidth > 900);
 
     // Update all sidebar classes based on current state
     function updateSidebarClasses() {
-        const isWide = isWideScreen.value;
         const isOpen = sidebarOpen.value;
 
-        // Clear all state classes first
-        nav.classList.remove("sidebar-hidden", "sidebar-visible");
-        
         if (isOpen) {
             toggleBtn.classList.add("active");
+            container.classList.remove("sidebar-closed");
             document.body.classList.remove("sidebar-collapsed");
-            if (!isWide) {
-                nav.classList.add("sidebar-visible");
-            }
         } else {
             toggleBtn.classList.remove("active");
-            if (isWide) {
-                nav.classList.add("sidebar-hidden");
-                document.body.classList.add("sidebar-collapsed");
-            }
+            container.classList.add("sidebar-closed");
+            document.body.classList.add("sidebar-collapsed");
         }
     }
 

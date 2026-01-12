@@ -1085,6 +1085,11 @@ ul li {
   flex-direction: row;
   z-index: 1000;
   pointer-events: none;
+  transition: transform 0.3s ease;
+}
+
+#nav-theme-container.sidebar-closed {
+  transform: translateX(280px);
 }
 
 #sidebar-controls {
@@ -1187,11 +1192,6 @@ ul li {
   pointer-events: auto;
 }
 
-#examples-nav.sidebar-hidden {
-  transform: translateX(100%);
-  opacity: 0;
-  pointer-events: none;
-}
 
 @supports(backdrop-filter: blur(10px)) {
   #examples-nav {
@@ -1352,16 +1352,8 @@ body[data-theme="dark"] .examples-nav__link--active:hover {
 
 /* Responsive: Auto-hide sidebar on narrow screens */
 @media (max-width: 900px) {
-  #examples-nav {
-    transform: translateX(100%);
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  #examples-nav.sidebar-visible {
-    transform: translateX(0);
-    opacity: 1;
-    pointer-events: auto;
+  #nav-theme-container.sidebar-closed {
+    transform: translateX(280px);
   }
 
   .sidebar-toggle {
