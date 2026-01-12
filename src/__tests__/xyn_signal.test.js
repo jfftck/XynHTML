@@ -10,7 +10,12 @@ function test(name, fn) {
         results.push({ name, passed: true });
         passCount++;
     } catch (error) {
-        results.push({ name, passed: false, error: error.message });
+        results.push({
+            name,
+            passed: false,
+            error: error.message,
+            stack: error.stack,
+        });
         failCount++;
     }
 }
@@ -24,12 +29,16 @@ function expect(actual) {
         },
         toEqual(expected) {
             if (JSON.stringify(actual) !== JSON.stringify(expected)) {
-                throw new Error(`Expected ${JSON.stringify(expected)}, but got ${JSON.stringify(actual)}`);
+                throw new Error(
+                    `Expected ${JSON.stringify(expected)}, but got ${JSON.stringify(actual)}`,
+                );
             }
         },
         toBeDefined() {
             if (actual === undefined) {
-                throw new Error(`Expected value to be defined, but got undefined`);
+                throw new Error(
+                    `Expected value to be defined, but got undefined`,
+                );
             }
         },
         toBeInstanceOf(constructor) {
@@ -44,9 +53,11 @@ function expect(actual) {
         },
         toHaveBeenCalledTimes(times) {
             if (actual.callCount !== times) {
-                throw new Error(`Expected ${times} calls, but got ${actual.callCount}`);
+                throw new Error(
+                    `Expected ${times} calls, but got ${actual.callCount}`,
+                );
             }
-        }
+        },
     };
 }
 
@@ -177,7 +188,9 @@ test("REGRESSION: createSignal({}).value.a = 1 notifies subscribers", () => {
 });
 
 test("Nested object: can access nested properties", () => {
-    const data = createSignal({ user: { name: "Alice", profile: { age: 25 } } });
+    const data = createSignal({
+        user: { name: "Alice", profile: { age: 25 } },
+    });
     expect(data.value.user.name).toBe("Alice");
     expect(data.value.user.profile.age).toBe(25);
 });
@@ -344,7 +357,7 @@ test("Set signal: subscriber receives correct change for add", () => {
 
 export function runTests() {
     console.log("\n=== XynSignal Test Suite ===\n");
-    
+
     for (const result of results) {
         if (result.passed) {
             console.log(`PASS: ${result.name}`);
@@ -353,9 +366,18 @@ export function runTests() {
             console.log(`  Error: ${result.error}`);
         }
     }
-    
-    console.log(`\n=== Results: ${passCount} passed, ${failCount} failed ===\n`);
-    
+
+    console.log(
+        `\n=== Results: ${passCount} passed, ${failCount} failed ===\n`,
+    );
+
+    for (const result of results) {
+        if (!result.passed) {
+            console.log(`\nDetailed failure for: ${result.name}`);
+            console.log(`Stack:\n${result.stack}`);
+        }
+    }
+
     return { passCount, failCount, results };
 }
 

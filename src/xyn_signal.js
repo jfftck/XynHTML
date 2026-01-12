@@ -201,40 +201,157 @@ export function createSignal(value) {
   return signalProxy;
 }
 
-function proxyFactory(obj) {
+/**
+ * @function proxyFactory
+ * @param {Object} obj
+ * @param {Set<Function>} subscribers
+ * @returns {Proxy | Number | String | Boolean | null | undefined | Symbol | BigInt }
+ * @description Creates a proxy for the given object that notifies subscribers when the object changes.
+ * @example
+ * const obj = { a: 1, b: 2 };
+ * const subscribers = new Set();
+ * const proxy = proxyFactory(obj, subscribers);
+ * proxy.a = 3; // Notifies subscribers
+ * proxy.b = 4; // Notifies subscribers
+ * proxy.c = 5; // Notifies subscribers
+ * delete proxy.a; // Notifies subscribers
+ * proxy.a = 6; // Notifies subscribers
+ * proxy.a = 7; // Notifies subscribers
+ */
+function proxyFactory(value, subscribers) {
   if (value instanceof Map || value instanceof Set) {
-    return createCollectionProxy(value);
+    return createCollectionProxy(value, subscribers);
   } else if (Array.isArray(value)) {
-    return createListProxy(value);
+    return createListProxy(value, subscribers);
+  } else if (typeof value === "object" && value != null) {
+    return createObjectProxy(value, subscribers);
   }
-  return createObjectProxy(value);
+  return value;
 }
 
-function createCollectionProxy(collection) {
-  const proxy = new Proxy(collection, {
-    get(target, prop, receiver) {
-      const value = Reflect.get(target, prop, receiver);
+function createCollectionProxy(collection, subscribers) {
+  return new Proxy(collection, {
+    get(target, prop) {
+      console.debug(`Getting property ${prop} from collection`);
+      const value = Reflect.get(target, prop);
       if (typeof value === "function") {
-        value = value();
+        return (...args) => {
+          const prevDeleteValue =
+            prop === "delete" ? Reflect.get(target, args[0]) : null;
+
+          const result = value.apply(target, args);
+          if (prop === "get") {
+            return proxyFactory(result, subscribers);
+          }
+          if (prop === "set" || prop === "add") {
+            subscribers.forEach((subscriber) => {
+              subscriber(
+                XynCollectionChange.create(
+                  args[0],
+                  args[1],
+                  CollectionValue.INSERT,
+                ),
+              );
+            });
+          }
+          if (prop === "delete") {
+            subscribers.forEach((subscriber) => {
+              subscriber(
+                XynCollectionChange.create(
+                  args[0],
+                  CollectionValue.DELETE,
+                  prevDeleteValue,
+                ),
+              );
+            });
+          }
+          if (prop === "clear") {
+            subscribers.forEach((subscriber) => {
+              subscriber(
+                XynCollectionChange.create(
+                  CollectionValue.DELETE,
+                  CollectionValue.DELETE,
+                  CollectionValue.DELETE,
+                ),
+              );
+            });
+          }
+          return result;
+        };
       }
+
       if (typeof value === "object" && value !== null) {
-        proxyFactory(value);
+        return proxyFactory(value, subscribers);
       }
+
+      return value;
     },
-    set(target, prop, newValue) {
-      const previousValue = Reflect.get(target, prop);
-      Reflect.set(target, prop, newValue);
-      subscribers.forEach((subscriber) =>
-        subscriber(XynCollectionChange.create(prop, newValue, previousValue)),
-      );
+    getOwnPropertyDescriptor(target, prop) {
+      return Reflect.getOwnPropertyDescriptor(target, prop);
+    },
+    getPrototypeOf(target) {
+      return Reflect.getPrototypeOf(target);
     },
   });
+}
 
-  return proxy;
+function createListProxy(list, subscribers) {
+  return new Proxy(list, {
+    get(target, prop) {
+      const value = Reflect.get(target, prop);
+      if (typeof value === "function") {
+        return (...args) => {
+          const result = value.apply(target, args);
+          const LAST_INDEX = Reflect.get(target, "length") - 1;
+
+          if (prop === "push" || prop === "unshift") {
+            subscribers.forEach((subscriber) =>
+              subscriber(
+                XynCollectionChange.create(
+                  prop === "push" ? LAST_INDEX : 0,
+                  args[0],
+                  CollectionValue.INSERT,
+                ),
+              ),
+            );
+          }
+
+          if (prop === "pop" || prop === "shift") {
+            subscribers.forEach((subscriber) =>
+              subscriber(
+                XynCollectionChange.create(
+                  prop === "pop" ? LAST_INDEX : 0,
+                  CollectionValue.DELETE,
+                  result,
+                ),
+              ),
+            );
+          }
+
+          if (prop === "splice") {
+            const [start, deleteCount, ...items] = args;
+            subscribers.forEach((subscriber) =>
+              subscriber(
+                XynCollectionChange.create([start, deleteCount], items, result),
+              ),
+            );
+          }
+
+          return result;
+        };
+      }
+
+      if (typeof value === "object" && value !== null) {
+        return proxyFactory(value, subscribers);
+      }
+
+      return value;
+    },
+  });
 }
 
 function createObjectProxy(obj, subscribers) {
-  const proxy = new Proxy(obj, {
+  return new Proxy(obj, {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop, receiver);
       if (typeof value === "function") {
@@ -242,7 +359,7 @@ function createObjectProxy(obj, subscribers) {
       }
 
       if (typeof value === "object" && value !== null) {
-        return proxyFactory(value);
+        return proxyFactory(value, subscribers);
       }
 
       return value;
@@ -270,132 +387,40 @@ function createObjectProxy(obj, subscribers) {
       return true;
     },
   });
-
-  return proxy;
 }
 
 function createObjectSignal(obj) {
   const subscribers = new Set();
 
-  const signalProxy = {
+  return {
     value: createObjectProxy(obj, subscribers),
     subscribe(subscriber) {
       subscribers.add(subscriber);
       return () => subscribers.delete(subscriber);
     },
   };
-
-  return signalProxy;
 }
 
 function createListSignal(list) {
   const subscribers = new Set();
-  const signalProxy = new Proxy(list, {
-    get(target, prop, receiver) {
-      const value = Reflect.get(target, prop, receiver);
-      if (typeof value === "function") {
-        return (...args) => {
-          const result = value.apply(target, args);
-          if (prop === "push" || prop === "unshift") {
-            subscribers.forEach((subscriber) =>
-              subscriber(
-                XynCollectionChange.create(
-                  args[0],
-                  result,
-                  CollectionValue.INSERT,
-                ),
-              ),
-            );
-          } else if (prop === "pop" || prop === "shift") {
-            subscribers.forEach((subscriber) =>
-              subscriber(
-                XynCollectionChange.create(
-                  target.length,
-                  CollectionValue.DELETE,
-                  CollectionValue.DELETE,
-                ),
-              ),
-            );
-          } else if (prop === "splice") {
-            subscribers.forEach((subscriber) =>
-              subscriber(
-                XynCollectionChange.create(
-                  args[0],
-                  args[2],
-                  CollectionValue.DELETE,
-                ),
-              ),
-            );
-          } else {
-            subscribers.forEach((subscriber) =>
-              subscriber(
-                XynCollectionChange.create(prop, value, CollectionValue.DELETE),
-              ),
-            );
-          }
-        };
-      }
+
+  return {
+    value: createListProxy(list, subscribers),
+    subscribe(subscriber) {
+      subscribers.add(subscriber);
+      return () => subscribers.delete(subscriber);
     },
-  });
-
-  function subscribe(subscriber) {
-    subscribers.add(subscriber);
-    return () => subscribers.delete(subscriber);
-  }
-
-  return Object.assign(signalProxy, { subscribe });
+  };
 }
 
 function createCollectionSignal(collection) {
   const subscribers = new Set();
-  const signalProxy = new Proxy(collection, {
-    get(target, prop, receiver) {
-      const value = Reflect.get(target, prop, receiver);
 
-      if (typeof value === "function") {
-        return (...args) => {
-          const result = value.apply(target, args);
-          if (prop === "set" || prop === "add") {
-            subscribers.forEach((subscriber) =>
-              subscriber(
-                XynCollectionChange.create(
-                  args[0],
-                  args[1],
-                  target.get(args[0]),
-                ),
-              ),
-            );
-          } else if (prop === "delete") {
-            subscribers.forEach((subscriber) =>
-              subscriber(
-                XynCollectionChange.create(
-                  args[0],
-                  CollectionValue.DELETE,
-                  target.get(args[0]),
-                ),
-              ),
-            );
-          } else if (prop === "clear") {
-            subscribers.forEach((subscriber) =>
-              subscriber(
-                XynCollectionChange.create(
-                  target.length,
-                  CollectionValue.DELETE,
-                  CollectionValue.DELETE,
-                ),
-              ),
-            );
-          }
-          return result;
-        };
-      }
+  return {
+    value: createCollectionProxy(collection, subscribers),
+    subscribe(subscriber) {
+      subscribers.add(subscriber);
+      return () => subscribers.delete(subscriber);
     },
-  });
-
-  function subscribe(subscriber) {
-    subscribers.add(subscriber);
-    return () => subscribers.delete(subscriber);
-  }
-
-  return Object.assign(signalProxy, { subscribe });
+  };
 }
