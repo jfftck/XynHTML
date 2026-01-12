@@ -508,36 +508,76 @@ async function loadExamples() {
     );
 }
 
-// Hamburger menu functionality
-function setupHamburgerMenu() {
-    const hamburger = document.getElementById("hamburger-menu");
+// Sidebar toggle functionality
+function setupSidebar() {
+    const toggleBtn = document.getElementById("sidebar-toggle");
     const nav = document.getElementById("examples-nav");
 
-    if (!hamburger || !nav) return;
+    if (!toggleBtn || !nav) return;
 
-    const menuOpen = signal(false);
+    const sidebarOpen = signal(window.innerWidth > 900);
+    const isWideScreen = signal(window.innerWidth > 900);
 
-    hamburger.addEventListener("click", () => {
-        menuOpen.value = !menuOpen.value;
-    });
+    // Update all sidebar classes based on current state
+    function updateSidebarClasses() {
+        const isWide = isWideScreen.value;
+        const isOpen = sidebarOpen.value;
 
-    // Effect to toggle classes based on menu state
-    effect(() => {
-        if (menuOpen.value) {
-            hamburger.classList.add("active");
-            nav.classList.add("mobile-open");
+        // Clear all state classes first
+        nav.classList.remove("sidebar-hidden", "sidebar-visible");
+        
+        if (isOpen) {
+            toggleBtn.classList.add("active");
+            document.body.classList.remove("sidebar-collapsed");
+            if (!isWide) {
+                nav.classList.add("sidebar-visible");
+            }
         } else {
-            hamburger.classList.remove("active");
-            nav.classList.remove("mobile-open");
+            toggleBtn.classList.remove("active");
+            if (isWide) {
+                nav.classList.add("sidebar-hidden");
+                document.body.classList.add("sidebar-collapsed");
+            }
         }
-    }, [menuOpen]);
+    }
 
-    // Close menu when clicking a navigation link
+    toggleBtn.addEventListener("click", () => {
+        sidebarOpen.value = !sidebarOpen.value;
+    });
+
+    // Effect to toggle classes based on sidebar state
+    effect(() => {
+        updateSidebarClasses();
+    }, [sidebarOpen, isWideScreen]);
+
+    // Close sidebar when clicking a navigation link on mobile
     nav.addEventListener("click", (e) => {
-        if (e.target.classList.contains("examples-nav__link--sub")) {
-            menuOpen.value = false;
+        if (e.target.classList.contains("examples-nav__link--sub") && !isWideScreen.value) {
+            sidebarOpen.value = false;
         }
     });
+
+    // Handle window resize
+    function handleResize() {
+        const wasWide = isWideScreen.value;
+        const isWide = window.innerWidth > 900;
+        
+        if (wasWide !== isWide) {
+            isWideScreen.value = isWide;
+            
+            // Auto-open on wide screens, auto-close on narrow
+            if (isWide) {
+                sidebarOpen.value = true;
+            } else {
+                sidebarOpen.value = false;
+            }
+        }
+    }
+
+    window.addEventListener("resize", handleResize);
+    
+    // Initial setup
+    updateSidebarClasses();
 }
 
 // Build sticky navigation bar with scroll-based highlighting
@@ -551,27 +591,29 @@ function createExamplesNavigation() {
     // Find main section headers
     const coreFeaturesHeader = document.getElementById("core-features");
     const extraFeaturesHeader = document.getElementById("extra-features");
+    const xynSignalFeaturesHeader = document.getElementById("xyn-signal-features");
 
-    if (coreFeaturesHeader) {
-        const coreSubSections = [];
-        // Find all section wrappers between core-features and extra-features
-        let currentElement = coreFeaturesHeader.nextElementSibling;
-        while (currentElement && currentElement !== extraFeaturesHeader) {
+    // Helper function to collect subsections between two headers
+    function collectSubSections(startHeader, endHeader) {
+        const subSections = [];
+        let currentElement = startHeader.nextElementSibling;
+        while (currentElement && currentElement !== endHeader) {
             if (currentElement.classList && currentElement.classList.contains('example-section')) {
                 const h3 = currentElement.querySelector('h3[id]');
                 if (h3) {
-                    coreSubSections.push({
+                    subSections.push({
                         id: h3.id,
-                        label: h3.textContent.replace(
-                            /^Example \d+:\s*/,
-                            "",
-                        ),
+                        label: h3.textContent.replace(/^Example \d+:\s*/, ""),
                     });
                 }
             }
             currentElement = currentElement.nextElementSibling;
         }
+        return subSections;
+    }
 
+    if (coreFeaturesHeader) {
+        const coreSubSections = collectSubSections(coreFeaturesHeader, extraFeaturesHeader);
         if (coreSubSections.length > 0) {
             sections.push({
                 id: "core-features",
@@ -582,30 +624,23 @@ function createExamplesNavigation() {
     }
 
     if (extraFeaturesHeader) {
-        const extraSubSections = [];
-        // Find all section wrappers after extra-features
-        let currentElement = extraFeaturesHeader.nextElementSibling;
-        while (currentElement) {
-            if (currentElement.classList && currentElement.classList.contains('example-section')) {
-                const h3 = currentElement.querySelector('h3[id]');
-                if (h3) {
-                    extraSubSections.push({
-                        id: h3.id,
-                        label: h3.textContent.replace(
-                            /^Example \d+:\s*/,
-                            "",
-                        ),
-                    });
-                }
-            }
-            currentElement = currentElement.nextElementSibling;
-        }
-
+        const extraSubSections = collectSubSections(extraFeaturesHeader, xynSignalFeaturesHeader);
         if (extraSubSections.length > 0) {
             sections.push({
                 id: "extra-features",
                 label: "Extra Features",
                 subSections: extraSubSections,
+            });
+        }
+    }
+
+    if (xynSignalFeaturesHeader) {
+        const xynSignalSubSections = collectSubSections(xynSignalFeaturesHeader, null);
+        if (xynSignalSubSections.length > 0) {
+            sections.push({
+                id: "xyn-signal-features",
+                label: "XynSignal",
+                subSections: xynSignalSubSections,
             });
         }
     }
@@ -776,8 +811,8 @@ const loadExamplesOnReady = async () => {
     // Now that all examples are loaded and titles are in DOM, create navigation
     createExamplesNavigation();
 
-    // Setup hamburger menu
-    setupHamburgerMenu();
+    // Setup sidebar
+    setupSidebar();
 
     // Mark initial load as complete to enable transitions for future changes
     setTimeout(() => {
