@@ -232,8 +232,8 @@ function proxyFactory(value, subscribers) {
 function createCollectionProxy(collection, subscribers) {
   return new Proxy(collection, {
     get(target, prop) {
-      console.debug(`Getting property ${prop} from collection`);
       const value = Reflect.get(target, prop);
+
       if (typeof value === "function") {
         return (...args) => {
           const prevDeleteValue =

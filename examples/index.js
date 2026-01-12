@@ -581,6 +581,17 @@ function createExamplesNavigation() {
     // Dynamically extract sections from the DOM
     const sections = [];
 
+    // Add Introduction section first
+    const introSection = document.getElementById("introduction");
+    if (introSection) {
+        sections.push({
+            id: "introduction",
+            label: "Introduction",
+            subSections: [],
+            isSingle: true,
+        });
+    }
+
     // Find main section headers
     const coreFeaturesHeader = document.getElementById("core-features");
     const extraFeaturesHeader = document.getElementById("extra-features");
@@ -644,133 +655,153 @@ function createExamplesNavigation() {
         return;
     }
 
-    // Signals to track state
-    const activeMainSection = signal(sections[0].id);
-    const activeSubSection = signal(sections[0].subSections[0].id);
+    // Signal to track visible sections (as a Set of IDs)
+    const visibleSections = signal(new Set());
 
     // Create navigation structure
-    sections.forEach((section, sectionIndex) => {
+    sections.forEach((section) => {
         const mainItem = tag`div`;
         mainItem.css.classes`examples-nav__main-item`;
         mainItem.attributes.set("data-section-id", section.id);
 
-        const mainLabel = tag`div`;
-        mainLabel.css.classes`examples-nav__link examples-nav__link--main`;
-        mainLabel.children.add(text(section.label));
-
-        mainItem.children.add(mainLabel);
-
-        // Create sub-sections container
-        const subNav = tag`div`;
-        subNav.css.classes`examples-nav__subnav`;
-
-        section.subSections.forEach((subSection) => {
-            const subLink = tag`a`;
-            subLink.attributes.set("href", `#${subSection.id}`);
-            subLink.css.classes`examples-nav__link examples-nav__link--sub`;
-            subLink.attributes.set("data-subsection-id", subSection.id);
-            subLink.children.add(text(subSection.label));
-
-            const subLinkElement = subLink.render();
-
-            // Sub-section click handler
-            subLinkElement.addEventListener("click", (e) => {
+        // For single sections (like Introduction), create a clickable link
+        if (section.isSingle) {
+            const mainLink = tag`a`;
+            mainLink.attributes.set("href", `#${section.id}`);
+            mainLink.css.classes`examples-nav__link examples-nav__link--single`;
+            mainLink.attributes.set("data-section-id", section.id);
+            mainLink.children.add(text(section.label));
+            
+            const mainLinkElement = mainLink.render();
+            mainLinkElement.addEventListener("click", (e) => {
                 e.preventDefault();
-                const targetElement = document.getElementById(subSection.id);
+                const targetElement = document.getElementById(section.id);
                 if (targetElement) {
                     targetElement.scrollIntoView({
                         behavior: "smooth",
                         block: "start",
                     });
-                    activeMainSection.value = section.id;
-                    activeSubSection.value = subSection.id;
                 }
             });
+            
+            mainItem.children.add(mainLink);
+        } else {
+            const mainLabel = tag`div`;
+            mainLabel.css.classes`examples-nav__link examples-nav__link--main`;
+            mainLabel.children.add(text(section.label));
+            mainItem.children.add(mainLabel);
 
-            subNav.children.add(subLink);
-        });
+            // Create sub-sections container
+            const subNav = tag`div`;
+            subNav.css.classes`examples-nav__subnav`;
 
-        mainItem.children.add(subNav);
+            section.subSections.forEach((subSection) => {
+                const subLink = tag`a`;
+                subLink.attributes.set("href", `#${subSection.id}`);
+                subLink.css.classes`examples-nav__link examples-nav__link--sub`;
+                subLink.attributes.set("data-subsection-id", subSection.id);
+                subLink.children.add(text(subSection.label));
+
+                const subLinkElement = subLink.render();
+
+                // Sub-section click handler
+                subLinkElement.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    const targetElement = document.getElementById(subSection.id);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: "smooth",
+                            block: "start",
+                        });
+                    }
+                });
+
+                subNav.children.add(subLink);
+            });
+
+            mainItem.children.add(subNav);
+        }
+
         mountNext(mainItem, navContainer);
     });
 
-    // Effect to update sub-section active states
+    // Effect to update active states based on visible sections
     effect(() => {
-        const subLinks = navContainer.querySelectorAll(
-            ".examples-nav__link--sub",
-        );
-        subLinks.forEach((link) => {
-            const subSectionId = link.getAttribute("data-subsection-id");
-            if (subSectionId === activeSubSection.value) {
+        const visible = visibleSections.value;
+        
+        // Update single section links (like Introduction)
+        const singleLinks = navContainer.querySelectorAll(".examples-nav__link--single");
+        singleLinks.forEach((link) => {
+            const sectionId = link.getAttribute("data-section-id");
+            if (visible.has(sectionId)) {
                 link.classList.add("examples-nav__link--active");
             } else {
                 link.classList.remove("examples-nav__link--active");
             }
         });
-    }, [activeSubSection]);
+        
+        // Update sub-section links
+        const subLinks = navContainer.querySelectorAll(".examples-nav__link--sub");
+        subLinks.forEach((link) => {
+            const subSectionId = link.getAttribute("data-subsection-id");
+            if (visible.has(subSectionId)) {
+                link.classList.add("examples-nav__link--active");
+            } else {
+                link.classList.remove("examples-nav__link--active");
+            }
+        });
+    }, [visibleSections]);
 
     // Viewport-based scroll detection
-    // Highlights section closest to viewport center among all visible sections
+    // Highlights ALL sections that are in the viewport
     
     let animationFrameId = null;
 
-    // Get all subsections in order
-    const allSubSections = [];
+    // Build list of all navigable items
+    const allNavItems = [];
+    
+    // Add introduction
+    if (introSection) {
+        allNavItems.push({ id: "introduction", elementId: "introduction" });
+    }
+    
+    // Add all subsections
     sections.forEach(section => {
-        section.subSections.forEach(subSection => {
-            allSubSections.push({ sectionId: section.id, subSectionId: subSection.id });
-        });
+        if (!section.isSingle) {
+            section.subSections.forEach(subSection => {
+                const exampleNumber = subSection.id.match(/\d+/)?.[0];
+                if (exampleNumber) {
+                    allNavItems.push({ id: subSection.id, elementId: `example${exampleNumber}` });
+                }
+            });
+        }
     });
 
     function checkSectionVisibility() {
         const viewportHeight = window.innerHeight;
-        const viewportCenter = viewportHeight / 2;
+        const newVisible = new Set();
 
-        let selectedSubSection = null;
-        let closestDistance = Infinity;
+        // Check each navigable item for visibility
+        for (const item of allNavItems) {
+            const element = document.getElementById(item.elementId);
+            if (!element) continue;
 
-        // Find all visible sections and select the one closest to viewport center
-        for (let i = 0; i < allSubSections.length; i++) {
-            const { sectionId, subSectionId } = allSubSections[i];
-            
-            // Extract the example number from the subsection ID (e.g., "example1-title" -> "1")
-            const exampleNumber = subSectionId.match(/\d+/)[0];
-            const wrapper = document.getElementById(`example${exampleNumber}`);
-            
-            if (!wrapper) continue;
-
-            // Get wrapper bounds
-            const rect = wrapper.getBoundingClientRect();
+            const rect = element.getBoundingClientRect();
             const elementTop = rect.top;
             const elementBottom = rect.bottom;
 
-            // Check if either edge is inside viewport, or section spans entire viewport
+            // Check if any part of the element is in viewport
             const topEdgeInViewport = elementTop >= 0 && elementTop <= viewportHeight;
             const bottomEdgeInViewport = elementBottom >= 0 && elementBottom <= viewportHeight;
             const spansViewport = elementTop < 0 && elementBottom > viewportHeight;
             
             if (topEdgeInViewport || bottomEdgeInViewport || spansViewport) {
-                // Calculate section center
-                const sectionCenter = (elementTop + elementBottom) / 2;
-                const distance = Math.abs(sectionCenter - viewportCenter);
-                
-                // Track closest section to viewport center
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    selectedSubSection = { sectionId, subSectionId };
-                }
+                newVisible.add(item.id);
             }
         }
 
-        // Update signals
-        if (selectedSubSection) {
-            activeSubSection.value = selectedSubSection.subSectionId;
-            activeMainSection.value = selectedSubSection.sectionId;
-        } else {
-            // Clear active states if no sections visible
-            activeSubSection.value = null;
-            activeMainSection.value = null;
-        }
+        // Update signal with new visible set
+        visibleSections.value = newVisible;
     }
 
     function onScroll() {
