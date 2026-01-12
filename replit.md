@@ -10,6 +10,18 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**January 12, 2026 - v1.2.0 - Right Sidebar Navigation and Bug Fixes**
+- Converted top horizontal navigation to a right-aligned sticky sidebar
+- Added toggle button with hamburger-to-arrow icon transformation animation
+- Implemented responsive behavior:
+  - Auto-opens on wide screens (>900px)
+  - Auto-closes on narrow screens (<900px)
+  - Smooth slide-in/out transitions
+- Added XynSignal section to navigation with 4 examples
+- Fixed Symbol-to-string conversion bugs in xyn_signal.js:
+  - Added String() wrapper for Symbol props in console.debug
+  - Added propKey conversion for Symbol props in set/deleteProperty handlers
+
 **January 10, 2026 - v1.1.0 - XynSignal Module Examples and Tests**
 - Added new "XynSignal Features" section with four examples demonstrating the new createSignal API:
   - **signal-comparison.js**: Side-by-side comparison of legacy `signal()` vs new `createSignal()` 
