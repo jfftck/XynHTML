@@ -176,6 +176,62 @@ test("REGRESSION: createSignal({}).value.a = 1 notifies subscribers", () => {
     expect(subscriber.lastArgs[0].value).toBe(1);
 });
 
+test("Nested object: can access nested properties", () => {
+    const data = createSignal({ user: { name: "Alice", profile: { age: 25 } } });
+    expect(data.value.user.name).toBe("Alice");
+    expect(data.value.user.profile.age).toBe(25);
+});
+
+test("Nested object: modifying nested property triggers subscriber", () => {
+    const data = createSignal({ user: { name: "Alice" } });
+    const subscriber = createMockFn();
+    data.subscribe(subscriber);
+    data.value.user.name = "Bob";
+    expect(subscriber).toHaveBeenCalled();
+});
+
+test("Nested object: adding property to nested object triggers subscriber", () => {
+    const data = createSignal({ user: {} });
+    const subscriber = createMockFn();
+    data.subscribe(subscriber);
+    data.value.user.email = "test@example.com";
+    expect(subscriber).toHaveBeenCalled();
+});
+
+test("Nested object: deleting nested property triggers subscriber", () => {
+    const data = createSignal({ user: { name: "Alice", age: 25 } });
+    const subscriber = createMockFn();
+    data.subscribe(subscriber);
+    delete data.value.user.age;
+    expect(subscriber).toHaveBeenCalled();
+});
+
+test("Nested object: deeply nested modification triggers subscriber", () => {
+    const data = createSignal({ level1: { level2: { level3: { value: 1 } } } });
+    const subscriber = createMockFn();
+    data.subscribe(subscriber);
+    data.value.level1.level2.level3.value = 2;
+    expect(subscriber).toHaveBeenCalled();
+});
+
+test("Nested object: replacing nested object triggers subscriber", () => {
+    const data = createSignal({ user: { name: "Alice" } });
+    const subscriber = createMockFn();
+    data.subscribe(subscriber);
+    data.value.user = { name: "Bob", age: 30 };
+    expect(subscriber).toHaveBeenCalled();
+});
+
+test("Nested object: subscriber receives correct change for nested update", () => {
+    const data = createSignal({ config: { theme: "light" } });
+    let receivedChange = null;
+    data.subscribe((change) => {
+        receivedChange = change;
+    });
+    data.value.config.theme = "dark";
+    expect(receivedChange).toBeDefined();
+});
+
 test("Array signal: .value provides access to array", () => {
     const list = createSignal(["a", "b", "c"]);
     expect(list.value.length).toBe(3);

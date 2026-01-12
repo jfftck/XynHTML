@@ -227,22 +227,25 @@ function createCollectionProxy(collection) {
       subscribers.forEach((subscriber) =>
         subscriber(XynCollectionChange.create(prop, newValue, previousValue)),
       );
-    }
+    },
   });
 
   return proxy;
 }
 
-function createObjectProxy(obj) {
+function createObjectProxy(obj, subscribers) {
   const proxy = new Proxy(obj, {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop, receiver);
       if (typeof value === "function") {
         value = value();
       }
+
       if (typeof value === "object" && value !== null) {
         return proxyFactory(value);
       }
+
+      return value;
     },
     set(target, prop, newValue) {
       const previousValue = Reflect.get(target, prop);
@@ -275,7 +278,7 @@ function createObjectSignal(obj) {
   const subscribers = new Set();
 
   const signalProxy = {
-    value: createObjectProxy(obj),
+    value: createObjectProxy(obj, subscribers),
     subscribe(subscriber) {
       subscribers.add(subscriber);
       return () => subscribers.delete(subscriber);
