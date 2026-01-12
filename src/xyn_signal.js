@@ -232,7 +232,7 @@ function proxyFactory(value, subscribers) {
 function createCollectionProxy(collection, subscribers) {
   return new Proxy(collection, {
     get(target, prop) {
-      console.debug(`Getting property ${String(prop)} from collection`);
+      console.debug(`Getting property ${prop} from collection`);
       const value = Reflect.get(target, prop);
       if (typeof value === "function") {
         return (...args) => {
@@ -367,20 +367,18 @@ function createObjectProxy(obj, subscribers) {
     set(target, prop, newValue) {
       const previousValue = Reflect.get(target, prop);
       Reflect.set(target, prop, newValue);
-      const propKey = typeof prop === 'symbol' ? prop.description || String(prop) : prop;
       subscribers.forEach((subscriber) =>
-        subscriber(XynCollectionChange.create(propKey, newValue, previousValue)),
+        subscriber(XynCollectionChange.create(prop, newValue, previousValue)),
       );
       return true;
     },
     deleteProperty(target, prop) {
       const previousValue = Reflect.get(target, prop);
       Reflect.deleteProperty(target, prop);
-      const propKey = typeof prop === 'symbol' ? prop.description || String(prop) : prop;
       subscribers.forEach((subscriber) =>
         subscriber(
           XynCollectionChange.create(
-            propKey,
+            prop,
             CollectionValue.DELETE,
             previousValue,
           ),
