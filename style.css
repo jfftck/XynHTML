@@ -1089,7 +1089,7 @@ ul li {
 }
 
 #nav-theme-container.sidebar-closed {
-  transform: translateX(280px);
+  transform: translateX(calc(280px + 1px));
 }
 
 #sidebar-controls {
@@ -1113,6 +1113,7 @@ ul li {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(0, 0, 0, 0.15);
+  border-right: none;
   border-radius: 8px 0 0 8px;
   cursor: pointer;
   display: flex;
@@ -1356,7 +1357,7 @@ body[data-theme="dark"] .examples-nav__link--active:hover {
 /* Responsive: Auto-hide sidebar on narrow screens */
 @media (max-width: 900px) {
   #nav-theme-container.sidebar-closed {
-    transform: translateX(280px);
+    transform: translateX(calc(280px + 1px));
   }
 
   .sidebar-toggle {
