@@ -1088,8 +1088,8 @@ ul li {
   transition: transform 0.3s ease;
 }
 
-#nav-theme-container.sidebar-closed #examples-nav {
-  transform: translateX(100%);
+#nav-theme-container.sidebar-closed {
+  transform: translateX(280px);
 }
 
 #sidebar-controls {
@@ -1355,8 +1355,8 @@ body[data-theme="dark"] .examples-nav__link--active:hover {
 
 /* Responsive: Auto-hide sidebar on narrow screens */
 @media (max-width: 900px) {
-  #nav-theme-container.sidebar-closed #examples-nav {
-    transform: translateX(100%);
+  #nav-theme-container.sidebar-closed {
+    transform: translateX(280px);
   }
 
   .sidebar-toggle {
