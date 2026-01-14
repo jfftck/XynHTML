@@ -3,47 +3,10 @@ import { tag, text } from "../src/xyn_html.js";
 
 export const title = "Example 23: Timing Functions";
 
-function createSection(title, description) {
-    const section = tag`div`;
-    section.css.styles({ marginBottom: "24px" });
-    
-    const titleEl = tag`p`;
-    titleEl.children.add(text(`=== ${title} ===`));
-    section.children.add(titleEl);
-    
-    const descEl = tag`p`;
-    descEl.children.add(text(description));
-    section.children.add(descEl);
-    
-    return section;
-}
-
-function createPlayButton(label, onClick) {
-    const container = tag`div`;
-    container.css.styles({ marginBottom: "24px" });
-    
-    const button = tag`button`;
-    button.children.add(text(label));
-    button.css.styles({
-        padding: "10px 20px",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        color: "white",
-        border: "none",
-        borderRadius: "6px",
-        cursor: "pointer",
-        fontWeight: "bold",
-        fontSize: "14px"
-    });
-    button.event("click", onClick);
-    container.children.add(button);
-    
-    return container;
-}
-
 function addOutput(container, message) {
-    const p = tag`p`;
-    p.children.add(text(message));
-    container.children.add(p);
+    const p = document.createElement("p");
+    p.textContent = message;
+    container.appendChild(p);
 }
 
 async function runDebounceEffect(container, scrollTarget) {
@@ -239,10 +202,30 @@ export async function example23(output) {
     ];
     
     let currentSection = 0;
-    let contentContainers = [];
-    let playButtonContainer = null;
-    let resetButton = null;
     let isRunning = false;
+    let resetButtonEl = null;
+    
+    function createPlayButton(label, onClick) {
+        const container = tag`div`;
+        container.css.styles({ marginBottom: "24px" });
+        
+        const button = tag`button`;
+        button.children.add(text(label));
+        button.css.styles({
+            padding: "10px 20px",
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontWeight: "bold",
+            fontSize: "14px"
+        });
+        button.event("click", onClick);
+        container.children.add(button);
+        
+        return container;
+    }
     
     function createResetButton() {
         const container = tag`div`;
@@ -264,7 +247,7 @@ export async function example23(output) {
             if (isRunning) return;
             output.clear();
             currentSection = 0;
-            contentContainers = [];
+            resetButtonEl = null;
             showNextPlayButton();
         });
         container.children.add(button);
@@ -274,127 +257,100 @@ export async function example23(output) {
     
     function showNextPlayButton() {
         if (currentSection >= sections.length) {
-            const summaryContainer = tag`div`;
-            summaryContainer.css.styles({ marginBottom: "24px" });
-            output.append(summaryContainer);
-            contentContainers.push(summaryContainer);
+            const summaryContainer = document.createElement("div");
+            summaryContainer.style.marginBottom = "24px";
             
-            resetButton = createResetButton();
+            const resetButton = createResetButton();
             output.append(resetButton);
+            resetButtonEl = resetButton.render();
             
-            const resetEl = resetButton.render();
-            showSummary(summaryContainer.render(), resetEl);
+            resetButtonEl.parentNode.insertBefore(summaryContainer, resetButtonEl);
+            showSummary(summaryContainer, resetButtonEl);
             return;
         }
         
         const section = sections[currentSection];
-        playButtonContainer = createPlayButton(`Play: ${section.title}`, async () => {
+        const playButtonContainer = createPlayButton(`Play: ${section.title}`, async () => {
             if (isRunning) return;
             isRunning = true;
             
             const playEl = playButtonContainer.render();
             playEl.style.display = "none";
             
-            const contentContainer = tag`div`;
-            contentContainer.css.styles({ marginBottom: "24px" });
+            const contentContainer = document.createElement("div");
+            contentContainer.style.marginBottom = "24px";
             
-            const titleEl = tag`p`;
-            titleEl.children.add(text(`=== ${section.title} ===`));
-            contentContainer.children.add(titleEl);
+            const titleEl = document.createElement("p");
+            titleEl.textContent = `=== ${section.title} ===`;
+            contentContainer.appendChild(titleEl);
             
-            output.append(contentContainer);
-            contentContainers.push(contentContainer);
+            if (!resetButtonEl) {
+                const resetButton = createResetButton();
+                output.append(resetButton);
+                resetButtonEl = resetButton.render();
+            }
             
-            resetButton = createResetButton();
-            output.append(resetButton);
+            resetButtonEl.parentNode.insertBefore(contentContainer, resetButtonEl);
             
-            const resetEl = resetButton.render();
-            const containerEl = contentContainer.render();
-            
-            await section.run(containerEl, resetEl);
+            await section.run(contentContainer, resetButtonEl);
             
             currentSection++;
             isRunning = false;
             
             if (currentSection < sections.length) {
                 const nextSection = sections[currentSection];
-                const nextPlayButton = createPlayButton(`Play: ${nextSection.title}`, async () => {
-                    if (isRunning) return;
-                    isRunning = true;
-                    
-                    const nextPlayEl = nextPlayButton.render();
-                    nextPlayEl.style.display = "none";
-                    
-                    const nextContentContainer = tag`div`;
-                    nextContentContainer.css.styles({ marginBottom: "24px" });
-                    
-                    const nextTitleEl = tag`p`;
-                    nextTitleEl.children.add(text(`=== ${sections[currentSection].title} ===`));
-                    nextContentContainer.children.add(nextTitleEl);
-                    
-                    resetEl.parentNode.insertBefore(nextContentContainer.render(), resetEl);
-                    contentContainers.push(nextContentContainer);
-                    
-                    await sections[currentSection].run(nextContentContainer.render(), resetEl);
-                    
-                    currentSection++;
-                    isRunning = false;
-                    
-                    showNextInline(resetEl);
-                });
+                const nextPlayButton = createPlayButton(`Play: ${nextSection.title}`, handlePlayClick);
                 
-                resetEl.parentNode.insertBefore(nextPlayButton.render(), resetEl);
-                playButtonContainer = nextPlayButton;
+                function handlePlayClick() {
+                    runNextSection(nextPlayButton, nextSection);
+                }
+                
+                resetButtonEl.parentNode.insertBefore(nextPlayButton.render(), resetButtonEl);
             } else {
-                const summaryContainer = tag`div`;
-                summaryContainer.css.styles({ marginBottom: "24px" });
-                resetEl.parentNode.insertBefore(summaryContainer.render(), resetEl);
-                contentContainers.push(summaryContainer);
-                showSummary(summaryContainer.render(), resetEl);
+                const summaryContainer = document.createElement("div");
+                summaryContainer.style.marginBottom = "24px";
+                resetButtonEl.parentNode.insertBefore(summaryContainer, resetButtonEl);
+                showSummary(summaryContainer, resetButtonEl);
             }
         });
         
         output.append(playButtonContainer);
     }
     
-    function showNextInline(resetEl) {
-        if (currentSection >= sections.length) {
-            const summaryContainer = tag`div`;
-            summaryContainer.css.styles({ marginBottom: "24px" });
-            resetEl.parentNode.insertBefore(summaryContainer.render(), resetEl);
-            contentContainers.push(summaryContainer);
-            showSummary(summaryContainer.render(), resetEl);
-            return;
+    async function runNextSection(playButtonContainer, section) {
+        if (isRunning) return;
+        isRunning = true;
+        
+        const playEl = playButtonContainer.render();
+        playEl.style.display = "none";
+        
+        const contentContainer = document.createElement("div");
+        contentContainer.style.marginBottom = "24px";
+        
+        const titleEl = document.createElement("p");
+        titleEl.textContent = `=== ${section.title} ===`;
+        contentContainer.appendChild(titleEl);
+        
+        resetButtonEl.parentNode.insertBefore(contentContainer, resetButtonEl);
+        
+        await section.run(contentContainer, resetButtonEl);
+        
+        currentSection++;
+        isRunning = false;
+        
+        if (currentSection < sections.length) {
+            const nextSection = sections[currentSection];
+            const nextPlayButton = createPlayButton(`Play: ${nextSection.title}`, () => {
+                runNextSection(nextPlayButton, nextSection);
+            });
+            
+            resetButtonEl.parentNode.insertBefore(nextPlayButton.render(), resetButtonEl);
+        } else {
+            const summaryContainer = document.createElement("div");
+            summaryContainer.style.marginBottom = "24px";
+            resetButtonEl.parentNode.insertBefore(summaryContainer, resetButtonEl);
+            showSummary(summaryContainer, resetButtonEl);
         }
-        
-        const section = sections[currentSection];
-        const nextPlayButton = createPlayButton(`Play: ${section.title}`, async () => {
-            if (isRunning) return;
-            isRunning = true;
-            
-            const nextPlayEl = nextPlayButton.render();
-            nextPlayEl.style.display = "none";
-            
-            const nextContentContainer = tag`div`;
-            nextContentContainer.css.styles({ marginBottom: "24px" });
-            
-            const nextTitleEl = tag`p`;
-            nextTitleEl.children.add(text(`=== ${section.title} ===`));
-            nextContentContainer.children.add(nextTitleEl);
-            
-            resetEl.parentNode.insertBefore(nextContentContainer.render(), resetEl);
-            contentContainers.push(nextContentContainer);
-            
-            await section.run(nextContentContainer.render(), resetEl);
-            
-            currentSection++;
-            isRunning = false;
-            
-            showNextInline(resetEl);
-        });
-        
-        resetEl.parentNode.insertBefore(nextPlayButton.render(), resetEl);
-        playButtonContainer = nextPlayButton;
     }
     
     showNextPlayButton();
