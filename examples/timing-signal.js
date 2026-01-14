@@ -1,8 +1,9 @@
 import { createSignal, watch, timing } from "../src/xyn_signal.js";
+import { tag, text } from "../src/xyn_html.js";
 
 export const title = "Example 23: Timing Functions";
 
-export async function example23(output) {
+async function runTimingDemo(output) {
     output("=== Debounce Effect ===");
     output("Debounce waits for pause in activity before executing.");
     output("(Only the last value after 300ms pause is processed)");
@@ -168,4 +169,43 @@ export async function example23(output) {
     output("");
     output("Derived: timing passed as wrappingFn argument");
     output("  watch(a).watch(b).derived(fn, timing(ms).debounce)");
+}
+
+export async function example23(output) {
+    const replayButton = tag`button`;
+    replayButton.children.add(text("Replay Demo"));
+    replayButton.css.styles({
+        padding: "8px 16px",
+        marginBottom: "16px",
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        color: "white",
+        border: "none",
+        borderRadius: "6px",
+        cursor: "pointer",
+        fontWeight: "bold",
+        fontSize: "14px"
+    });
+    
+    let isRunning = false;
+    
+    replayButton.event("click", async () => {
+        if (isRunning) return;
+        isRunning = true;
+        
+        const buttonEl = replayButton.render();
+        buttonEl.textContent = "Running...";
+        buttonEl.style.opacity = "0.6";
+        
+        output.clear();
+        output.append(replayButton);
+        
+        await runTimingDemo(output);
+        
+        buttonEl.textContent = "Replay Demo";
+        buttonEl.style.opacity = "1";
+        isRunning = false;
+    });
+    
+    output.append(replayButton);
+    await runTimingDemo(output);
 }
