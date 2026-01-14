@@ -117,13 +117,38 @@ class XynCollectionChange {
 }
 
 /**
- * @enum {Symbol}
+ * @class None
+ * @description None is a class for storing a value that doesn't exist.
+ * @example
+ * const none = new None("none");
+ * console.log(none.is(new None("none"))); // true
+ * console.log(none.is(new None("other"))); // false
+ * console.log(none.value); // "none"
+ */
+class None {
+  #value;
+
+  constructor(value) {
+    this.#value = value;
+  }
+
+  is(none) {
+    return none instanceof None && this.#value === none.value;
+  }
+
+  get value() {
+    return this.#value;
+  }
+}
+
+/**
+ * @enum {None}
  * @readonly
  * @description CollectionValue is an enum of sentinals for the values of a collection change that don't or didn't exist.
  */
 export const CollectionValue = Object.freeze({
-  INSERT: Symbol("insert"),
-  DELETE: Symbol("delete"),
+  INSERT: new None("insert"),
+  DELETE: new None("delete"),
 });
 
 /**
@@ -185,6 +210,9 @@ export function createSignal(value) {
         if (prop === "value") {
           const previousValue = Reflect.get(target, prop);
           Reflect.set(target, prop, newValue);
+          if (previousValue === newValue) {
+            return true;
+          }
           subscribers.forEach((subscriber) =>
             subscriber(XynChange.create(newValue, previousValue)),
           );
@@ -225,6 +253,8 @@ function proxyFactory(value, subscribers) {
     return createListProxy(value, subscribers);
   } else if (typeof value === "object" && value != null) {
     return createObjectProxy(value, subscribers);
+  } else if (typeof value === "symbol") {
+    return String(value);
   }
   return value;
 }
@@ -244,6 +274,9 @@ function createCollectionProxy(collection, subscribers) {
             return proxyFactory(result, subscribers);
           }
           if (prop === "set" || prop === "add") {
+            if (prop === "set" && Reflect.has(target, args[0])) {
+              return result;
+            }
             subscribers.forEach((subscriber) => {
               subscriber(
                 XynCollectionChange.create(
@@ -285,9 +318,6 @@ function createCollectionProxy(collection, subscribers) {
       }
 
       return value;
-    },
-    getOwnPropertyDescriptor(target, prop) {
-      return Reflect.getOwnPropertyDescriptor(target, prop);
     },
     getPrototypeOf(target) {
       return Reflect.getPrototypeOf(target);
@@ -347,6 +377,9 @@ function createListProxy(list, subscribers) {
 
       return value;
     },
+    getPrototypeOf(target) {
+      return Reflect.getPrototypeOf(target);
+    },
   });
 }
 
@@ -374,6 +407,9 @@ function createObjectProxy(obj, subscribers) {
     },
     deleteProperty(target, prop) {
       const previousValue = Reflect.get(target, prop);
+      if (typeof prop === "symbol") {
+        prop = prop.description || prop.toString();
+      }
       Reflect.deleteProperty(target, prop);
       subscribers.forEach((subscriber) =>
         subscriber(
@@ -385,6 +421,9 @@ function createObjectProxy(obj, subscribers) {
         ),
       );
       return true;
+    },
+    getPrototypeOf(target) {
+      return Reflect.getPrototypeOf(target);
     },
   });
 }
@@ -423,4 +462,56 @@ function createCollectionSignal(collection) {
       return () => subscribers.delete(subscriber);
     },
   };
+}
+
+/**
+ * @function watch
+ * @param {Object} signal
+ * @returns {Object}
+ * @description Watches the given signal and returns an object with methods to watch other signals and create effects.
+ * The effect method takes a subscriber function and returns a function to unsubscribe.
+ * The derived method takes a function and returns a signal and a function to unsubscribe.
+ * @example
+ * const signal = createSignal(0);
+ * const signal2 = createSignal(1);
+ * const unsubscribe = watch(signal)
+ * .watch(signal2)
+ * .effect(({value, previousValue}) => console.log(`Value changed from ${previousValue} to ${value}`));
+ */
+export function watch(signal) {
+  const signals = new Set();
+
+  const watchers = (sig) => {
+    if (sig && typeof sig.subscribe === "function") {
+      signals.add(sig);
+    }
+    return {
+      watch(s) {
+        return watchers(s);
+      },
+      effect(subscriber) {
+        const unsubscribers = Array.from(signals.keys()).map((s) =>
+          s.subscribe(subscriber),
+        );
+
+        return () => {
+          unsubscribers.forEach((unsubscribe) => unsubscribe());
+        };
+      },
+      derived(fn) {
+        const derivedSignal = createSignal(fn());
+        const unsubscribers = Array.from(signals.keys()).map((s) =>
+          s.subscribe(() => (derivedSignal.value = fn())),
+        );
+
+        return {
+          signal: derivedSignal,
+          unsubscribe: () =>
+            unsubscribers.forEach((unsubscribe) => unsubscribe()),
+        };
+      },
+    };
+  };
+
+  return watchers(signal);
 }

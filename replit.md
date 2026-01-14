@@ -10,6 +10,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**January 14, 2026 - v1.3.0 - Watch Function**
+- Added `watch()` function to xyn_signal.js for observing multiple signals
+- Created comprehensive test suite for watch function (8 new tests, 43 total passing)
+- Added Example 22: Watch Multiple Signals demonstrating:
+  - Basic watch with effect for single signal observation
+  - Chaining `.watch()` to observe multiple signals
+  - Creating derived signals from multiple sources with `.derived()`
+  - Proper cleanup with unsubscribe functions
+
 **January 12, 2026 - v1.2.0 - Right Sidebar Navigation**
 - Converted top horizontal navigation to a right-aligned sticky sidebar
 - Added toggle button with hamburger-to-arrow icon transformation animation
@@ -98,6 +107,12 @@ Preferred communication style: Simple, everyday language.
 - All signal types offer a `.value` property and a `.subscribe(callback)` method that returns an unsubscribe function.
 - Object and Array signals intercept mutations for fine-grained reactivity.
 - Map/Set signals intercept their respective methods (`set`, `add`, `delete`, `clear`) for reactive updates.
+
+**Watch Function**
+- `watch(signal)` returns an object with chainable methods for observing multiple signals:
+  - `.watch(signal)` - Chain additional signals to observe
+  - `.effect(subscriber)` - Subscribe to all watched signals, returns unsubscribe function
+  - `.derived(fn)` - Create a derived signal from all watched signals, returns `{signal, unsubscribe}`
 
 ### Extension Architecture
 

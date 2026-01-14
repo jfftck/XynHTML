@@ -1,4 +1,4 @@
-import { createSignal, CollectionValue } from "../xyn_signal.js";
+import { createSignal, CollectionValue, watch } from "../xyn_signal.js";
 
 const results = [];
 let passCount = 0;
@@ -353,6 +353,77 @@ test("Set signal: subscriber receives correct change for add", () => {
     });
     set.value.add("item");
     expect(receivedChange.index).toBe("item");
+});
+
+test("watch: returns object with watch, effect, and derived methods", () => {
+    const sig = createSignal(0);
+    const watcher = watch(sig);
+    expect(typeof watcher.watch).toBe("function");
+    expect(typeof watcher.effect).toBe("function");
+    expect(typeof watcher.derived).toBe("function");
+});
+
+test("watch: effect subscribes to single signal", () => {
+    const counter = createSignal(0);
+    const subscriber = createMockFn();
+    watch(counter).effect(subscriber);
+    counter.value = 5;
+    expect(subscriber.callCount).toBe(1);
+});
+
+test("watch: effect subscribes to multiple signals via chaining", () => {
+    const signal1 = createSignal(0);
+    const signal2 = createSignal(0);
+    const subscriber = createMockFn();
+    watch(signal1).watch(signal2).effect(subscriber);
+    signal1.value = 1;
+    signal2.value = 2;
+    expect(subscriber.callCount).toBe(2);
+});
+
+test("watch: effect returns unsubscribe function", () => {
+    const counter = createSignal(0);
+    const subscriber = createMockFn();
+    const unsubscribe = watch(counter).effect(subscriber);
+    counter.value = 1;
+    unsubscribe();
+    counter.value = 2;
+    expect(subscriber.callCount).toBe(1);
+});
+
+test("watch: derived creates a derived signal from watched signals", () => {
+    const a = createSignal(2);
+    const b = createSignal(3);
+    const { signal: sum } = watch(a).watch(b).derived(() => a.value + b.value);
+    expect(sum.value).toBe(5);
+});
+
+test("watch: derived signal updates when source signals change", () => {
+    const a = createSignal(2);
+    const b = createSignal(3);
+    const { signal: sum } = watch(a).watch(b).derived(() => a.value + b.value);
+    a.value = 10;
+    expect(sum.value).toBe(13);
+    b.value = 7;
+    expect(sum.value).toBe(17);
+});
+
+test("watch: derived returns unsubscribe function", () => {
+    const a = createSignal(1);
+    const b = createSignal(2);
+    const { signal: sum, unsubscribe } = watch(a).watch(b).derived(() => a.value + b.value);
+    expect(sum.value).toBe(3);
+    unsubscribe();
+    a.value = 100;
+    expect(sum.value).toBe(3);
+});
+
+test("watch: handles null/undefined signals gracefully", () => {
+    const sig = createSignal(0);
+    const subscriber = createMockFn();
+    watch(null).watch(sig).watch(undefined).effect(subscriber);
+    sig.value = 1;
+    expect(subscriber.callCount).toBe(1);
 });
 
 export function runTests() {
