@@ -1,4 +1,4 @@
-import { createSignal, timing } from "../src/xyn_signal.js";
+import { createSignal, watch, timing } from "../src/xyn_signal.js";
 
 export const title = "Example 23: Timing Functions";
 
@@ -15,8 +15,7 @@ export async function example23(output) {
         output(`Debounced: Full name is "${firstName1.value} ${lastName1.value}"`);
     });
     
-    firstName1.subscribe(debouncedEffect);
-    lastName1.subscribe(debouncedEffect);
+    watch(firstName1).watch(lastName1).effect(debouncedEffect);
     
     firstName1.value = "J";
     firstName1.value = "Ja";
@@ -43,8 +42,7 @@ export async function example23(output) {
         output(`Throttled: Full name is "${firstName2.value} ${lastName2.value}"`);
     });
     
-    firstName2.subscribe(throttledEffect);
-    lastName2.subscribe(throttledEffect);
+    watch(firstName2).watch(lastName2).effect(throttledEffect);
     
     firstName2.value = "J";
     firstName2.value = "Ja";
@@ -73,8 +71,7 @@ export async function example23(output) {
         output(`Delayed: Full name is "${firstName3.value} ${lastName3.value}"`);
     });
     
-    firstName3.subscribe(delayedEffect);
-    lastName3.subscribe(delayedEffect);
+    watch(firstName3).watch(lastName3).effect(delayedEffect);
     
     output("Setting firstName to 'Alice'...");
     firstName3.value = "Alice";
