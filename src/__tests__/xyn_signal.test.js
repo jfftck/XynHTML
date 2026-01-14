@@ -1,4 +1,4 @@
-import { createSignal, CollectionValue, watch } from "../xyn_signal.js";
+import { createSignal, CollectionValue, watch, timing } from "../xyn_signal.js";
 
 const results = [];
 let passCount = 0;
@@ -424,6 +424,57 @@ test("watch: handles null/undefined signals gracefully", () => {
     watch(null).watch(sig).watch(undefined).effect(subscriber);
     sig.value = 1;
     expect(subscriber.callCount).toBe(1);
+});
+
+test("timing: returns object with debounce, throttle, and delay methods", () => {
+    const t = timing(100);
+    expect(typeof t.debounce).toBe("function");
+    expect(typeof t.throttle).toBe("function");
+    expect(typeof t.delay).toBe("function");
+});
+
+test("timing: debounce wraps function and returns a function", () => {
+    const fn = createMockFn();
+    const debounced = timing(100).debounce(fn);
+    expect(typeof debounced).toBe("function");
+});
+
+test("timing: throttle wraps function and returns a function", () => {
+    const fn = createMockFn();
+    const throttled = timing(100).throttle(fn);
+    expect(typeof throttled).toBe("function");
+});
+
+test("timing: delay wraps function and returns a function", () => {
+    const fn = createMockFn();
+    const delayed = timing(100).delay(fn);
+    expect(typeof delayed).toBe("function");
+});
+
+test("timing: throttle executes immediately on first call", () => {
+    const fn = createMockFn();
+    const throttled = timing(1000).throttle(fn);
+    throttled("arg1");
+    expect(fn.callCount).toBe(1);
+    expect(fn.lastArgs).toEqual(["arg1"]);
+});
+
+test("timing: throttle blocks rapid calls within delay period", () => {
+    const fn = createMockFn();
+    const throttled = timing(1000).throttle(fn);
+    throttled("first");
+    throttled("second");
+    throttled("third");
+    expect(fn.callCount).toBe(1);
+    expect(fn.lastArgs).toEqual(["first"]);
+});
+
+test("timing: different delay values create independent timing objects", () => {
+    const t100 = timing(100);
+    const t200 = timing(200);
+    expect(t100 !== t200).toBe(true);
+    expect(typeof t100.debounce).toBe("function");
+    expect(typeof t200.debounce).toBe("function");
 });
 
 export function runTests() {

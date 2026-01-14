@@ -10,9 +10,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**January 14, 2026 - v1.4.0 - Timing Functions**
+- Added tests for `timing()` function (7 new tests, 50 total passing)
+- Added Example 23: Timing Functions demonstrating:
+  - debounce: Waits for pause in activity before executing (search inputs, form validation)
+  - throttle: Fires immediately then limits rate (scroll events, continuous updates)
+  - delay: Fires each time after a fixed delay (staggered animations)
+  - Each example uses firstName/lastName pattern to show timing behavior
+
 **January 14, 2026 - v1.3.0 - Watch Function**
 - Added `watch()` function to xyn_signal.js for observing multiple signals
-- Created comprehensive test suite for watch function (8 new tests, 43 total passing)
+- Created comprehensive test suite for watch function (8 new tests)
 - Added Example 22: Watch Multiple Signals demonstrating:
   - Basic watch with effect for single signal observation
   - Chaining `.watch()` to observe multiple signals
@@ -113,6 +121,12 @@ Preferred communication style: Simple, everyday language.
   - `.watch(signal)` - Chain additional signals to observe
   - `.effect(subscriber)` - Subscribe to all watched signals, returns unsubscribe function
   - `.derived(fn)` - Create a derived signal from all watched signals, returns `{signal, unsubscribe}`
+
+**Timing Functions**
+- `timing(delay)` returns an object with methods to wrap functions for timing control:
+  - `.debounce(fn)` - Delays execution until inactivity period passes; only last call executes
+  - `.throttle(fn)` - Executes immediately, then limits to once per delay period
+  - `.delay(fn)` - Each call executes after the fixed delay
 
 ### Extension Architecture
 

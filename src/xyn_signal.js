@@ -515,3 +515,30 @@ export function watch(signal) {
 
   return watchers(signal);
 }
+
+export function timing(delay) {
+  return {
+    debounce(fn) {
+      let timeoutId;
+      return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(fn, delay, ...args);
+      };
+    },
+    throttle(fn) {
+      let lastCall = 0;
+      return (...args) => {
+        const now = Date.now();
+        if (now - lastCall >= delay) {
+          lastCall = now;
+          fn(...args);
+        }
+      };
+    },
+    delay(fn) {
+      return (...args) => {
+        setTimeout(fn, delay, ...args);
+      };
+    },
+  };
+}
