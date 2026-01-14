@@ -80,13 +80,92 @@ export async function example23(output) {
     output("(Outputs appear after 200ms delay)");
     
     await new Promise(r => setTimeout(r, 300));
+
+    output("");
+    output("=== Debounce Derived ===");
+    output("Derived signal updates only after typing pause.");
+    output("");
+    
+    const firstName4 = createSignal("John");
+    const lastName4 = createSignal("Doe");
+    
+    const { signal: debouncedName } = watch(firstName4)
+        .watch(lastName4)
+        .derived(
+            () => `${firstName4.value} ${lastName4.value}`,
+            timing(300).debounce
+        );
+    
+    output(`Initial derived value: "${debouncedName.value}"`);
+    
+    firstName4.value = "J";
+    firstName4.value = "Ja";
+    firstName4.value = "Jane";
+    lastName4.value = "Smith";
+    
+    output(`Immediately after changes: "${debouncedName.value}" (not updated yet)`);
+    
+    await new Promise(r => setTimeout(r, 400));
+    output(`After 300ms pause: "${debouncedName.value}"`);
+
+    output("");
+    output("=== Throttle Derived ===");
+    output("Derived signal updates at most once per time window.");
+    output("");
+    
+    const firstName5 = createSignal("John");
+    const lastName5 = createSignal("Doe");
+    
+    const { signal: throttledName } = watch(firstName5)
+        .watch(lastName5)
+        .derived(
+            () => `${firstName5.value} ${lastName5.value}`,
+            timing(200).throttle
+        );
+    
+    output(`Initial derived value: "${throttledName.value}"`);
+    
+    firstName5.value = "A";
+    output(`After first change: "${throttledName.value}" (immediate)`);
+    
+    firstName5.value = "Al";
+    firstName5.value = "Ali";
+    firstName5.value = "Alic";
+    firstName5.value = "Alice";
+    output(`After rapid changes: "${throttledName.value}" (throttled)`);
+    
+    await new Promise(r => setTimeout(r, 250));
+    lastName5.value = "Wonder";
+    output(`After 200ms + change: "${throttledName.value}"`);
+
+    output("");
+    output("=== Delay Derived ===");
+    output("Derived signal updates after fixed delay for each change.");
+    output("");
+    
+    const firstName6 = createSignal("John");
+    const lastName6 = createSignal("Doe");
+    
+    const { signal: delayedName } = watch(firstName6)
+        .watch(lastName6)
+        .derived(
+            () => `${firstName6.value} ${lastName6.value}`,
+            timing(200).delay
+        );
+    
+    output(`Initial derived value: "${delayedName.value}"`);
+    
+    firstName6.value = "Bob";
+    output(`Immediately after change: "${delayedName.value}" (not yet)`);
+    
+    await new Promise(r => setTimeout(r, 250));
+    output(`After 200ms delay: "${delayedName.value}"`);
     
     output("");
-    output("=== Comparison Summary ===");
-    output("• debounce: Waits for inactivity, then fires once");
-    output("  Use for: Search inputs, form validation, resize handlers");
-    output("• throttle: Fires immediately, then limits rate");
-    output("  Use for: Scroll events, mousemove, continuous updates");
-    output("• delay: Fires each time, but after a delay");
-    output("  Use for: Staggered animations, delayed notifications");
+    output("=== Summary ===");
+    output("Effect: timing wraps the callback directly");
+    output("  watch(a).watch(b).effect(timing(ms).debounce(fn))");
+    output("");
+    output("Derived: timing passed as wrappingFn argument");
+    output("  watch(a).watch(b).derived(fn, timing(ms).debounce)");
 }

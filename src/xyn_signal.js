@@ -465,9 +465,16 @@ function createCollectionSignal(collection) {
 }
 
 /**
+ * @typedef {Object} Watch
+ * @property {function(Object): Watch} watch
+ * @property {function(function({value: any, previousValue: any}): void): function(): void} effect
+ * @property {function(function(...any): any): {signal: Object, unsubscribe: function(): void}} derived
+ */
+
+/**
  * @function watch
  * @param {Object} signal
- * @returns {Object}
+ * @returns {Watch}
  * @description Watches the given signal and returns an object with methods to watch other signals and create effects.
  * The effect method takes a subscriber function and returns a function to unsubscribe.
  * The derived method takes a function and returns a signal and a function to unsubscribe.
@@ -498,10 +505,14 @@ export function watch(signal) {
           unsubscribers.forEach((unsubscribe) => unsubscribe());
         };
       },
-      derived(fn) {
+      derived(fn, wrappingFn = (fn) => (change) => fn(change)) {
         const derivedSignal = createSignal(fn());
         const unsubscribers = Array.from(signals.keys()).map((s) =>
-          s.subscribe(() => (derivedSignal.value = fn())),
+          s.subscribe(
+            wrappingFn((change) => {
+              derivedSignal.value = fn(change);
+            }),
+          ),
         );
 
         return {
@@ -516,6 +527,32 @@ export function watch(signal) {
   return watchers(signal);
 }
 
+/**
+ * @typedef {Object} Timing
+ * @property {function(function(...any): void): function(...any): void} debounce
+ * @property {function(function(...any): void): function(...any): void} throttle
+ * @property {function(function(...any): void): function(...any): void} delay
+ * @description Timing is an object with methods to debounce, throttle, and delay functions.
+ */
+
+/**
+ * @function timing
+ * @param {int} delay
+ * @returns {Timing}
+ * @description Returns an object with methods to debounce, throttle, and delay functions.
+ * The debounce method takes a function and returns a function that will only call the given function after the given delay.
+ * The throttle method takes a function and returns a function that will only call the given function once per delay.
+ * The delay method takes a function and returns a function that will call the given function after the given delay.
+ * @example
+ * const debounced = timing(100).debounce(() => console.log("debounced"));
+ * const throttled = timing(100).throttle(() => console.log("throttled"));
+ * const delayed = timing(100).delay(() => console.log("delayed"));
+ * debounced(); // Will log "debounced" after 100ms
+ * throttled(); // Will log "throttled" immediately
+ * throttled(); // Will not log "throttled" again until 100ms have passed
+ * delayed(); // Will log "delayed" after 100ms
+ * debounced(); // Will not log "debounced" again until 100ms have passed
+ */
 export function timing(delay) {
   return {
     debounce(fn) {

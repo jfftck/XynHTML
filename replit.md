@@ -13,10 +13,10 @@ Preferred communication style: Simple, everyday language.
 **January 14, 2026 - v1.4.0 - Timing Functions**
 - Added tests for `timing()` function (7 new tests, 50 total passing)
 - Added Example 23: Timing Functions demonstrating:
-  - debounce: Waits for pause in activity before executing (search inputs, form validation)
-  - throttle: Fires immediately then limits rate (scroll events, continuous updates)
-  - delay: Fires each time after a fixed delay (staggered animations)
+  - debounce, throttle, delay with `watch().effect()` for side effects
+  - debounce, throttle, delay with `watch().derived()` using wrappingFn argument
   - Each example uses firstName/lastName pattern to show timing behavior
+  - Summary shows syntax for both effect and derived patterns
 
 **January 14, 2026 - v1.3.0 - Watch Function**
 - Added `watch()` function to xyn_signal.js for observing multiple signals
