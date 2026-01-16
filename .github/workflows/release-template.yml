@@ -1,0 +1,41 @@
+name: Release Package Template
+
+# This is a reusable workflow template for publishing individual packages.
+# To add a new package, copy the publish-xyn-signal.yml and modify:
+# 1. The workflow name
+# 2. The tag pattern (e.g., 'new-package-v*')
+# 3. The working-directory paths
+# 4. The release name and files
+
+# Example for a new package called 'xyn-html':
+#
+# on:
+#   push:
+#     tags:
+#       - 'xyn-html-v*'
+#
+# And update working-directory to: packages/xyn-html
+
+# Tag naming convention:
+# - xyn-signal-v1.0.0  -> publishes xyn-signal version 1.0.0
+# - xyn-html-v2.1.0    -> publishes xyn-html version 2.1.0
+# - xyn-router-v0.5.0  -> publishes xyn-router version 0.5.0
+
+# To create a release:
+# 1. Ensure your changes are merged to main
+# 2. Create and push a tag: git tag xyn-signal-v1.4.0 && git push origin xyn-signal-v1.4.0
+# 3. The workflow will automatically:
+#    - Build the package
+#    - Publish to NPM
+#    - Create a GitHub release with auto-generated notes
+
+on: workflow_dispatch
+
+jobs:
+  info:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Template Info
+        run: |
+          echo "This is a template workflow for reference."
+          echo "See the comments in this file for instructions on adding new packages."
