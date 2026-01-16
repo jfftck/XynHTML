@@ -10,6 +10,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+**January 16, 2026 - NPM Publishing Setup**
+- Created packages directory structure for individual library releases
+- Set up `packages/xyn-signal/` with package.json, README.md, and LICENSE
+- Added GitHub Actions workflow for automated NPM publishing on tag
+- Publishing triggers on tags like `xyn-signal-v1.4.0`
+- Workflow creates GitHub releases with auto-generated notes
+- See PUBLISHING.md for setup and usage instructions
+
 **January 14, 2026 - v1.4.0 - Timing Functions**
 - Added tests for `timing()` function (7 new tests, 50 total passing)
 - Added Example 23: Timing Functions demonstrating:
