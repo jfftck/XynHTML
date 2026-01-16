@@ -1,0 +1,41 @@
+{
+  "name": "xyn-signal",
+  "version": "1.4.0",
+  "description": "Lightweight, reactive signal-based state management for JavaScript applications",
+  "type": "module",
+  "main": "dist/xyn_signal.js",
+  "module": "dist/xyn_signal.js",
+  "exports": {
+    ".": {
+      "import": "./dist/xyn_signal.js",
+      "default": "./dist/xyn_signal.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "cp ../../src/xyn_signal.js dist/xyn_signal.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "signal",
+    "reactive",
+    "state-management",
+    "javascript",
+    "frontend",
+    "xyn"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "bugs": {
+    "url": ""
+  },
+  "homepage": ""
+}
