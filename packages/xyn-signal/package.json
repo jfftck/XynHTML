@@ -1,5 +1,5 @@
 {
-  "name": "@jfftck/xyn-signal",
+  "name": "@xyn-html/xyn-signal",
   "version": "1.4.0",
   "description": "Lightweight, reactive signal-based state management for JavaScript applications",
   "type": "module",
