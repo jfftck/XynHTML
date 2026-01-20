@@ -99,7 +99,7 @@ test("Primitive signal: has .change property with last change", () => {
     counter.subscribe(() => {});
     counter.value = 20;
     expect(counter.change).toBeDefined();
-    expect(counter.change.set).toBe(10);
+    expect(counter.change.mutate).toBe(10);
 });
 
 test("Primitive signal: unsubscribe stops notifications", () => {

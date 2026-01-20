@@ -171,9 +171,9 @@ export function createSignal(value) {
       },
       set(target, prop, newValue) {
         if (prop === "value") {
-          change = { set: Reflect.get(target, prop) };
+          change = { mutate: Reflect.get(target, prop) };
 
-          if (previousValue === newValue) {
+          if (change.mutate === newValue) {
             return false;
           }
 
@@ -368,8 +368,8 @@ function createObjectProxy(obj, subscribers) {
         prop = prop.description || prop.toString();
       }
       Reflect.deleteProperty(target, prop);
-      subscribers.forEach((subscriber) =>
-        subscriber(),
+      subscribers.forEach(
+        (subscriber) => subscriber(),
         // XynCollectionChange.create(prop, Change.DELETE, previousValue),
       );
       return true;
