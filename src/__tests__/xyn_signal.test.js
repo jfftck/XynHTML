@@ -1,4 +1,4 @@
-import { createSignal, Change, watch, timing } from "../xyn_signal.js";
+import { createSignal, watch, timing } from "../xyn_signal.js";
 
 const results = [];
 let passCount = 0;
@@ -94,14 +94,6 @@ test("Primitive signal: subscriber is called on value change", () => {
     expect(subscriber.callCount).toBe(1);
 });
 
-test("Primitive signal: has .change property with last change", () => {
-    const counter = createSignal(10);
-    counter.subscribe(() => {});
-    counter.value = 20;
-    expect(counter.change).toBeDefined();
-    expect(counter.change.mutate).toBe(10);
-});
-
 test("Primitive signal: unsubscribe stops notifications", () => {
     const counter = createSignal(0);
     const subscriber = createMockFn();
@@ -130,13 +122,6 @@ test("Object signal: property assignment triggers subscriber", () => {
     expect(subscriber.callCount).toBe(1);
 });
 
-test("Object signal: has .change property with last change", () => {
-    const user = createSignal({ name: "Alice" });
-    user.subscribe(() => {});
-    user.value.name = "Bob";
-    expect(user.change).toBeDefined();
-});
-
 test("Object signal: adding new property triggers subscriber", () => {
     const user = createSignal({});
     const subscriber = createMockFn();
@@ -151,13 +136,6 @@ test("Object signal: deleting property triggers subscriber", () => {
     user.subscribe(subscriber);
     delete user.value.age;
     expect(subscriber.callCount).toBe(1);
-});
-
-test("Object signal: delete change is reflected in .change property", () => {
-    const user = createSignal({ name: "Alice" });
-    user.subscribe(() => {});
-    delete user.value.name;
-    expect(user.change).toBeDefined();
 });
 
 test("REGRESSION: createSignal({}).value.a = 1 assigns correctly", () => {
@@ -222,13 +200,6 @@ test("Nested object: replacing nested object triggers subscriber", () => {
     expect(subscriber).toHaveBeenCalled();
 });
 
-test("Nested object: .change property is updated on nested update", () => {
-    const data = createSignal({ config: { theme: "light" } });
-    data.subscribe(() => {});
-    data.value.config.theme = "dark";
-    expect(data.change).toBeDefined();
-});
-
 test("Array signal: .value provides access to array", () => {
     const list = createSignal(["a", "b", "c"]);
     expect(list.value.length).toBe(3);
@@ -275,13 +246,6 @@ test("Array signal: splice triggers subscriber", () => {
     expect(subscriber.callCount).toBe(1);
 });
 
-test("Array signal: has .change property", () => {
-    const list = createSignal([]);
-    list.subscribe(() => {});
-    list.value.push("item");
-    expect(list.change).toBeDefined();
-});
-
 test("Map signal: .value provides access to Map", () => {
     const map = createSignal(new Map([["key", "value"]]));
     expect(map.value.get("key")).toBe("value");
@@ -301,13 +265,6 @@ test("Map signal: delete triggers subscriber", () => {
     map.subscribe(subscriber);
     map.value.delete("name");
     expect(subscriber.callCount).toBe(1);
-});
-
-test("Map signal: has .change property", () => {
-    const map = createSignal(new Map());
-    map.subscribe(() => {});
-    map.value.set("key", "value");
-    expect(map.change).toBeDefined();
 });
 
 test("Set signal: .value provides access to Set", () => {
@@ -330,13 +287,6 @@ test("Set signal: delete triggers subscriber", () => {
     set.subscribe(subscriber);
     set.value.delete("a");
     expect(subscriber.callCount).toBe(1);
-});
-
-test("Set signal: has .change property", () => {
-    const set = createSignal(new Set());
-    set.subscribe(() => {});
-    set.value.add("item");
-    expect(set.change).toBeDefined();
 });
 
 test("watch: returns object with watch, effect, and derived methods", () => {
@@ -378,14 +328,18 @@ test("watch: effect returns unsubscribe function", () => {
 test("watch: derived creates a derived signal from watched signals", () => {
     const a = createSignal(2);
     const b = createSignal(3);
-    const { signal: sum } = watch(a).watch(b).derived(() => a.value + b.value);
+    const { signal: sum } = watch(a)
+        .watch(b)
+        .derived(() => a.value + b.value);
     expect(sum.value).toBe(5);
 });
 
 test("watch: derived signal updates when source signals change", () => {
     const a = createSignal(2);
     const b = createSignal(3);
-    const { signal: sum } = watch(a).watch(b).derived(() => a.value + b.value);
+    const { signal: sum } = watch(a)
+        .watch(b)
+        .derived(() => a.value + b.value);
     a.value = 10;
     expect(sum.value).toBe(13);
     b.value = 7;
@@ -395,7 +349,9 @@ test("watch: derived signal updates when source signals change", () => {
 test("watch: derived returns unsubscribe function", () => {
     const a = createSignal(1);
     const b = createSignal(2);
-    const { signal: sum, unsubscribe } = watch(a).watch(b).derived(() => a.value + b.value);
+    const { signal: sum, unsubscribe } = watch(a)
+        .watch(b)
+        .derived(() => a.value + b.value);
     expect(sum.value).toBe(3);
     unsubscribe();
     a.value = 100;

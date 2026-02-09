@@ -84,30 +84,6 @@ class Some extends Option {
 }
 
 /**
- * @enum {Object} Change
- * @readonly
- * @description CollectionValue is an enum of sentinals for the values of a collection change that don't or didn't exist.
- */
-export const Change = (change) =>
-  Object.freeze({
-    get INSERT() {
-      return Object.freeze({
-        insert: change,
-      });
-    },
-    get DELETE() {
-      return Object.freeze({
-        delete: change,
-      });
-    },
-    get UPDATE() {
-      return Object.freeze({
-        update: change,
-      });
-    },
-  });
-
-/**
  * @template T
  * @param {T} value
  * @returns {{ value: T, subscribe: (subscriber: Function) => void }}
@@ -137,7 +113,6 @@ export function createSignal(value) {
   }
   const subscribers = new Set();
   let sub = Option.None;
-  let change = value;
 
   /**
    * @type {Object}
@@ -157,11 +132,10 @@ export function createSignal(value) {
       value,
       subscribe(subscriber) {
         sub = Option.Some(subscriber);
+        subscriber();
+        sub = Option.None;
 
         return () => subscribers.delete(subscriber);
-      },
-      get change() {
-        return change;
       },
     },
     {
@@ -171,19 +145,13 @@ export function createSignal(value) {
       },
       set(target, prop, newValue) {
         if (prop === "value") {
-          change = { mutate: Reflect.get(target, prop) };
-
-          if (change.mutate === newValue) {
-            return false;
-          }
-
           Reflect.set(target, prop, newValue);
+
           subscribers.forEach((subscriber) => subscriber());
+
           return true;
         }
-        if (prop === "change") {
-          return false;
-        }
+
         return Reflect.set(target, prop, newValue);
       },
       apply(target, thisArg, args) {
@@ -212,60 +180,52 @@ export function createSignal(value) {
  * proxy.a = 6; // Notifies subscribers
  * proxy.a = 7; // Notifies subscribers
  */
-function proxyFactory(value, subscribers) {
+function proxyFactory(value, subscribers, sub) {
   if (value instanceof Map || value instanceof Set) {
-    return createCollectionProxy(value, subscribers);
+    return createCollectionProxy(value, subscribers, sub);
   } else if (Array.isArray(value)) {
-    return createListProxy(value, subscribers);
+    return createListProxy(value, subscribers, sub);
   } else if (typeof value === "object" && value != null) {
-    return createObjectProxy(value, subscribers);
+    return createObjectProxy(value, subscribers, sub);
   } else if (typeof value === "symbol") {
     return String(value);
   }
   return value;
 }
 
-function createCollectionProxy(collection, subscribers) {
+/**
+ * Mutating methods for Map, Set, and Array.
+ */
+const COLLECTION_METHODS = ["set", "add", "delete", "clear"];
+const LIST_METHODS = [
+  "push",
+  "pop",
+  "shift",
+  "unshift",
+  "splice",
+  "reverse",
+  "sort",
+  "fill",
+  "copyWithin",
+];
+
+function createCollectionProxy(collection, subscribers, sub) {
   return new Proxy(collection, {
     get(target, prop) {
       const value = Reflect.get(target, prop);
 
       if (typeof value === "function") {
         return (...args) => {
-          const prevDeleteValue =
-            prop === "delete" ? Reflect.get(target, args[0]) : null;
-
           const result = value.apply(target, args);
+
           if (prop === "get") {
-            return proxyFactory(result, subscribers);
+            subscribers.add(sub);
+
+            return proxyFactory(result, subscribers, sub);
           }
-          if (prop === "set" || prop === "add") {
-            if (prop === "set" && Reflect.has(target, args[0])) {
-              return result;
-            }
+          if (COLLECTION_METHODS.includes(prop)) {
             subscribers.forEach((subscriber) => {
               subscriber();
-              // XynCollectionChange.create(args[0], args[1], Change.INSERT),
-            });
-          }
-          if (prop === "delete") {
-            subscribers.forEach((subscriber) => {
-              subscriber();
-              // XynCollectionChange.create(
-              //   args[0],
-              //   Change.DELETE,
-              //   prevDeleteValue,
-              // ),
-            });
-          }
-          if (prop === "clear") {
-            subscribers.forEach((subscriber) => {
-              subscriber();
-              // XynCollectionChange.create(
-              //   Change.DELETE,
-              //   Change.DELETE,
-              //   Change.DELETE,
-              // ),
             });
           }
           return result;
@@ -284,54 +244,30 @@ function createCollectionProxy(collection, subscribers) {
   });
 }
 
-function createListProxy(list, subscribers) {
+function createListProxy(list, subscribers, sub) {
   return new Proxy(list, {
     get(target, prop) {
       const value = Reflect.get(target, prop);
       if (typeof value === "function") {
         return (...args) => {
           const result = value.apply(target, args);
-          const LAST_INDEX = Reflect.get(target, "length") - 1;
 
-          if (prop === "push" || prop === "unshift") {
-            subscribers.forEach(
-              (subscriber) => subscriber(),
-              // XynCollectionChange.create(
-              //   prop === "push" ? LAST_INDEX : 0,
-              //   args[0],
-              //   Change.INSERT,
-              // ),
-            );
-          }
-
-          if (prop === "pop" || prop === "shift") {
-            subscribers.forEach(
-              (subscriber) => subscriber(),
-              // XynCollectionChange.create(
-              //   prop === "pop" ? LAST_INDEX : 0,
-              //   Change.DELETE,
-              //   result,
-              // ),
-            );
-          }
-
-          if (prop === "splice") {
-            const [start, deleteCount, ...items] = args;
-            subscribers.forEach(
-              (subscriber) => subscriber(),
-              // XynCollectionChange.create([start, deleteCount], items, result),
-            );
+          if (LIST_METHODS.includes(prop)) {
+            subscribers.forEach((subscriber) => subscriber());
           }
 
           return result;
         };
+      } else {
+        subscribers.add(sub);
+      }
+      const result = value.apply(target, args);
+
+      if (typeof result === "object" && result !== null) {
+        return proxyFactory(result, subscribers, sub);
       }
 
-      if (typeof value === "object" && value !== null) {
-        return proxyFactory(value, subscribers);
-      }
-
-      return value;
+      return result;
     },
     getPrototypeOf(target) {
       return Reflect.getPrototypeOf(target);
@@ -339,7 +275,7 @@ function createListProxy(list, subscribers) {
   });
 }
 
-function createObjectProxy(obj, subscribers) {
+function createObjectProxy(obj, subscribers, sub) {
   return new Proxy(obj, {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop, receiver);
@@ -347,31 +283,25 @@ function createObjectProxy(obj, subscribers) {
         value = value();
       }
 
+      subscribers.add(sub);
+
       if (typeof value === "object" && value !== null) {
-        return proxyFactory(value, subscribers);
+        return proxyFactory(value, subscribers, sub);
       }
 
       return value;
     },
     set(target, prop, newValue) {
-      const previousValue = Reflect.get(target, prop);
       Reflect.set(target, prop, newValue);
-      subscribers.forEach(
-        (subscriber) => subscriber(),
-        // XynCollectionChange.create(prop, newValue, previousValue)
-      );
+      subscribers.forEach((subscriber) => subscriber());
       return true;
     },
     deleteProperty(target, prop) {
-      const previousValue = Reflect.get(target, prop);
       if (typeof prop === "symbol") {
         prop = prop.description || prop.toString();
       }
       Reflect.deleteProperty(target, prop);
-      subscribers.forEach(
-        (subscriber) => subscriber(),
-        // XynCollectionChange.create(prop, Change.DELETE, previousValue),
-      );
+      subscribers.forEach((subscriber) => subscriber());
       return true;
     },
     getPrototypeOf(target) {
@@ -382,11 +312,15 @@ function createObjectProxy(obj, subscribers) {
 
 function createObjectSignal(obj) {
   const subscribers = new Set();
+  const sub = Option.None;
 
   return {
-    value: createObjectProxy(obj, subscribers),
+    value: createObjectProxy(obj, subscribers, sub),
     subscribe(subscriber) {
-      subscribers.add(subscriber);
+      sub = Option.Some(subscriber);
+      subscriber();
+      sub = Option.None;
+
       return () => subscribers.delete(subscriber);
     },
   };
@@ -394,11 +328,15 @@ function createObjectSignal(obj) {
 
 function createListSignal(list) {
   const subscribers = new Set();
+  const sub = Option.None;
 
   return {
-    value: createListProxy(list, subscribers),
+    value: createListProxy(list, subscribers, sub),
     subscribe(subscriber) {
-      subscribers.add(subscriber);
+      sub = Option.Some(subscriber);
+      subscriber();
+      sub = Option.None;
+
       return () => subscribers.delete(subscriber);
     },
   };
@@ -406,11 +344,15 @@ function createListSignal(list) {
 
 function createCollectionSignal(collection) {
   const subscribers = new Set();
+  const sub = Option.None;
 
   return {
-    value: createCollectionProxy(collection, subscribers),
+    value: createCollectionProxy(collection, subscribers, sub),
     subscribe(subscriber) {
-      subscribers.add(subscriber);
+      sub = Option.Some(subscriber);
+      subscriber();
+      sub = Option.None;
+
       return () => subscribers.delete(subscriber);
     },
   };
