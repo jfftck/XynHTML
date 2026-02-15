@@ -24,8 +24,8 @@ export async function example18(output) {
     output("=== New createSignal() ===");
     const newCounter = createSignal(0);
     
-    const unsubscribe = newCounter.subscribe((change) => {
-        output(`New changed: ${change.previousValue} → ${change.value}`);
+    const unsubscribe = newCounter.subscribe(() => {
+        output(`New value: ${newCounter.value}`);
     });
     
     newCounter.value = 5;
@@ -35,7 +35,8 @@ export async function example18(output) {
     output("");
     output("Key differences:");
     output("• Legacy: subscriber receives {previousValue}, access value via signal.value");
-    output("• New: subscriber receives XynChange with .value and .previousValue");
+    output("• New: subscriber is called with no args, read signal.value directly");
     output("• Legacy: unsubscribe via signal.unsubscribe(fn)");
     output("• New: subscribe() returns unsubscribe function");
+    output("• New: subscribe() calls subscriber immediately on registration");
 }

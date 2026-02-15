@@ -6,8 +6,8 @@ export async function example19(output) {
     output("Creating object signal with createSignal({name: 'Alice', age: 25})");
     const user = createSignal({ name: "Alice", age: 25 });
 
-    user.subscribe((change) => {
-        output(`Property '${change.index}' changed: ${change.previousValue} → ${change.value}`);
+    user.subscribe(() => {
+        output(`User updated → name: ${user.value.name}, age: ${user.value.age}, email: ${user.value.email ?? "(none)"}`);
     });
 
     output("");
@@ -30,5 +30,5 @@ export async function example19(output) {
     output("Final object state:");
     output(`  name: ${user.value.name}`);
     output(`  age: ${user.value.age}`);
-    output(`  email: ${user.value.email} (deleted)`);
+    output(`  email: ${user.value.email ?? "(deleted)"}`);
 }

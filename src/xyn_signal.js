@@ -219,7 +219,7 @@ function createCollectionProxy(collection, subscribers, sub) {
           const result = value.apply(target, args);
 
           if (prop === "get") {
-            subscribers.add(sub);
+            sub.map((subscriber) => subscribers.add(subscriber));
 
             return proxyFactory(result, subscribers, sub);
           }
@@ -259,9 +259,13 @@ function createListProxy(list, subscribers, sub) {
           return result;
         };
       } else {
-        subscribers.add(sub);
+        sub.map((subscriber) => subscribers.add(subscriber));
       }
-      const result = prop !== "value" && value.apply(target, prop);
+      const result =
+        (prop !== "value" &&
+          typeof value === "function" &&
+          value.apply(target, prop)) ||
+        value;
 
       if (typeof result === "object" && result !== null) {
         return proxyFactory(result, subscribers, sub);
@@ -283,7 +287,7 @@ function createObjectProxy(obj, subscribers, sub) {
         value = value();
       }
 
-      subscribers.add(sub);
+      sub.map((subscriber) => subscribers.add(subscriber));
 
       if (typeof value === "object" && value !== null) {
         return proxyFactory(value, subscribers, sub);

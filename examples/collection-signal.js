@@ -7,10 +7,12 @@ export async function example21(output) {
     output("Creating Map signal with createSignal(new Map())");
     const userMap = createSignal(new Map());
 
-    userMap.subscribe((change) => {
-        const valueStr = String(change.value);
-        const prevStr = String(change.previousValue);
-        output(`Map operation on key '${change.index}': ${prevStr} → ${valueStr}`);
+    userMap.subscribe(() => {
+        const entries = [];
+        for (const [key, value] of userMap.value.entries()) {
+            entries.push(`${key}: ${value}`);
+        }
+        output(`Map updated → {${entries.join(", ")}}`);
     });
 
     output("");
@@ -39,9 +41,8 @@ export async function example21(output) {
     output("Creating Set signal with createSignal(new Set())");
     const tags = createSignal(new Set());
 
-    tags.subscribe((change) => {
-        const valueStr = String(change.value);
-        output(`Set operation: added '${change.index}'`);
+    tags.subscribe(() => {
+        output(`Set updated → {${[...tags.value].join(", ")}}`);
     });
 
     output("");
