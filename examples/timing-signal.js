@@ -9,14 +9,6 @@ function addOutput(container, message) {
     container.appendChild(p);
 }
 
-function addCode(container, code) {
-    const pre = document.createElement("pre");
-    pre.style.cssText = "background: var(--code-bg, #f4f4f4); padding: 12px; border-radius: 6px; font-size: 13px; overflow-x: auto; margin: 8px 0;";
-    const codeEl = document.createElement("code");
-    codeEl.textContent = code;
-    pre.appendChild(codeEl);
-    container.appendChild(pre);
-}
 
 export async function example23(output) {
     const sections = [
@@ -25,14 +17,6 @@ export async function example23(output) {
             run: async (container, scrollTarget) => {
                 addOutput(container, "Debounce waits for a pause in activity before executing.");
                 addOutput(container, "Only the last call after the delay period passes is processed.");
-                addCode(container,
-`const debouncedFn = timing(300).debounce(() => {
-    console.log(firstName.value, lastName.value);
-});
-
-watch(firstName).watch(lastName).effect(debouncedFn);`
-                );
-                addOutput(container, "");
 
                 const firstName = createSignal("John");
                 const lastName = createSignal("Doe");
@@ -64,14 +48,6 @@ watch(firstName).watch(lastName).effect(debouncedFn);`
             title: "Throttle Effect",
             run: async (container, scrollTarget) => {
                 addOutput(container, "Throttle executes immediately, then limits to once per time window.");
-                addCode(container,
-`const throttledFn = timing(200).throttle(() => {
-    console.log(firstName.value, lastName.value);
-});
-
-watch(firstName).watch(lastName).effect(throttledFn);`
-                );
-                addOutput(container, "");
 
                 const firstName = createSignal("John");
                 const lastName = createSignal("Doe");
@@ -105,14 +81,6 @@ watch(firstName).watch(lastName).effect(throttledFn);`
             title: "Delay Effect",
             run: async (container, scrollTarget) => {
                 addOutput(container, "Delay executes every change, but after a fixed time.");
-                addCode(container,
-`const delayedFn = timing(200).delay(() => {
-    console.log(firstName.value, lastName.value);
-});
-
-watch(firstName).watch(lastName).effect(delayedFn);`
-                );
-                addOutput(container, "");
 
                 const firstName = createSignal("John");
                 const lastName = createSignal("Doe");
@@ -138,15 +106,6 @@ watch(firstName).watch(lastName).effect(delayedFn);`
             title: "Debounce Derived",
             run: async (container, scrollTarget) => {
                 addOutput(container, "Derived signal updates only after a pause in activity.");
-                addCode(container,
-`const { signal: debouncedName } = watch(firstName)
-    .watch(lastName)
-    .derived(
-        () => \`\${firstName.value} \${lastName.value}\`,
-        timing(300).debounce
-    );`
-                );
-                addOutput(container, "");
 
                 const firstName = createSignal("John");
                 const lastName = createSignal("Doe");
@@ -177,15 +136,6 @@ watch(firstName).watch(lastName).effect(delayedFn);`
             title: "Throttle Derived",
             run: async (container, scrollTarget) => {
                 addOutput(container, "Derived signal updates at most once per time window.");
-                addCode(container,
-`const { signal: throttledName } = watch(firstName)
-    .watch(lastName)
-    .derived(
-        () => \`\${firstName.value} \${lastName.value}\`,
-        timing(200).throttle
-    );`
-                );
-                addOutput(container, "");
 
                 const firstName = createSignal("John");
                 const lastName = createSignal("Doe");
@@ -219,15 +169,6 @@ watch(firstName).watch(lastName).effect(delayedFn);`
             title: "Delay Derived",
             run: async (container, scrollTarget) => {
                 addOutput(container, "Derived signal updates after a fixed delay for each change.");
-                addCode(container,
-`const { signal: delayedName } = watch(firstName)
-    .watch(lastName)
-    .derived(
-        () => \`\${firstName.value} \${lastName.value}\`,
-        timing(200).delay
-    );`
-                );
-                addOutput(container, "");
 
                 const firstName = createSignal("John");
                 const lastName = createSignal("Doe");
@@ -309,10 +250,8 @@ watch(firstName).watch(lastName).effect(delayedFn);`
     function showSummary(container, scrollTarget) {
         addOutput(container, "");
         addOutput(container, "=== Summary ===");
-        addOutput(container, "Effect: timing wraps the callback directly");
-        addCode(container, "watch(a).watch(b).effect(timing(ms).debounce(fn))");
-        addOutput(container, "Derived: timing method passed as wrappingFn argument");
-        addCode(container, "watch(a).watch(b).derived(fn, timing(ms).debounce)");
+        addOutput(container, "Effect: watch(a).watch(b).effect(timing(ms).debounce(fn))");
+        addOutput(container, "Derived: watch(a).watch(b).derived(fn, timing(ms).debounce)");
         scrollTarget.scrollIntoView({ behavior: "smooth", block: "end" });
     }
 
