@@ -261,7 +261,7 @@ function createListProxy(list, subscribers, sub) {
       } else {
         subscribers.add(sub);
       }
-      const result = value.apply(target, args);
+      const result = prop !== "value" && value.apply(target, prop);
 
       if (typeof result === "object" && result !== null) {
         return proxyFactory(result, subscribers, sub);
@@ -312,7 +312,7 @@ function createObjectProxy(obj, subscribers, sub) {
 
 function createObjectSignal(obj) {
   const subscribers = new Set();
-  const sub = Option.None;
+  let sub = Option.None;
 
   return {
     value: createObjectProxy(obj, subscribers, sub),
@@ -328,7 +328,7 @@ function createObjectSignal(obj) {
 
 function createListSignal(list) {
   const subscribers = new Set();
-  const sub = Option.None;
+  let sub = Option.None;
 
   return {
     value: createListProxy(list, subscribers, sub),
@@ -344,7 +344,7 @@ function createListSignal(list) {
 
 function createCollectionSignal(collection) {
   const subscribers = new Set();
-  const sub = Option.None;
+  let sub = Option.None;
 
   return {
     value: createCollectionProxy(collection, subscribers, sub),
