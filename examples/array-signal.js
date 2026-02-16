@@ -9,29 +9,32 @@ export async function example20(output) {
     output(`Initial state → [${fruits.value.join(", ")}]`);
 
     output("");
+    output("Subscribing to changes:");
+    let changeCount = 0;
+    fruits.subscribe(() => {
+        changeCount++;
+        output(`  Subscriber #${changeCount} → [${fruits.value.join(", ")}]`);
+    });
+
+    output("");
     output("Pushing 'cherry': fruits.value.push('cherry')");
     fruits.value.push("cherry");
-    output(`  → [${fruits.value.join(", ")}]`);
 
     output("");
     output("Unshifting 'apricot': fruits.value.unshift('apricot')");
     fruits.value.unshift("apricot");
-    output(`  → [${fruits.value.join(", ")}]`);
 
     output("");
     output("Popping last item: fruits.value.pop()");
     fruits.value.pop();
-    output(`  → [${fruits.value.join(", ")}]`);
 
     output("");
     output("Shifting first item: fruits.value.shift()");
     fruits.value.shift();
-    output(`  → [${fruits.value.join(", ")}]`);
 
     output("");
     output("Splicing at index 1: fruits.value.splice(1, 1, 'blueberry')");
     fruits.value.splice(1, 1, "blueberry");
-    output(`  → [${fruits.value.join(", ")}]`);
 
     output("");
     output("Final array state:");
