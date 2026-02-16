@@ -219,7 +219,7 @@ function createCollectionProxy(collection, subscribers, sub) {
           const result = value.apply(target, args);
 
           if (prop === "get") {
-            sub.map((subscriber) => subscribers.add(subscriber));
+            sub.current.map((subscriber) => subscribers.add(subscriber));
 
             return proxyFactory(result, subscribers, sub);
           }
@@ -259,7 +259,7 @@ function createListProxy(list, subscribers, sub) {
           return result;
         };
       } else {
-        sub.map((subscriber) => subscribers.add(subscriber);
+        sub.current.map((subscriber) => subscribers.add(subscriber));
       }
       const result =
         (prop !== "value" &&
@@ -287,7 +287,7 @@ function createObjectProxy(obj, subscribers, sub) {
         value = value();
       }
 
-      sub.map((subscriber) => subscribers.add(subscriber));
+      sub.current.map((subscriber) => subscribers.add(subscriber));
 
       if (typeof value === "object" && value !== null) {
         return proxyFactory(value, subscribers, sub);
@@ -316,14 +316,14 @@ function createObjectProxy(obj, subscribers, sub) {
 
 function createObjectSignal(obj) {
   const subscribers = new Set();
-  let sub = Option.None;
+  let sub = { current: Option.None };
 
   return {
     value: createObjectProxy(obj, subscribers, sub),
     subscribe(subscriber) {
-      sub = Option.Some(subscriber);
+      sub.current = Option.Some(subscriber);
       subscriber();
-      sub = Option.None;
+      sub.current = Option.None;
 
       return () => subscribers.delete(subscriber);
     },
@@ -332,14 +332,14 @@ function createObjectSignal(obj) {
 
 function createListSignal(list) {
   const subscribers = new Set();
-  let sub = Option.None;
+  let sub = { current: Option.None };
 
   return {
     value: createListProxy(list, subscribers, sub),
     subscribe(subscriber) {
-      sub = Option.Some(subscriber);
+      sub.current = Option.Some(subscriber);
       subscriber();
-      sub = Option.None;
+      sub.current = Option.None;
 
       return () => subscribers.delete(subscriber);
     },
@@ -348,14 +348,14 @@ function createListSignal(list) {
 
 function createCollectionSignal(collection) {
   const subscribers = new Set();
-  let sub = Option.None;
+  let sub = { current: Option.None };
 
   return {
     value: createCollectionProxy(collection, subscribers, sub),
     subscribe(subscriber) {
-      sub = Option.Some(subscriber);
+      sub.current = Option.Some(subscriber);
       subscriber();
-      sub = Option.None;
+      sub.current = Option.None;
 
       return () => subscribers.delete(subscriber);
     },
