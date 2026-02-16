@@ -212,6 +212,8 @@ const LIST_METHODS = [
 function createCollectionProxy(collection, subscribers, sub) {
   return new Proxy(collection, {
     get(target, prop) {
+      sub.current.map((subscriber) => subscribers.add(subscriber));
+
       const value = Reflect.get(target, prop);
 
       if (typeof value === "function") {
@@ -219,8 +221,6 @@ function createCollectionProxy(collection, subscribers, sub) {
           const result = value.apply(target, args);
 
           if (prop === "get") {
-            sub.current.map((subscriber) => subscribers.add(subscriber));
-
             return proxyFactory(result, subscribers, sub);
           }
           if (COLLECTION_METHODS.includes(prop)) {
@@ -247,6 +247,8 @@ function createCollectionProxy(collection, subscribers, sub) {
 function createListProxy(list, subscribers, sub) {
   return new Proxy(list, {
     get(target, prop) {
+      sub.current.map((subscriber) => subscribers.add(subscriber));
+
       const value = Reflect.get(target, prop);
       if (typeof value === "function") {
         return (...args) => {
@@ -258,9 +260,8 @@ function createListProxy(list, subscribers, sub) {
 
           return result;
         };
-      } else {
-        sub.current.map((subscriber) => subscribers.add(subscriber));
       }
+
       const result =
         (prop !== "value" &&
           typeof value === "function" &&
