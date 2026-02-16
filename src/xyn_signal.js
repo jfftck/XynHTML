@@ -259,7 +259,7 @@ function createListProxy(list, subscribers, sub) {
           return result;
         };
       } else {
-        sub.map((subscriber) => subscribers.add(subscriber));
+        sub.map((subscriber) => subscribers.add(subscriber);
       }
       const result =
         (prop !== "value" &&
