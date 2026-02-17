@@ -1,5 +1,5 @@
 {
-  "name": "xyn-signal",
+  "name": "@xyn-html/xyn-signal",
   "version": "1.4.0",
   "description": "Lightweight, reactive signal-based state management for JavaScript applications",
   "type": "module",
@@ -28,14 +28,14 @@
     "frontend",
     "xyn"
   ],
-  "author": "",
+  "author": "Jeffrey Tackett",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github/jfftck/XynHTML"
   },
   "bugs": {
-    "url": ""
+    "url": "https://github.com/jfftck/XynHTML"
   },
-  "homepage": ""
+  "homepage": "https://github.com/jfftck/XynHTML"
 }
