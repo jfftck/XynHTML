@@ -6,8 +6,8 @@ export async function example22(output) {
     output("=== Basic watch with effect ===");
     const counter = createSignal(0);
     
-    const unsubscribe = watch(counter).effect((change) => {
-        output(`Counter changed: ${change.previousValue} → ${change.value}`);
+    const unsubscribe = watch(counter).effect(() => {
+        output(`Counter value: ${counter.value}`);
     });
     
     counter.value = 5;
@@ -23,7 +23,7 @@ export async function example22(output) {
     
     watch(firstName)
         .watch(lastName)
-        .effect((change) => {
+        .effect(() => {
             output(`Name updated: ${firstName.value} ${lastName.value}`);
         });
     
@@ -57,4 +57,5 @@ export async function example22(output) {
     output("• .effect() subscribes to all watched signals");
     output("• .derived() creates computed values from multiple sources");
     output("• Both return unsubscribe functions for cleanup");
+    output("• Subscribers receive no args - read signal.value directly");
 }

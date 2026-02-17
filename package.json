@@ -1,0 +1,27 @@
+{
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "> ⚠️ **Warning**: This library is unstable and still under active development. APIs may change without notice. Use at your own risk in production environments.",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jfftck/XynHTML.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/jfftck/XynHTML/issues"
+  },
+  "homepage": "https://github.com/jfftck/XynHTML#readme",
+  "dependencies": {
+    "jest": "^30.2.0"
+  }
+}

@@ -26,130 +26,62 @@
  */
 
 /**
- * @typedef {Object} XynChange
+ * @class Option
  * @template T
- * @property {T} value
- * @property {T} previousValue
- * @description XynChange is a class for storing the values of a change.
+ * @property {Option} None
+ * @property {function(value: T): Option} Some
+ * @function get
+ * @returns {T | Option}
+ * @function map
+ * @param {function(value: T): T} fn
+ * @returns {Option}
+ * @description Option is a class for creating optional values.
+ * It is used to represent values that may or may not exist.
  * @example
- * const change = XynChange.create(1, 0);
- * console.log(change.value); // 1
- * console.log(change.previousValue); // 0
- * console.log(change.values); // { value: 1, previousValue: 0 }
+ * const option = Option.Some(5);
+ * const value = option.get(); // 5
+ * const mapped = option.map((value) => value * 2); // Option.Some(10)
+ * const none = Option.None;
+ * const value = none.get(); // Option.None
+ * const mapped = none.map((value) => value * 2); // Option.None
+ * @see https://en.wikipedia.org/wiki/Option_type
  */
-class XynChange {
-  #value;
-  #previousValue;
-
-  constructor(value, previousValue) {
-    this.#value = value;
-    this.#previousValue = previousValue;
+export class Option {
+  static #none;
+  static get None() {
+    return this.#none ?? (this.#none = new None());
   }
-
-  static create(value, previousValue) {
-    return new XynChange(value, previousValue);
-  }
-
-  get value() {
-    return this.#value;
-  }
-
-  get previousValue() {
-    return this.#previousValue;
-  }
-
-  get values() {
-    return {
-      value: this.#value,
-      previousValue: this.#previousValue,
-    };
+  static Some(value) {
+    return new Some(value);
   }
 }
 
-/**
- * @typedef {Object} XynCollectionChange
- * @template T
- * @property {int} index
- * @property {T} value
- * @property {T} previousValue
- * @description XynListChange is a class for storing the values of a collection change.
- * @example
- * const change = XynListChange.create(0, 1, 0);
- * console.log(change.index); // 0
- * console.log(change.value); // 1
- * console.log(change.previousValue); // 0
- * console.log(change.values); // { index: 0, value: 1, previousValue: 0 }
- */
-class XynCollectionChange {
-  #index;
-  #value;
-  #previousValue;
-
-  constructor(index, value, previousValue) {
-    this.#index = index;
-    this.#value = value;
-    this.#previousValue = previousValue;
+class None extends Option {
+  get() {
+    return this;
   }
 
-  static create(index, value, previousValue) {
-    return new XynCollectionChange(index, value, previousValue);
-  }
-
-  get index() {
-    return this.#index;
-  }
-
-  get value() {
-    return this.#value;
-  }
-
-  get previousValue() {
-    return this.#previousValue;
-  }
-
-  get values() {
-    return {
-      value: this.#value,
-      previousValue: this.#previousValue,
-      index: this.#index,
-    };
+  map(_) {
+    return this;
   }
 }
 
-/**
- * @class None
- * @description None is a class for storing a value that doesn't exist.
- * @example
- * const none = new None("none");
- * console.log(none.is(new None("none"))); // true
- * console.log(none.is(new None("other"))); // false
- * console.log(none.value); // "none"
- */
-class None {
-  #value;
+class Some extends Option {
+  #value = null;
 
   constructor(value) {
+    super();
     this.#value = value;
   }
 
-  is(none) {
-    return none instanceof None && this.#value === none.value;
-  }
-
-  get value() {
+  get() {
     return this.#value;
   }
-}
 
-/**
- * @enum {None}
- * @readonly
- * @description CollectionValue is an enum of sentinals for the values of a collection change that don't or didn't exist.
- */
-export const CollectionValue = Object.freeze({
-  INSERT: new None("insert"),
-  DELETE: new None("delete"),
-});
+  map(fn) {
+    return Option.Some(fn(this.#value));
+  }
+}
 
 /**
  * @template T
@@ -180,6 +112,7 @@ export function createSignal(value) {
     }
   }
   const subscribers = new Set();
+  let sub = Option.None;
 
   /**
    * @type {Object}
@@ -198,26 +131,27 @@ export function createSignal(value) {
     {
       value,
       subscribe(subscriber) {
-        subscribers.add(subscriber);
+        sub = Option.Some(subscriber);
+        subscriber();
+        sub = Option.None;
+
         return () => subscribers.delete(subscriber);
       },
     },
     {
       get(target, prop) {
+        sub.map((subscriber) => subscribers.add(subscriber));
         return Reflect.get(target, prop);
       },
       set(target, prop, newValue) {
         if (prop === "value") {
-          const previousValue = Reflect.get(target, prop);
           Reflect.set(target, prop, newValue);
-          if (previousValue === newValue) {
-            return true;
-          }
-          subscribers.forEach((subscriber) =>
-            subscriber(XynChange.create(newValue, previousValue)),
-          );
+
+          subscribers.forEach((subscriber) => subscriber());
+
           return true;
         }
+
         return Reflect.set(target, prop, newValue);
       },
       apply(target, thisArg, args) {
@@ -246,67 +180,52 @@ export function createSignal(value) {
  * proxy.a = 6; // Notifies subscribers
  * proxy.a = 7; // Notifies subscribers
  */
-function proxyFactory(value, subscribers) {
+function proxyFactory(value, subscribers, sub) {
   if (value instanceof Map || value instanceof Set) {
-    return createCollectionProxy(value, subscribers);
+    return createCollectionProxy(value, subscribers, sub);
   } else if (Array.isArray(value)) {
-    return createListProxy(value, subscribers);
+    return createListProxy(value, subscribers, sub);
   } else if (typeof value === "object" && value != null) {
-    return createObjectProxy(value, subscribers);
+    return createObjectProxy(value, subscribers, sub);
   } else if (typeof value === "symbol") {
     return String(value);
   }
   return value;
 }
 
-function createCollectionProxy(collection, subscribers) {
+/**
+ * Mutating methods for Map, Set, and Array.
+ */
+const COLLECTION_METHODS = ["set", "add", "delete", "clear"];
+const LIST_METHODS = [
+  "push",
+  "pop",
+  "shift",
+  "unshift",
+  "splice",
+  "reverse",
+  "sort",
+  "fill",
+  "copyWithin",
+];
+
+function createCollectionProxy(collection, subscribers, sub) {
   return new Proxy(collection, {
     get(target, prop) {
+      sub.current.map((subscriber) => subscribers.add(subscriber));
+
       const value = Reflect.get(target, prop);
 
       if (typeof value === "function") {
         return (...args) => {
-          const prevDeleteValue =
-            prop === "delete" ? Reflect.get(target, args[0]) : null;
-
           const result = value.apply(target, args);
+
           if (prop === "get") {
-            return proxyFactory(result, subscribers);
+            return proxyFactory(result, subscribers, sub);
           }
-          if (prop === "set" || prop === "add") {
-            if (prop === "set" && Reflect.has(target, args[0])) {
-              return result;
-            }
+          if (COLLECTION_METHODS.includes(prop)) {
             subscribers.forEach((subscriber) => {
-              subscriber(
-                XynCollectionChange.create(
-                  args[0],
-                  args[1],
-                  CollectionValue.INSERT,
-                ),
-              );
-            });
-          }
-          if (prop === "delete") {
-            subscribers.forEach((subscriber) => {
-              subscriber(
-                XynCollectionChange.create(
-                  args[0],
-                  CollectionValue.DELETE,
-                  prevDeleteValue,
-                ),
-              );
-            });
-          }
-          if (prop === "clear") {
-            subscribers.forEach((subscriber) => {
-              subscriber(
-                XynCollectionChange.create(
-                  CollectionValue.DELETE,
-                  CollectionValue.DELETE,
-                  CollectionValue.DELETE,
-                ),
-              );
+              subscriber();
             });
           }
           return result;
@@ -325,57 +244,35 @@ function createCollectionProxy(collection, subscribers) {
   });
 }
 
-function createListProxy(list, subscribers) {
+function createListProxy(list, subscribers, sub) {
   return new Proxy(list, {
     get(target, prop) {
+      sub.current.map((subscriber) => subscribers.add(subscriber));
+
       const value = Reflect.get(target, prop);
       if (typeof value === "function") {
         return (...args) => {
           const result = value.apply(target, args);
-          const LAST_INDEX = Reflect.get(target, "length") - 1;
 
-          if (prop === "push" || prop === "unshift") {
-            subscribers.forEach((subscriber) =>
-              subscriber(
-                XynCollectionChange.create(
-                  prop === "push" ? LAST_INDEX : 0,
-                  args[0],
-                  CollectionValue.INSERT,
-                ),
-              ),
-            );
-          }
-
-          if (prop === "pop" || prop === "shift") {
-            subscribers.forEach((subscriber) =>
-              subscriber(
-                XynCollectionChange.create(
-                  prop === "pop" ? LAST_INDEX : 0,
-                  CollectionValue.DELETE,
-                  result,
-                ),
-              ),
-            );
-          }
-
-          if (prop === "splice") {
-            const [start, deleteCount, ...items] = args;
-            subscribers.forEach((subscriber) =>
-              subscriber(
-                XynCollectionChange.create([start, deleteCount], items, result),
-              ),
-            );
+          if (LIST_METHODS.includes(prop)) {
+            subscribers.forEach((subscriber) => subscriber());
           }
 
           return result;
         };
       }
 
-      if (typeof value === "object" && value !== null) {
-        return proxyFactory(value, subscribers);
+      const result =
+        (prop !== "value" &&
+          typeof value === "function" &&
+          value.apply(target, prop)) ||
+        value;
+
+      if (typeof result === "object" && result !== null) {
+        return proxyFactory(result, subscribers, sub);
       }
 
-      return value;
+      return result;
     },
     getPrototypeOf(target) {
       return Reflect.getPrototypeOf(target);
@@ -383,7 +280,7 @@ function createListProxy(list, subscribers) {
   });
 }
 
-function createObjectProxy(obj, subscribers) {
+function createObjectProxy(obj, subscribers, sub) {
   return new Proxy(obj, {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop, receiver);
@@ -391,35 +288,25 @@ function createObjectProxy(obj, subscribers) {
         value = value();
       }
 
+      sub.current.map((subscriber) => subscribers.add(subscriber));
+
       if (typeof value === "object" && value !== null) {
-        return proxyFactory(value, subscribers);
+        return proxyFactory(value, subscribers, sub);
       }
 
       return value;
     },
     set(target, prop, newValue) {
-      const previousValue = Reflect.get(target, prop);
       Reflect.set(target, prop, newValue);
-      subscribers.forEach((subscriber) =>
-        subscriber(XynCollectionChange.create(prop, newValue, previousValue)),
-      );
+      subscribers.forEach((subscriber) => subscriber());
       return true;
     },
     deleteProperty(target, prop) {
-      const previousValue = Reflect.get(target, prop);
       if (typeof prop === "symbol") {
         prop = prop.description || prop.toString();
       }
       Reflect.deleteProperty(target, prop);
-      subscribers.forEach((subscriber) =>
-        subscriber(
-          XynCollectionChange.create(
-            prop,
-            CollectionValue.DELETE,
-            previousValue,
-          ),
-        ),
-      );
+      subscribers.forEach((subscriber) => subscriber());
       return true;
     },
     getPrototypeOf(target) {
@@ -430,11 +317,15 @@ function createObjectProxy(obj, subscribers) {
 
 function createObjectSignal(obj) {
   const subscribers = new Set();
+  let sub = { current: Option.None };
 
   return {
-    value: createObjectProxy(obj, subscribers),
+    value: createObjectProxy(obj, subscribers, sub),
     subscribe(subscriber) {
-      subscribers.add(subscriber);
+      sub.current = Option.Some(subscriber);
+      subscriber();
+      sub.current = Option.None;
+
       return () => subscribers.delete(subscriber);
     },
   };
@@ -442,11 +333,15 @@ function createObjectSignal(obj) {
 
 function createListSignal(list) {
   const subscribers = new Set();
+  let sub = { current: Option.None };
 
   return {
-    value: createListProxy(list, subscribers),
+    value: createListProxy(list, subscribers, sub),
     subscribe(subscriber) {
-      subscribers.add(subscriber);
+      sub.current = Option.Some(subscriber);
+      subscriber();
+      sub.current = Option.None;
+
       return () => subscribers.delete(subscriber);
     },
   };
@@ -454,11 +349,15 @@ function createListSignal(list) {
 
 function createCollectionSignal(collection) {
   const subscribers = new Set();
+  let sub = { current: Option.None };
 
   return {
-    value: createCollectionProxy(collection, subscribers),
+    value: createCollectionProxy(collection, subscribers, sub),
     subscribe(subscriber) {
-      subscribers.add(subscriber);
+      sub.current = Option.Some(subscriber);
+      subscriber();
+      sub.current = Option.None;
+
       return () => subscribers.delete(subscriber);
     },
   };

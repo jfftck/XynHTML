@@ -6,10 +6,14 @@ export async function example20(output) {
     output("Creating array signal with createSignal(['apple', 'banana'])");
     const fruits = createSignal(["apple", "banana"]);
 
-    fruits.subscribe((change) => {
-        const valueStr = String(change.value);
-        const prevStr = String(change.previousValue);
-        output(`Array operation at index '${change.index}': ${prevStr} → ${valueStr}`);
+    output(`Initial state → [${fruits.value.join(", ")}]`);
+
+    output("");
+    output("Subscribing to changes:");
+    let changeCount = 0;
+    fruits.subscribe(() => {
+        changeCount++;
+        output(`  Subscriber #${changeCount} → [${fruits.value.join(", ")}]`);
     });
 
     output("");

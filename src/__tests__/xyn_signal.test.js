@@ -1,4 +1,4 @@
-import { createSignal, CollectionValue, watch, timing } from "../xyn_signal.js";
+import { createSignal, watch, timing } from "../xyn_signal.js";
 
 const results = [];
 let passCount = 0;
@@ -94,17 +94,6 @@ test("Primitive signal: subscriber is called on value change", () => {
     expect(subscriber.callCount).toBe(1);
 });
 
-test("Primitive signal: subscriber receives change object with value and previousValue", () => {
-    const counter = createSignal(10);
-    let receivedChange = null;
-    counter.subscribe((change) => {
-        receivedChange = change;
-    });
-    counter.value = 20;
-    expect(receivedChange.value).toBe(20);
-    expect(receivedChange.previousValue).toBe(10);
-});
-
 test("Primitive signal: unsubscribe stops notifications", () => {
     const counter = createSignal(0);
     const subscriber = createMockFn();
@@ -133,18 +122,6 @@ test("Object signal: property assignment triggers subscriber", () => {
     expect(subscriber.callCount).toBe(1);
 });
 
-test("Object signal: subscriber receives change with index (property key)", () => {
-    const user = createSignal({ name: "Alice" });
-    let receivedChange = null;
-    user.subscribe((change) => {
-        receivedChange = change;
-    });
-    user.value.name = "Bob";
-    expect(receivedChange.index).toBe("name");
-    expect(receivedChange.value).toBe("Bob");
-    expect(receivedChange.previousValue).toBe("Alice");
-});
-
 test("Object signal: adding new property triggers subscriber", () => {
     const user = createSignal({});
     const subscriber = createMockFn();
@@ -161,16 +138,6 @@ test("Object signal: deleting property triggers subscriber", () => {
     expect(subscriber.callCount).toBe(1);
 });
 
-test("Object signal: delete change has CollectionValue.DELETE as value", () => {
-    const user = createSignal({ name: "Alice" });
-    let receivedChange = null;
-    user.subscribe((change) => {
-        receivedChange = change;
-    });
-    delete user.value.name;
-    expect(receivedChange.value).toBe(CollectionValue.DELETE);
-});
-
 test("REGRESSION: createSignal({}).value.a = 1 assigns correctly", () => {
     const obj = createSignal({});
     obj.value.a = 1;
@@ -183,8 +150,6 @@ test("REGRESSION: createSignal({}).value.a = 1 notifies subscribers", () => {
     obj.subscribe(subscriber);
     obj.value.a = 1;
     expect(subscriber.callCount).toBe(1);
-    expect(subscriber.lastArgs[0].index).toBe("a");
-    expect(subscriber.lastArgs[0].value).toBe(1);
 });
 
 test("Nested object: can access nested properties", () => {
@@ -233,16 +198,6 @@ test("Nested object: replacing nested object triggers subscriber", () => {
     data.subscribe(subscriber);
     data.value.user = { name: "Bob", age: 30 };
     expect(subscriber).toHaveBeenCalled();
-});
-
-test("Nested object: subscriber receives correct change for nested update", () => {
-    const data = createSignal({ config: { theme: "light" } });
-    let receivedChange = null;
-    data.subscribe((change) => {
-        receivedChange = change;
-    });
-    data.value.config.theme = "dark";
-    expect(receivedChange).toBeDefined();
 });
 
 test("Array signal: .value provides access to array", () => {
@@ -312,17 +267,6 @@ test("Map signal: delete triggers subscriber", () => {
     expect(subscriber.callCount).toBe(1);
 });
 
-test("Map signal: subscriber receives correct change metadata", () => {
-    const map = createSignal(new Map());
-    let receivedChange = null;
-    map.subscribe((change) => {
-        receivedChange = change;
-    });
-    map.value.set("key", "value");
-    expect(receivedChange.index).toBe("key");
-    expect(receivedChange.value).toBe("value");
-});
-
 test("Set signal: .value provides access to Set", () => {
     const set = createSignal(new Set(["a", "b"]));
     expect(set.value.has("a")).toBe(true);
@@ -343,16 +287,6 @@ test("Set signal: delete triggers subscriber", () => {
     set.subscribe(subscriber);
     set.value.delete("a");
     expect(subscriber.callCount).toBe(1);
-});
-
-test("Set signal: subscriber receives correct change for add", () => {
-    const set = createSignal(new Set());
-    let receivedChange = null;
-    set.subscribe((change) => {
-        receivedChange = change;
-    });
-    set.value.add("item");
-    expect(receivedChange.index).toBe("item");
 });
 
 test("watch: returns object with watch, effect, and derived methods", () => {
@@ -394,14 +328,18 @@ test("watch: effect returns unsubscribe function", () => {
 test("watch: derived creates a derived signal from watched signals", () => {
     const a = createSignal(2);
     const b = createSignal(3);
-    const { signal: sum } = watch(a).watch(b).derived(() => a.value + b.value);
+    const { signal: sum } = watch(a)
+        .watch(b)
+        .derived(() => a.value + b.value);
     expect(sum.value).toBe(5);
 });
 
 test("watch: derived signal updates when source signals change", () => {
     const a = createSignal(2);
     const b = createSignal(3);
-    const { signal: sum } = watch(a).watch(b).derived(() => a.value + b.value);
+    const { signal: sum } = watch(a)
+        .watch(b)
+        .derived(() => a.value + b.value);
     a.value = 10;
     expect(sum.value).toBe(13);
     b.value = 7;
@@ -411,7 +349,9 @@ test("watch: derived signal updates when source signals change", () => {
 test("watch: derived returns unsubscribe function", () => {
     const a = createSignal(1);
     const b = createSignal(2);
-    const { signal: sum, unsubscribe } = watch(a).watch(b).derived(() => a.value + b.value);
+    const { signal: sum, unsubscribe } = watch(a)
+        .watch(b)
+        .derived(() => a.value + b.value);
     expect(sum.value).toBe(3);
     unsubscribe();
     a.value = 100;

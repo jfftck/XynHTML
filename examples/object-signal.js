@@ -6,8 +6,14 @@ export async function example19(output) {
     output("Creating object signal with createSignal({name: 'Alice', age: 25})");
     const user = createSignal({ name: "Alice", age: 25 });
 
-    user.subscribe((change) => {
-        output(`Property '${change.index}' changed: ${change.previousValue} → ${change.value}`);
+    output(`Initial state → name: ${user.value.name}, age: ${user.value.age}`);
+
+    output("");
+    output("Subscribing to changes:");
+    let changeCount = 0;
+    user.subscribe(() => {
+        changeCount++;
+        output(`  Subscriber #${changeCount} → name: ${user.value.name}, age: ${user.value.age}`);
     });
 
     output("");
@@ -21,14 +27,19 @@ export async function example19(output) {
     output("");
     output("Adding new property: user.value.email = 'bob@example.com'");
     user.value.email = "bob@example.com";
+    output(`  → email: ${user.value.email}`);
 
     output("");
     output("Deleting property: delete user.value.email");
     delete user.value.email;
+    output(`  → email: ${user.value.email ?? "(deleted)"}`);
 
     output("");
-    output("Final object state:");
-    output(`  name: ${user.value.name}`);
-    output(`  age: ${user.value.age}`);
-    output(`  email: ${user.value.email} (deleted)`);
+    output("Unsubscribing, then setting user.value.name = 'Charlie'");
+    const unsub = user.subscribe(() => {
+        output(`  Second subscriber → name: ${user.value.name}`);
+    });
+    unsub();
+    user.value.name = "Charlie";
+    output(`  → name: ${user.value.name} (second subscriber silent after unsubscribe)`);
 }

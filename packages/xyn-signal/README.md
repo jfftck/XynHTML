@@ -2,6 +2,12 @@
 
 Lightweight, reactive signal-based state management for JavaScript applications.
 
+## Installation
+
+```bash
+npm install xyn-signal
+```
+
 ## Usage
 
 ```javascript

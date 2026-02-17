@@ -7,10 +7,16 @@ export async function example21(output) {
     output("Creating Map signal with createSignal(new Map())");
     const userMap = createSignal(new Map());
 
-    userMap.subscribe((change) => {
-        const valueStr = String(change.value);
-        const prevStr = String(change.previousValue);
-        output(`Map operation on key '${change.index}': ${prevStr} → ${valueStr}`);
+    output("");
+    output("Subscribing to Map changes:");
+    let mapChangeCount = 0;
+    userMap.subscribe(() => {
+        mapChangeCount++;
+        const entries = [];
+        for (const [key, value] of userMap.value.entries()) {
+            entries.push(`${key}: ${value}`);
+        }
+        output(`  Subscriber #${mapChangeCount} → {${entries.join(", ")}}`);
     });
 
     output("");
@@ -29,19 +35,16 @@ export async function example21(output) {
     userMap.value.delete("age");
 
     output("");
-    output("Final Map state:");
-    for (const [key, value] of userMap.value.entries()) {
-        output(`  ${key}: ${value}`);
-    }
-
-    output("");
     output("=== Set Signal ===");
     output("Creating Set signal with createSignal(new Set())");
     const tags = createSignal(new Set());
 
-    tags.subscribe((change) => {
-        const valueStr = String(change.value);
-        output(`Set operation: added '${change.index}'`);
+    output("");
+    output("Subscribing to Set changes:");
+    let setChangeCount = 0;
+    tags.subscribe(() => {
+        setChangeCount++;
+        output(`  Subscriber #${setChangeCount} → {${[...tags.value].join(", ")}}`);
     });
 
     output("");
