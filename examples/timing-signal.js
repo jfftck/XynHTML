@@ -9,103 +9,159 @@ function addOutput(container, message) {
     container.appendChild(p);
 }
 
-
 export async function example23(output) {
     const sections = [
         {
             title: "Debounce Effect",
             run: async (container, scrollTarget) => {
-                addOutput(container, "Debounce waits for a pause in activity before executing.");
-                addOutput(container, "Only the last call after the delay period passes is processed.");
+                addOutput(
+                    container,
+                    "Debounce waits for a pause in activity before executing.",
+                );
+                addOutput(
+                    container,
+                    "Only the last call after the delay period passes is processed.",
+                );
 
                 const firstName = createSignal("John");
                 const lastName = createSignal("Doe");
 
                 const debouncedEffect = timing(300).debounce(() => {
-                    addOutput(container, `  Result: "${firstName.value} ${lastName.value}"`);
-                    scrollTarget.scrollIntoView({ behavior: "smooth", block: "end" });
+                    addOutput(
+                        container,
+                        `  Result: "${firstName.get()} ${lastName.get()}"`,
+                    );
+                    scrollTarget.scrollIntoView({
+                        behavior: "smooth",
+                        block: "end",
+                    });
                 });
 
                 watch(firstName).watch(lastName).effect(debouncedEffect);
 
-                addOutput(container, "Rapidly setting firstName: J → Ja → Jan → Jane");
-                firstName.value = "J";
-                firstName.value = "Ja";
-                firstName.value = "Jan";
-                firstName.value = "Jane";
-                addOutput(container, "Rapidly setting lastName: S → Sm → Smi → Smith");
-                lastName.value = "S";
-                lastName.value = "Sm";
-                lastName.value = "Smi";
-                lastName.value = "Smith";
+                addOutput(
+                    container,
+                    "Rapidly setting firstName: J → Ja → Jan → Jane",
+                );
+                firstName.set("J");
+                firstName.set("Ja");
+                firstName.set("Jan");
+                firstName.set("Jane");
+                addOutput(
+                    container,
+                    "Rapidly setting lastName: S → Sm → Smi → Smith",
+                );
+                lastName.set("S");
+                lastName.set("Sm");
+                lastName.set("Smi");
+                lastName.set("Smith");
 
-                await new Promise(r => setTimeout(r, 400));
+                await new Promise((r) => setTimeout(r, 400));
                 addOutput(container, "(Only one output after typing stopped)");
-                scrollTarget.scrollIntoView({ behavior: "smooth", block: "end" });
-            }
+                scrollTarget.scrollIntoView({
+                    behavior: "smooth",
+                    block: "end",
+                });
+            },
         },
         {
             title: "Throttle Effect",
             run: async (container, scrollTarget) => {
-                addOutput(container, "Throttle executes immediately, then limits to once per time window.");
+                addOutput(
+                    container,
+                    "Throttle executes immediately, then limits to once per time window.",
+                );
 
                 const firstName = createSignal("John");
                 const lastName = createSignal("Doe");
 
                 const throttledEffect = timing(200).throttle(() => {
-                    addOutput(container, `  Result: "${firstName.value} ${lastName.value}"`);
-                    scrollTarget.scrollIntoView({ behavior: "smooth", block: "end" });
+                    addOutput(
+                        container,
+                        `  Result: "${firstName.get()} ${lastName.get()}"`,
+                    );
+                    scrollTarget.scrollIntoView({
+                        behavior: "smooth",
+                        block: "end",
+                    });
                 });
 
                 watch(firstName).watch(lastName).effect(throttledEffect);
 
-                addOutput(container, "Rapidly setting firstName: J → Ja → Jan → Jane");
-                firstName.value = "J";
-                firstName.value = "Ja";
-                firstName.value = "Jan";
-                firstName.value = "Jane";
+                addOutput(
+                    container,
+                    "Rapidly setting firstName: J → Ja → Jan → Jane",
+                );
+                firstName.set("J");
+                firstName.set("Ja");
+                firstName.set("Jan");
+                firstName.set("Jane");
 
-                await new Promise(r => setTimeout(r, 250));
+                await new Promise((r) => setTimeout(r, 250));
 
-                addOutput(container, "After 200ms, setting lastName: S → Sm → Smith");
-                lastName.value = "S";
-                lastName.value = "Sm";
-                lastName.value = "Smith";
+                addOutput(
+                    container,
+                    "After 200ms, setting lastName: S → Sm → Smith",
+                );
+                lastName.set("S");
+                lastName.set("Sm");
+                lastName.set("Smith");
 
-                await new Promise(r => setTimeout(r, 250));
-                addOutput(container, "(First change fires immediately, then one per 200ms window)");
-                scrollTarget.scrollIntoView({ behavior: "smooth", block: "end" });
-            }
+                await new Promise((r) => setTimeout(r, 250));
+                addOutput(
+                    container,
+                    "(First change fires immediately, then one per 200ms window)",
+                );
+                scrollTarget.scrollIntoView({
+                    behavior: "smooth",
+                    block: "end",
+                });
+            },
         },
         {
             title: "Delay Effect",
             run: async (container, scrollTarget) => {
-                addOutput(container, "Delay executes every change, but after a fixed time.");
+                addOutput(
+                    container,
+                    "Delay executes every change, but after a fixed time.",
+                );
 
                 const firstName = createSignal("John");
                 const lastName = createSignal("Doe");
 
                 const delayedEffect = timing(200).delay(() => {
-                    addOutput(container, `  Result: "${firstName.value} ${lastName.value}"`);
-                    scrollTarget.scrollIntoView({ behavior: "smooth", block: "end" });
+                    addOutput(
+                        container,
+                        `  Result: "${firstName.get()} ${lastName.get()}"`,
+                    );
+                    scrollTarget.scrollIntoView({
+                        behavior: "smooth",
+                        block: "end",
+                    });
                 });
 
                 watch(firstName).watch(lastName).effect(delayedEffect);
 
                 addOutput(container, "Setting firstName to 'Alice'...");
-                firstName.value = "Alice";
+                firstName.set("Alice");
                 addOutput(container, "Setting lastName to 'Wonder'...");
-                lastName.value = "Wonder";
+                lastName.set("Wonder");
                 addOutput(container, "(Outputs appear after 200ms delay)");
-                scrollTarget.scrollIntoView({ behavior: "smooth", block: "end" });
+                scrollTarget.scrollIntoView({
+                    behavior: "smooth",
+                    block: "end",
+                });
 
-                await new Promise(r => setTimeout(r, 300));
-            }
+                await new Promise((r) => setTimeout(r, 300));
+            },
         },
         {
             title: "Debounce Derived",
             run: async (container, scrollTarget) => {
-                addOutput(container, "Derived signal updates only after a pause in activity.");
+                addOutput(
+                    container,
+                    "Derived signal updates only after a pause in activity.",
+                );
 
                 const firstName = createSignal("John");
                 const lastName = createSignal("Doe");
@@ -113,29 +169,47 @@ export async function example23(output) {
                 const { signal: debouncedName } = watch(firstName)
                     .watch(lastName)
                     .derived(
-                        () => `${firstName.value} ${lastName.value}`,
-                        timing(300).debounce
+                        () => `${firstName.get()} ${lastName.get()}`,
+                        timing(300).debounce,
                     );
 
-                addOutput(container, `Initial derived value: "${debouncedName.value}"`);
+                addOutput(
+                    container,
+                    `Initial derived value: "${debouncedName.get()}"`,
+                );
 
-                firstName.value = "J";
-                firstName.value = "Ja";
-                firstName.value = "Jane";
-                lastName.value = "Smith";
+                firstName.set("J");
+                firstName.set("Ja");
+                firstName.set("Jane");
+                lastName.set("Smith");
 
-                addOutput(container, `Immediately after rapid changes: "${debouncedName.value}" (not updated yet)`);
-                scrollTarget.scrollIntoView({ behavior: "smooth", block: "end" });
+                addOutput(
+                    container,
+                    `Immediately after rapid changes: "${debouncedName.get()}" (not updated yet)`,
+                );
+                scrollTarget.scrollIntoView({
+                    behavior: "smooth",
+                    block: "end",
+                });
 
-                await new Promise(r => setTimeout(r, 400));
-                addOutput(container, `After 300ms pause: "${debouncedName.value}"`);
-                scrollTarget.scrollIntoView({ behavior: "smooth", block: "end" });
-            }
+                await new Promise((r) => setTimeout(r, 400));
+                addOutput(
+                    container,
+                    `After 300ms pause: "${debouncedName.get()}"`,
+                );
+                scrollTarget.scrollIntoView({
+                    behavior: "smooth",
+                    block: "end",
+                });
+            },
         },
         {
             title: "Throttle Derived",
             run: async (container, scrollTarget) => {
-                addOutput(container, "Derived signal updates at most once per time window.");
+                addOutput(
+                    container,
+                    "Derived signal updates at most once per time window.",
+                );
 
                 const firstName = createSignal("John");
                 const lastName = createSignal("Doe");
@@ -143,32 +217,53 @@ export async function example23(output) {
                 const { signal: throttledName } = watch(firstName)
                     .watch(lastName)
                     .derived(
-                        () => `${firstName.value} ${lastName.value}`,
-                        timing(200).throttle
+                        () => `${firstName.get()} ${lastName.get()}`,
+                        timing(200).throttle,
                     );
 
-                addOutput(container, `Initial derived value: "${throttledName.value}"`);
+                addOutput(
+                    container,
+                    `Initial derived value: "${throttledName.get()}"`,
+                );
 
-                firstName.value = "A";
-                addOutput(container, `After first change: "${throttledName.value}" (immediate)`);
+                firstName.set("A");
+                addOutput(
+                    container,
+                    `After first change: "${throttledName.get()}" (immediate)`,
+                );
 
-                firstName.value = "Al";
-                firstName.value = "Ali";
-                firstName.value = "Alic";
-                firstName.value = "Alice";
-                addOutput(container, `After rapid changes: "${throttledName.value}" (throttled)`);
-                scrollTarget.scrollIntoView({ behavior: "smooth", block: "end" });
+                firstName.set("Al");
+                firstName.set("Ali");
+                firstName.set("Alic");
+                firstName.set("Alice");
+                addOutput(
+                    container,
+                    `After rapid changes: "${throttledName.get()}" (throttled)`,
+                );
+                scrollTarget.scrollIntoView({
+                    behavior: "smooth",
+                    block: "end",
+                });
 
-                await new Promise(r => setTimeout(r, 250));
-                lastName.value = "Wonder";
-                addOutput(container, `After 200ms + change: "${throttledName.value}"`);
-                scrollTarget.scrollIntoView({ behavior: "smooth", block: "end" });
-            }
+                await new Promise((r) => setTimeout(r, 250));
+                lastName.set("Wonder");
+                addOutput(
+                    container,
+                    `After 200ms + change: "${throttledName.get()}"`,
+                );
+                scrollTarget.scrollIntoView({
+                    behavior: "smooth",
+                    block: "end",
+                });
+            },
         },
         {
             title: "Delay Derived",
             run: async (container, scrollTarget) => {
-                addOutput(container, "Derived signal updates after a fixed delay for each change.");
+                addOutput(
+                    container,
+                    "Derived signal updates after a fixed delay for each change.",
+                );
 
                 const firstName = createSignal("John");
                 const lastName = createSignal("Doe");
@@ -176,21 +271,36 @@ export async function example23(output) {
                 const { signal: delayedName } = watch(firstName)
                     .watch(lastName)
                     .derived(
-                        () => `${firstName.value} ${lastName.value}`,
-                        timing(200).delay
+                        () => `${firstName.get()} ${lastName.get()}`,
+                        timing(200).delay,
                     );
 
-                addOutput(container, `Initial derived value: "${delayedName.value}"`);
+                addOutput(
+                    container,
+                    `Initial derived value: "${delayedName.get()}"`,
+                );
 
-                firstName.value = "Bob";
-                addOutput(container, `Immediately after change: "${delayedName.value}" (not yet)`);
-                scrollTarget.scrollIntoView({ behavior: "smooth", block: "end" });
+                firstName.set("Bob");
+                addOutput(
+                    container,
+                    `Immediately after change: "${delayedName.get()}" (not yet)`,
+                );
+                scrollTarget.scrollIntoView({
+                    behavior: "smooth",
+                    block: "end",
+                });
 
-                await new Promise(r => setTimeout(r, 250));
-                addOutput(container, `After 200ms delay: "${delayedName.value}"`);
-                scrollTarget.scrollIntoView({ behavior: "smooth", block: "end" });
-            }
-        }
+                await new Promise((r) => setTimeout(r, 250));
+                addOutput(
+                    container,
+                    `After 200ms delay: "${delayedName.get()}"`,
+                );
+                scrollTarget.scrollIntoView({
+                    behavior: "smooth",
+                    block: "end",
+                });
+            },
+        },
     ];
 
     let currentSection = 0;
@@ -211,7 +321,7 @@ export async function example23(output) {
             borderRadius: "6px",
             cursor: "pointer",
             fontWeight: "bold",
-            fontSize: "14px"
+            fontSize: "14px",
         });
         button.event("click", onClick);
         container.children.add(button);
@@ -233,7 +343,7 @@ export async function example23(output) {
             borderRadius: "6px",
             cursor: "pointer",
             fontWeight: "bold",
-            fontSize: "14px"
+            fontSize: "14px",
         });
         button.event("click", () => {
             if (isRunning) return;
@@ -250,8 +360,14 @@ export async function example23(output) {
     function showSummary(container, scrollTarget) {
         addOutput(container, "");
         addOutput(container, "=== Summary ===");
-        addOutput(container, "Effect: watch(a).watch(b).effect(timing(ms).debounce(fn))");
-        addOutput(container, "Derived: watch(a).watch(b).derived(fn, timing(ms).debounce)");
+        addOutput(
+            container,
+            "Effect: watch(a).watch(b).effect(timing(ms).debounce(fn))",
+        );
+        addOutput(
+            container,
+            "Derived: watch(a).watch(b).derived(fn, timing(ms).debounce)",
+        );
         scrollTarget.scrollIntoView({ behavior: "smooth", block: "end" });
     }
 
@@ -264,53 +380,71 @@ export async function example23(output) {
             output.append(resetButton);
             resetButtonEl = resetButton.render();
 
-            resetButtonEl.parentNode.insertBefore(summaryContainer, resetButtonEl);
+            resetButtonEl.parentNode.insertBefore(
+                summaryContainer,
+                resetButtonEl,
+            );
             showSummary(summaryContainer, resetButtonEl);
             return;
         }
 
         const section = sections[currentSection];
-        const playButtonContainer = createPlayButton(`Play: ${section.title}`, async () => {
-            if (isRunning) return;
-            isRunning = true;
+        const playButtonContainer = createPlayButton(
+            `Play: ${section.title}`,
+            async () => {
+                if (isRunning) return;
+                isRunning = true;
 
-            const playEl = playButtonContainer.render();
-            playEl.style.display = "none";
+                const playEl = playButtonContainer.render();
+                playEl.style.display = "none";
 
-            const contentContainer = document.createElement("div");
-            contentContainer.style.marginBottom = "24px";
+                const contentContainer = document.createElement("div");
+                contentContainer.style.marginBottom = "24px";
 
-            const titleEl = document.createElement("p");
-            titleEl.textContent = `=== ${section.title} ===`;
-            contentContainer.appendChild(titleEl);
+                const titleEl = document.createElement("p");
+                titleEl.textContent = `=== ${section.title} ===`;
+                contentContainer.appendChild(titleEl);
 
-            if (!resetButtonEl) {
-                const resetButton = createResetButton();
-                output.append(resetButton);
-                resetButtonEl = resetButton.render();
-            }
+                if (!resetButtonEl) {
+                    const resetButton = createResetButton();
+                    output.append(resetButton);
+                    resetButtonEl = resetButton.render();
+                }
 
-            resetButtonEl.parentNode.insertBefore(contentContainer, resetButtonEl);
+                resetButtonEl.parentNode.insertBefore(
+                    contentContainer,
+                    resetButtonEl,
+                );
 
-            await section.run(contentContainer, resetButtonEl);
+                await section.run(contentContainer, resetButtonEl);
 
-            currentSection++;
-            isRunning = false;
+                currentSection++;
+                isRunning = false;
 
-            if (currentSection < sections.length) {
-                const nextSection = sections[currentSection];
-                const nextPlayButton = createPlayButton(`Play: ${nextSection.title}`, () => {
-                    runNextSection(nextPlayButton, nextSection);
-                });
+                if (currentSection < sections.length) {
+                    const nextSection = sections[currentSection];
+                    const nextPlayButton = createPlayButton(
+                        `Play: ${nextSection.title}`,
+                        () => {
+                            runNextSection(nextPlayButton, nextSection);
+                        },
+                    );
 
-                resetButtonEl.parentNode.insertBefore(nextPlayButton.render(), resetButtonEl);
-            } else {
-                const summaryContainer = document.createElement("div");
-                summaryContainer.style.marginBottom = "24px";
-                resetButtonEl.parentNode.insertBefore(summaryContainer, resetButtonEl);
-                showSummary(summaryContainer, resetButtonEl);
-            }
-        });
+                    resetButtonEl.parentNode.insertBefore(
+                        nextPlayButton.render(),
+                        resetButtonEl,
+                    );
+                } else {
+                    const summaryContainer = document.createElement("div");
+                    summaryContainer.style.marginBottom = "24px";
+                    resetButtonEl.parentNode.insertBefore(
+                        summaryContainer,
+                        resetButtonEl,
+                    );
+                    showSummary(summaryContainer, resetButtonEl);
+                }
+            },
+        );
 
         output.append(playButtonContainer);
     }
@@ -338,15 +472,24 @@ export async function example23(output) {
 
         if (currentSection < sections.length) {
             const nextSection = sections[currentSection];
-            const nextPlayButton = createPlayButton(`Play: ${nextSection.title}`, () => {
-                runNextSection(nextPlayButton, nextSection);
-            });
+            const nextPlayButton = createPlayButton(
+                `Play: ${nextSection.title}`,
+                () => {
+                    runNextSection(nextPlayButton, nextSection);
+                },
+            );
 
-            resetButtonEl.parentNode.insertBefore(nextPlayButton.render(), resetButtonEl);
+            resetButtonEl.parentNode.insertBefore(
+                nextPlayButton.render(),
+                resetButtonEl,
+            );
         } else {
             const summaryContainer = document.createElement("div");
             summaryContainer.style.marginBottom = "24px";
-            resetButtonEl.parentNode.insertBefore(summaryContainer, resetButtonEl);
+            resetButtonEl.parentNode.insertBefore(
+                summaryContainer,
+                resetButtonEl,
+            );
             showSummary(summaryContainer, resetButtonEl);
         }
     }

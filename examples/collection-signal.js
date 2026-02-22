@@ -13,28 +13,38 @@ export async function example21(output) {
     userMap.subscribe(() => {
         mapChangeCount++;
         const entries = [];
-        for (const [key, value] of userMap.value.entries()) {
+        for (const [key, value] of userMap.entries()) {
             entries.push(`${key}: ${value}`);
         }
         output(`  Subscriber #${mapChangeCount} → {${entries.join(", ")}}`);
     });
 
     output("");
-    output("Setting entries: userMap.value.set('name', 'Alice')");
-    userMap.value.set("name", "Alice");
+    output("Setting entries: userMap.set('name', 'Alice')");
+    userMap.set("name", "Alice");
 
-    output("Setting entries: userMap.value.set('age', 25)");
-    userMap.value.set("age", 25);
-
-    output("");
-    output("Updating entry: userMap.value.set('name', 'Bob')");
-    userMap.value.set("name", "Bob");
+    output("Setting entries: userMap.set('age', 25)");
+    userMap.set("age", 25);
 
     output("");
-    output("Deleting entry: userMap.value.delete('age')");
-    userMap.value.delete("age");
+    output("Updating entry: userMap.set('name', 'Bob')");
+    userMap.set("name", "Bob");
 
     output("");
+    output("Deleting entry: userMap.delete('age')");
+    userMap.delete("age");
+
+    output("");
+    output("Final Map state:");
+    const finalEntries = [];
+    for (const [key, value] of userMap.entries()) {
+        finalEntries.push(`${key}: ${value}`);
+    }
+    output(`  {${finalEntries.join(", ")}}`);
+    output(`  Size: ${userMap.size}`);
+    output(`  Has 'name': ${userMap.has("name")}`);
+    output(`  Has 'age': ${userMap.has("age")}`);
+
     output("=== Set Signal ===");
     output("Creating Set signal with createSignal(new Set())");
     const tags = createSignal(new Set());
@@ -44,24 +54,28 @@ export async function example21(output) {
     let setChangeCount = 0;
     tags.subscribe(() => {
         setChangeCount++;
-        output(`  Subscriber #${setChangeCount} → {${[...tags.value].join(", ")}}`);
+        output(`  Subscriber #${setChangeCount} → {${[...tags].join(", ")}}`);
     });
 
     output("");
-    output("Adding items: tags.value.add('javascript')");
-    tags.value.add("javascript");
+    output("Adding items: tags.add('javascript')");
+    tags.add("javascript");
 
-    output("Adding items: tags.value.add('reactive')");
-    tags.value.add("reactive");
+    output("Adding items: tags.add('reactive')");
+    tags.add("reactive");
 
-    output("Adding items: tags.value.add('signals')");
-    tags.value.add("signals");
+    output("Adding items: tags.add('signals')");
+    tags.add("signals");
 
     output("");
-    output("Deleting item: tags.value.delete('reactive')");
-    tags.value.delete("reactive");
+    output("Deleting item: tags.delete('reactive')");
+    tags.delete("reactive");
 
     output("");
     output("Final Set state:");
-    output(`  {${[...tags.value].join(", ")}}`);
+    output(`  {${[...tags].join(", ")}}`);
+    output(`  Size: ${tags.size}`);
+    output(`  Has 'javascript': ${tags.has("javascript")}`);
+    output(`  Has 'reactive': ${tags.has("reactive")}`);
+    output(`  Has 'signals': ${tags.has("signals")}`);
 }
