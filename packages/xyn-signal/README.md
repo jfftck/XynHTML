@@ -17,21 +17,21 @@ import { createSignal, watch, timing } from 'xyn-signal';
 const count = createSignal(0);
 
 // Subscribe to changes
-count.subscribe((value) => {
-  console.log('Count changed:', value);
+count.subscribe(() => {
+  console.log('Count changed:', count.get());
 });
 
 // Update the value
-count.value = 1;
-count.value = 2;
+count.set(1);
+count.set(2);
 
 // Object signals with reactive properties
 const user = createSignal({ name: 'John', age: 30 });
-user.value.name = 'Jane'; // Triggers subscribers
+user.set('name', 'Jane'); // Triggers subscribers
 
 // Array signals with reactive methods
 const items = createSignal([1, 2, 3]);
-items.value.push(4); // Triggers subscribers
+items.push(4); // Triggers subscribers
 
 // Watch multiple signals
 const firstName = createSignal('John');
@@ -40,13 +40,13 @@ const lastName = createSignal('Doe');
 watch(firstName)
   .watch(lastName)
   .effect(() => {
-    console.log(`Full name: ${firstName.value} ${lastName.value}`);
+    console.log(`Full name: ${firstName.get()} ${lastName.get()}`);
   });
 
 // Derived signals
 const { signal: fullName } = watch(firstName)
   .watch(lastName)
-  .derived(() => `${firstName.value} ${lastName.value}`);
+  .derived(() => `${firstName.get()} ${lastName.get()}`);
 
 // Timing functions
 const debouncedEffect = timing(300).debounce(() => {
