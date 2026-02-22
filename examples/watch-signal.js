@@ -7,13 +7,13 @@ export async function example22(output) {
     const counter = createSignal(0);
     
     const unsubscribe = watch(counter).effect(() => {
-        output(`Counter value: ${counter.value}`);
+        output(`Counter value: ${counter.get()}`);
     });
     
-    counter.value = 5;
-    counter.value = 10;
+    counter.set(5);
+    counter.set(10);
     unsubscribe();
-    counter.value = 15;
+    counter.set(15);
     output("(unsubscribed - no notification for 15)");
 
     output("");
@@ -24,11 +24,11 @@ export async function example22(output) {
     watch(firstName)
         .watch(lastName)
         .effect(() => {
-            output(`Name updated: ${firstName.value} ${lastName.value}`);
+            output(`Name updated: ${firstName.get()} ${lastName.get()}`);
         });
     
-    firstName.value = "Jane";
-    lastName.value = "Smith";
+    firstName.set("Jane");
+    lastName.set("Smith");
 
     output("");
     output("=== Derived from multiple signals ===");
@@ -37,19 +37,19 @@ export async function example22(output) {
     
     const { signal: area, unsubscribe: stopArea } = watch(width)
         .watch(height)
-        .derived(() => width.value * height.value);
+        .derived(() => width.get() * height.get());
     
-    output(`Initial area: ${area.value}`);
+    output(`Initial area: ${area.get()}`);
     
-    width.value = 20;
-    output(`After width=20: ${area.value}`);
+    width.set(20);
+    output(`After width=20: ${area.get()}`);
     
-    height.value = 10;
-    output(`After height=10: ${area.value}`);
+    height.set(10);
+    output(`After height=10: ${area.get()}`);
     
     stopArea();
-    width.value = 100;
-    output(`After unsubscribe (width=100): ${area.value} (unchanged)`);
+    width.set(100);
+    output(`After unsubscribe (width=100): ${area.get()} (unchanged)`);
 
     output("");
     output("Key features:");

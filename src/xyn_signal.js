@@ -86,7 +86,7 @@ class Some extends Option {
 /**
  * @template T
  * @param {T} value
- * @returns {{ value: T, subscribe: (subscriber: Function) => void }}
+ * @returns {{ value: T, get: () => T, set: (T) => void, subscribe: (subscriber: Function) => void } | { get: (key: string, defaultValue: any) => any, set: (key: string, value: any) => void, delete: (key: string) => void, subscribe: (subscriber: Function) => void} | { get: (index: number) => any, set: (index: number, value: any) => void, push: (...items: any[]) => void, pop: () => any, shift: () => any, unshift: (...items: any[]) => void, splice: (start: number, deleteCount: number, ...items: any[]) => any[], reverse: () => void, sort: (compareFn: Function) => void, fill: (value: any, start: number, end: number) => void, copyWithin: (target: number, start: number, end: number) => void, length: number, subscribe: (subscriber: Function) => void } | { get: (key: any) => any, set: (key: any, value: any) => void, delete: (key: any) => void, clear: () => void, subscribe: (subscriber: Function) }}
  * @description Creates a signal with the given value.
  * The signal can be subscribed to and will notify subscribers when the value changes.
  * @example
@@ -101,8 +101,11 @@ export function createSignal(value) {
   }
 
   if (value != null) {
-    if (value instanceof Map || value instanceof Set) {
-      return createCollectionSignal(value);
+    if (value instanceof Map) {
+      return createMapSignal(value);
+    }
+    if (value instanceof Set) {
+      return createSetSignal(value);
     }
     if (Array.isArray(value)) {
       return createListSignal(value);
@@ -130,6 +133,12 @@ export function createSignal(value) {
   const signalProxy = new Proxy(
     {
       value,
+      get() {
+        return this.value;
+      },
+      set(newValue) {
+        this.value = newValue;
+      },
       subscribe(subscriber) {
         sub = Option.Some(subscriber);
         subscriber();
@@ -318,9 +327,116 @@ function createObjectProxy(obj, subscribers, sub) {
 function createObjectSignal(obj) {
   const subscribers = new Set();
   let sub = { current: Option.None };
+  const proxy = createObjectProxy(obj, subscribers, sub);
 
   return {
-    value: createObjectProxy(obj, subscribers, sub),
+    get(key, defaultValue = null) {
+      return proxy[key] ?? defaultValue;
+    },
+    set(key, value) {
+      proxy[key] = value;
+    },
+    delete(key) {
+      delete proxy[key];
+    },
+    get [Symbol.iterator]() {
+      return proxy[Symbol.iterator];
+    },
+    get [Symbol.toStringTag]() {
+      return proxy[Symbol.toStringTag];
+    },
+    get hasOwnProperty() {
+      return proxy.hasOwnProperty;
+    },
+    get isPrototypeOf() {
+      return proxy.isPrototypeOf;
+    },
+    get propertyIsEnumerable() {
+      return proxy.propertyIsEnumerable;
+    },
+    get toLocaleString() {
+      return proxy.toLocaleString;
+    },
+    get toString() {
+      return proxy.toString;
+    },
+    get valueOf() {
+      return proxy.valueOf;
+    },
+    get entries() {
+      return () => Object.entries(proxy);
+    },
+    get keys() {
+      return () => Object.keys(proxy);
+    },
+    get values() {
+      return () => Object.values(proxy);
+    },
+    get forEach() {
+      return (callback) => {
+        Object.entries(proxy).forEach(([key, value]) => callback(value, key));
+      };
+    },
+    get map() {
+      return (callback) => {
+        return Object.entries(proxy).reduce((acc, [key, value]) => {
+          acc[key] = callback(value, key);
+          return acc;
+        }, {});
+      };
+    },
+    get filter() {
+      return (callback) => {
+        return Object.entries(proxy).reduce((acc, [key, value]) => {
+          if (callback(value, key)) {
+            acc[key] = value;
+          }
+          return acc;
+        }, {});
+      };
+    },
+    get reduce() {
+      return (callback, initialValue) => {
+        return Object.entries(proxy).reduce((acc, [key, value]) => {
+          return callback(acc, value, key);
+        }, initialValue);
+      };
+    },
+    get reduceRight() {
+      return (callback, initialValue) => {
+        return Object.entries(proxy).reduceRight((acc, [key, value]) => {
+          return callback(acc, value, key);
+        }, initialValue);
+      };
+    },
+    groupBy(callback) {
+      if (!Object.groupBy) {
+        const groups = {};
+        for (const value of proxy) {
+          const groupName = callback(value);
+          if (!Object.hasOwn(groups, groupName)) {
+            groups[groupName] = [];
+          }
+          groups[groupName].push(value);
+        }
+        return groups;
+      }
+      return Object.groupBy(proxy, callback);
+    },
+    groupByToMap(callback) {
+      if (!Map.groupBy) {
+        const groups = new Map();
+        for (const value of proxy) {
+          const groupName = callback(value);
+          if (!groups.has(groupName)) {
+            groups.set(groupName, []);
+          }
+          groups.get(groupName).push(value);
+        }
+        return groups;
+      }
+      return Map.groupBy(proxy, callback);
+    },
     subscribe(subscriber) {
       sub.current = Option.Some(subscriber);
       subscriber();
@@ -334,9 +450,163 @@ function createObjectSignal(obj) {
 function createListSignal(list) {
   const subscribers = new Set();
   let sub = { current: Option.None };
+  const proxy = createListProxy(list, subscribers, sub);
 
   return {
-    value: createListProxy(list, subscribers, sub),
+    get(index) {
+      return proxy[index];
+    },
+    set(index, value) {
+      proxy[index] = value;
+    },
+    push(...items) {
+      proxy.push(...items);
+    },
+    pop() {
+      return proxy.pop();
+    },
+    shift() {
+      return proxy.shift();
+    },
+    unshift(...items) {
+      proxy.unshift(...items);
+    },
+    splice(start, deleteCount, ...items) {
+      return proxy.splice(start, deleteCount, ...items);
+    },
+    reverse() {
+      proxy.reverse();
+    },
+    sort(compareFn) {
+      proxy.sort(compareFn);
+    },
+    fill(value, start, end) {
+      proxy.fill(value, start, end);
+    },
+    copyWithin(target, start, end) {
+      proxy.copyWithin(target, start, end);
+    },
+    get entries() {
+      return proxy.entries();
+    },
+    get keys() {
+      return proxy.keys();
+    },
+    get values() {
+      return proxy.values();
+    },
+    forEach(callback) {
+      proxy.forEach(callback);
+    },
+    get map() {
+      return proxy.map;
+    },
+    get filter() {
+      return proxy.filter;
+    },
+    get reduce() {
+      return proxy.reduce;
+    },
+    get reduceRight() {
+      return proxy.reduceRight;
+    },
+    get every() {
+      return proxy.every;
+    },
+    get some() {
+      return proxy.some;
+    },
+    get find() {
+      return proxy.find;
+    },
+    get findIndex() {
+      return proxy.findIndex;
+    },
+    get includes() {
+      return proxy.includes;
+    },
+    get indexOf() {
+      return proxy.indexOf;
+    },
+    get lastIndexOf() {
+      return proxy.lastIndexOf;
+    },
+    get join() {
+      return proxy.join;
+    },
+    get slice() {
+      return proxy.slice;
+    },
+    get concat() {
+      return proxy.concat;
+    },
+    get flat() {
+      return proxy.flat;
+    },
+    get flatMap() {
+      return proxy.flatMap;
+    },
+    get toString() {
+      return proxy.toString;
+    },
+    get toLocaleString() {
+      return proxy.toLocaleString;
+    },
+    get toReversed() {
+      return proxy.toReversed;
+    },
+    get toSorted() {
+      return proxy.toSorted;
+    },
+    get toSpliced() {
+      return proxy.toSpliced;
+    },
+    get at() {
+      return proxy.at;
+    },
+    groupBy(callback) {
+      if (!Object.groupBy) {
+        const groups = {};
+        for (const value of proxy) {
+          const groupName = callback(value);
+          if (!Object.hasOwn(groups, groupName)) {
+            groups[groupName] = [];
+          }
+          groups[groupName].push(value);
+        }
+        return groups;
+      }
+      return Object.groupBy(proxy, callback);
+    },
+    groupByToMap(callback) {
+      if (!Map.groupBy) {
+        const groups = new Map();
+        for (const value of proxy) {
+          const groupName = callback(value);
+          if (!groups.has(groupName)) {
+            groups.set(groupName, []);
+          }
+          groups.get(groupName).push(value);
+        }
+        return groups;
+      }
+      return Map.groupBy(proxy, callback);
+    },
+    get [Symbol.unscopables]() {
+      return proxy[Symbol.unscopables];
+    },
+    get length() {
+      return proxy.length;
+    },
+    set length(value) {
+      proxy.length = value;
+    },
+    get [Symbol.iterator]() {
+      return proxy[Symbol.iterator];
+    },
+    get [Symbol.toStringTag]() {
+      return proxy[Symbol.toStringTag];
+    },
     subscribe(subscriber) {
       sub.current = Option.Some(subscriber);
       subscriber();
@@ -347,12 +617,179 @@ function createListSignal(list) {
   };
 }
 
-function createCollectionSignal(collection) {
+function createSetSignal(set) {
   const subscribers = new Set();
   let sub = { current: Option.None };
+  const proxy = createCollectionProxy(set, subscribers, sub);
 
   return {
-    value: createCollectionProxy(collection, subscribers, sub),
+    add(value) {
+      proxy.add(value);
+    },
+    delete(value) {
+      proxy.delete(value);
+    },
+    has(value) {
+      return proxy.has(value);
+    },
+    clear() {
+      proxy.clear();
+    },
+    get size() {
+      return proxy.size;
+    },
+    get entries() {
+      return proxy.entries;
+    },
+    get keys() {
+      return proxy.keys;
+    },
+    get values() {
+      return proxy.values;
+    },
+    forEach(callback) {
+      proxy.forEach(callback);
+    },
+    get difference() {
+      return proxy.difference;
+    },
+    get intersection() {
+      return proxy.intersection;
+    },
+    get isDisjointFrom() {
+      return proxy.isDisjointFrom;
+    },
+    get isSubsetOf() {
+      return proxy.isSubsetOf;
+    },
+    get isSupersetOf() {
+      return proxy.isSupersetOf;
+    },
+    get symmetricDifference() {
+      return proxy.symmetricDifference;
+    },
+    get union() {
+      return proxy.union;
+    },
+    groupBy(callback) {
+      if (!Object.groupBy) {
+        const groups = {};
+        for (const value of proxy) {
+          const groupName = callback(value);
+          if (!Object.hasOwn(groups, groupName)) {
+            groups[groupName] = [];
+          }
+          groups[groupName].push(value);
+        }
+        return groups;
+      }
+
+      return Object.groupBy(proxy, callback);
+    },
+    groupByToMap(callback) {
+      if (!Map.groupBy) {
+        const groups = new Map();
+        for (const value of proxy) {
+          const groupName = callback(value);
+          if (!groups.has(groupName)) {
+            groups.set(groupName, []);
+          }
+          groups.get(groupName).push(value);
+        }
+        return groups;
+      }
+
+      return Map.groupBy(proxy, callback);
+    },
+    get [Symbol.iterator]() {
+      return proxy[Symbol.iterator];
+    },
+    get [Symbol.toStringTag]() {
+      return proxy[Symbol.toStringTag];
+    },
+    subscribe(subscriber) {
+      sub.current = Option.Some(subscriber);
+      subscriber();
+    },
+  };
+}
+
+function createMapSignal(map) {
+  const subscribers = new Set();
+  let sub = { current: Option.None };
+  const proxy = createCollectionProxy(map, subscribers, sub);
+
+  return {
+    get(key) {
+      return proxy.get(key);
+    },
+    set(key, value) {
+      proxy.set(key, value);
+    },
+    delete(key) {
+      proxy.delete(key);
+    },
+    has(key) {
+      return proxy.has(key);
+    },
+    get size() {
+      return proxy.size;
+    },
+    get entries() {
+      return proxy.entries;
+    },
+    get keys() {
+      return proxy.keys;
+    },
+    get values() {
+      return proxy.values;
+    },
+    forEach(callback) {
+      proxy.forEach(callback);
+    },
+    groupBy(callback) {
+      if (!Object.groupBy) {
+        const groups = {};
+        for (const value of proxy) {
+          const groupName = callback(value);
+          if (!Object.hasOwn(groups, groupName)) {
+            groups[groupName] = [];
+          }
+          groups[groupName].push(value);
+        }
+        return groups;
+      }
+      return Object.groupBy(proxy, callback);
+    },
+    groupByToMap(callback) {
+      if (!Map.groupBy) {
+        const groups = new Map();
+        for (const value of proxy) {
+          const groupName = callback(value);
+          if (!groups.has(groupName)) {
+            groups.set(groupName, []);
+          }
+          groups.get(groupName).push(value);
+        }
+        return groups;
+      }
+      return Map.groupBy(proxy, callback);
+    },
+    get getOrInsert() {
+      return proxy.getOrInsert;
+    },
+    get getOrInsertComputed() {
+      return proxy.getOrInsertComputed;
+    },
+    get [Symbol.iterator]() {
+      return proxy[Symbol.iterator];
+    },
+    get [Symbol.toStringTag]() {
+      return proxy[Symbol.toStringTag];
+    },
+    clear() {
+      proxy.clear();
+    },
     subscribe(subscriber) {
       sub.current = Option.Some(subscriber);
       subscriber();
