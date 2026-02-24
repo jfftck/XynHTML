@@ -1,4 +1,10 @@
-import { signal, derived, text, XynSwitch, tag } from "../src/xyn_html.js";
+import {
+    signal,
+    derived,
+    text,
+    XynSwitch,
+    tag,
+} from "../src/xyn_html_legacy.js";
 
 export const title = "Example 12: Conditional Rendering with XynSwitch";
 

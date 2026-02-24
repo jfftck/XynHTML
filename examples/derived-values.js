@@ -1,4 +1,4 @@
-import { effect, signal, derived, tag } from "../src/xyn_html.js";
+import { effect, signal, derived, tag } from "../src/xyn_html_legacy.js";
 
 export const title = "Example 3: Derived Values";
 

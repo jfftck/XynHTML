@@ -1,4 +1,10 @@
-import { signal, effect, tag, mountNext, text } from "../src/xyn_html.js";
+import {
+    signal,
+    effect,
+    tag,
+    mountNext,
+    text,
+} from "../src/xyn_html_legacy.js";
 
 function getExamples() {
     return document
@@ -466,38 +472,45 @@ async function loadExamples() {
                     (v) => typeof v === "function",
                 )[0];
                 const { title } = exampleModule;
-                
-                const outputDiv = document.getElementById(`example${i + 1}-output`);
-                if (outputDiv && !outputDiv.parentElement.classList.contains('example-section')) {
+
+                const outputDiv = document.getElementById(
+                    `example${i + 1}-output`,
+                );
+                if (
+                    outputDiv &&
+                    !outputDiv.parentElement.classList.contains(
+                        "example-section",
+                    )
+                ) {
                     // Create wrapper section element
-                    const wrapper = document.createElement('section');
+                    const wrapper = document.createElement("section");
                     wrapper.id = `example${i + 1}`;
-                    wrapper.className = 'example-section';
-                    
+                    wrapper.className = "example-section";
+
                     // Create and add title
-                    const h3 = document.createElement('h3');
+                    const h3 = document.createElement("h3");
                     h3.id = `example${i + 1}-title`;
                     h3.textContent = title;
                     wrapper.appendChild(h3);
-                    
+
                     // Create and add source code
-                    const pre = document.createElement('pre');
-                    const code = document.createElement('code');
-                    code.className = 'language-javascript';
+                    const pre = document.createElement("pre");
+                    const code = document.createElement("code");
+                    code.className = "language-javascript";
                     code.textContent = example.toString();
                     pre.appendChild(code);
                     wrapper.appendChild(pre);
-                    
+
                     // Insert wrapper before output div
                     outputDiv.parentElement.insertBefore(wrapper, outputDiv);
-                    
+
                     // Move output div into wrapper
                     wrapper.appendChild(outputDiv);
-                    
+
                     // Highlight the code
                     hljs.highlightElement(code);
                 }
-                
+
                 await example(createOutput(`example${i + 1}-output`));
             } catch (err) {
                 console.error(`Error loading example ${uri}:`, err);
@@ -545,7 +558,10 @@ function setupSidebar() {
 
     // Close sidebar when clicking a navigation link on mobile
     nav.addEventListener("click", (e) => {
-        if (e.target.classList.contains("examples-nav__link--sub") && !isWideScreen.value) {
+        if (
+            e.target.classList.contains("examples-nav__link--sub") &&
+            !isWideScreen.value
+        ) {
             sidebarOpen.value = false;
         }
     });
@@ -554,10 +570,10 @@ function setupSidebar() {
     function handleResize() {
         const wasWide = isWideScreen.value;
         const isWide = window.innerWidth > 900;
-        
+
         if (wasWide !== isWide) {
             isWideScreen.value = isWide;
-            
+
             // Auto-open on wide screens, auto-close on narrow
             if (isWide) {
                 sidebarOpen.value = true;
@@ -568,7 +584,7 @@ function setupSidebar() {
     }
 
     window.addEventListener("resize", handleResize);
-    
+
     // Initial setup
     updateSidebarClasses();
 }
@@ -595,15 +611,20 @@ function createExamplesNavigation() {
     // Find main section headers
     const coreFeaturesHeader = document.getElementById("core-features");
     const extraFeaturesHeader = document.getElementById("extra-features");
-    const xynSignalFeaturesHeader = document.getElementById("xyn-signal-features");
+    const xynSignalFeaturesHeader = document.getElementById(
+        "xyn-signal-features",
+    );
 
     // Helper function to collect subsections between two headers
     function collectSubSections(startHeader, endHeader) {
         const subSections = [];
         let currentElement = startHeader.nextElementSibling;
         while (currentElement && currentElement !== endHeader) {
-            if (currentElement.classList && currentElement.classList.contains('example-section')) {
-                const h3 = currentElement.querySelector('h3[id]');
+            if (
+                currentElement.classList &&
+                currentElement.classList.contains("example-section")
+            ) {
+                const h3 = currentElement.querySelector("h3[id]");
                 if (h3) {
                     subSections.push({
                         id: h3.id,
@@ -617,7 +638,10 @@ function createExamplesNavigation() {
     }
 
     if (coreFeaturesHeader) {
-        const coreSubSections = collectSubSections(coreFeaturesHeader, extraFeaturesHeader);
+        const coreSubSections = collectSubSections(
+            coreFeaturesHeader,
+            extraFeaturesHeader,
+        );
         if (coreSubSections.length > 0) {
             sections.push({
                 id: "core-features",
@@ -628,7 +652,10 @@ function createExamplesNavigation() {
     }
 
     if (extraFeaturesHeader) {
-        const extraSubSections = collectSubSections(extraFeaturesHeader, xynSignalFeaturesHeader);
+        const extraSubSections = collectSubSections(
+            extraFeaturesHeader,
+            xynSignalFeaturesHeader,
+        );
         if (extraSubSections.length > 0) {
             sections.push({
                 id: "extra-features",
@@ -639,7 +666,10 @@ function createExamplesNavigation() {
     }
 
     if (xynSignalFeaturesHeader) {
-        const xynSignalSubSections = collectSubSections(xynSignalFeaturesHeader, null);
+        const xynSignalSubSections = collectSubSections(
+            xynSignalFeaturesHeader,
+            null,
+        );
         if (xynSignalSubSections.length > 0) {
             sections.push({
                 id: "xyn-signal-features",
@@ -671,7 +701,7 @@ function createExamplesNavigation() {
             mainLink.css.classes`examples-nav__link examples-nav__link--single`;
             mainLink.attributes.set("data-section-id", section.id);
             mainLink.children.add(text(section.label));
-            
+
             const mainLinkElement = mainLink.render();
             mainLinkElement.addEventListener("click", (e) => {
                 e.preventDefault();
@@ -683,7 +713,7 @@ function createExamplesNavigation() {
                     });
                 }
             });
-            
+
             mainItem.children.add(mainLink);
         } else {
             const mainLabel = tag`div`;
@@ -707,7 +737,9 @@ function createExamplesNavigation() {
                 // Sub-section click handler
                 subLinkElement.addEventListener("click", (e) => {
                     e.preventDefault();
-                    const targetElement = document.getElementById(subSection.id);
+                    const targetElement = document.getElementById(
+                        subSection.id,
+                    );
                     if (targetElement) {
                         targetElement.scrollIntoView({
                             behavior: "smooth",
@@ -728,9 +760,11 @@ function createExamplesNavigation() {
     // Effect to update active states based on visible sections
     effect(() => {
         const visible = visibleSections.value;
-        
+
         // Update single section links (like Introduction)
-        const singleLinks = navContainer.querySelectorAll(".examples-nav__link--single");
+        const singleLinks = navContainer.querySelectorAll(
+            ".examples-nav__link--single",
+        );
         singleLinks.forEach((link) => {
             const sectionId = link.getAttribute("data-section-id");
             if (visible.has(sectionId)) {
@@ -739,9 +773,11 @@ function createExamplesNavigation() {
                 link.classList.remove("examples-nav__link--active");
             }
         });
-        
+
         // Update sub-section links
-        const subLinks = navContainer.querySelectorAll(".examples-nav__link--sub");
+        const subLinks = navContainer.querySelectorAll(
+            ".examples-nav__link--sub",
+        );
         subLinks.forEach((link) => {
             const subSectionId = link.getAttribute("data-subsection-id");
             if (visible.has(subSectionId)) {
@@ -754,24 +790,27 @@ function createExamplesNavigation() {
 
     // Viewport-based scroll detection
     // Highlights ALL sections that are in the viewport
-    
+
     let animationFrameId = null;
 
     // Build list of all navigable items
     const allNavItems = [];
-    
+
     // Add introduction
     if (introSection) {
         allNavItems.push({ id: "introduction", elementId: "introduction" });
     }
-    
+
     // Add all subsections
-    sections.forEach(section => {
+    sections.forEach((section) => {
         if (!section.isSingle) {
-            section.subSections.forEach(subSection => {
+            section.subSections.forEach((subSection) => {
                 const exampleNumber = subSection.id.match(/\d+/)?.[0];
                 if (exampleNumber) {
-                    allNavItems.push({ id: subSection.id, elementId: `example${exampleNumber}` });
+                    allNavItems.push({
+                        id: subSection.id,
+                        elementId: `example${exampleNumber}`,
+                    });
                 }
             });
         }
@@ -791,10 +830,13 @@ function createExamplesNavigation() {
             const elementBottom = rect.bottom;
 
             // Check if any part of the element is in viewport
-            const topEdgeInViewport = elementTop >= 0 && elementTop <= viewportHeight;
-            const bottomEdgeInViewport = elementBottom >= 0 && elementBottom <= viewportHeight;
-            const spansViewport = elementTop < 0 && elementBottom > viewportHeight;
-            
+            const topEdgeInViewport =
+                elementTop >= 0 && elementTop <= viewportHeight;
+            const bottomEdgeInViewport =
+                elementBottom >= 0 && elementBottom <= viewportHeight;
+            const spansViewport =
+                elementTop < 0 && elementBottom > viewportHeight;
+
             if (topEdgeInViewport || bottomEdgeInViewport || spansViewport) {
                 newVisible.add(item.id);
             }
@@ -815,11 +857,11 @@ function createExamplesNavigation() {
     checkSectionVisibility();
 
     // Listen for scroll events
-    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
 
     // Cleanup function
     return () => {
-        window.removeEventListener('scroll', onScroll);
+        window.removeEventListener("scroll", onScroll);
         if (animationFrameId) {
             cancelAnimationFrame(animationFrameId);
         }

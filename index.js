@@ -1,21 +1,29 @@
-import { signal, effect, derived, XynTag, text, createMount, XynSwitch } from "./src/xyn_html.js"
+import {
+    signal,
+    effect,
+    derived,
+    XynTag,
+    text,
+    createMount,
+    XynSwitch,
+} from "./src/xyn_html_legacy.js";
 
 // Create output function to append to DOM
 function output(message) {
-    const p = document.createElement('p');
+    const p = document.createElement("p");
     p.textContent = message;
     document.body.appendChild(p);
 }
 
 function outputHeader(message) {
-    const h3 = document.createElement('h3');
+    const h3 = document.createElement("h3");
     h3.textContent = message;
     document.body.appendChild(h3);
 }
 
 function outputCode(code) {
-    const pre = document.createElement('pre');
-    const codeElement = document.createElement('code');
+    const pre = document.createElement("pre");
+    const codeElement = document.createElement("code");
     codeElement.innerHTML = code;
     pre.appendChild(codeElement);
     document.body.appendChild(pre);
@@ -192,9 +200,9 @@ const filter = signal("all"); // "all", "completed", "pending"
 // Derived signal for filtered todos
 const filteredTodos = derived(() => {
     if (filter.value === "completed") {
-        return todos.value.filter(todo => todo.completed);
+        return todos.value.filter((todo) => todo.completed);
     } else if (filter.value === "pending") {
-        return todos.value.filter(todo => !todo.completed);
+        return todos.value.filter((todo) => !todo.completed);
     }
     return todos.value;
 }, [todos, filter]);
@@ -202,7 +210,7 @@ const filteredTodos = derived(() => {
 // Derived signal for todo stats
 const todoStats = derived(() => {
     const total = todos.value.length;
-    const completed = todos.value.filter(todo => todo.completed).length;
+    const completed = todos.value.filter((todo) => todo.completed).length;
     const pending = total - completed;
     return { total, completed, pending };
 }, [todos]);
@@ -213,7 +221,9 @@ const filteredSubscriber = () => {
 };
 const statsSubscriber = () => {
     const stats = todoStats.value;
-    output(`Todo Stats - Total: ${stats.total}, Completed: ${stats.completed}, Pending: ${stats.pending}`);
+    output(
+        `Todo Stats - Total: ${stats.total}, Completed: ${stats.completed}, Pending: ${stats.pending}`,
+    );
 };
 
 filteredTodos.subscribe(filteredSubscriber);
@@ -223,7 +233,7 @@ todoStats.subscribe(statsSubscriber);
 todos.value = [
     { id: 1, text: "Learn XynHTML", completed: false },
     { id: 2, text: "Build an app", completed: false },
-    { id: 3, text: "Write documentation", completed: true }
+    { id: 3, text: "Write documentation", completed: true },
 ];
 
 // Change filter
@@ -235,8 +245,8 @@ filter.value = "completed";
 
 // Update a todo
 output("Marking 'Learn XynHTML' as completed:");
-todos.value = todos.value.map(todo =>
-    todo.id === 1 ? { ...todo, completed: true } : todo
+todos.value = todos.value.map((todo) =>
+    todo.id === 1 ? { ...todo, completed: true } : todo,
 );
 
 // Clean up subscriptions
@@ -267,7 +277,9 @@ let updateCount = 0;
 
 const perfSubscriber = () => {
     updateCount++;
-    output(`Performance signal updated ${updateCount} times, value: ${performanceSignal.value}`);
+    output(
+        `Performance signal updated ${updateCount} times, value: ${performanceSignal.value}`,
+    );
 };
 performanceSignal.subscribe(perfSubscriber);
 
@@ -349,7 +361,7 @@ const uppercase = derived(() => {
 }, [textInput2]);
 
 const wordCount = derived(() => {
-    return uppercase.value.split(' ').length;
+    return uppercase.value.split(" ").length;
 }, [uppercase]);
 
 const analysis = derived(() => {
@@ -357,7 +369,7 @@ const analysis = derived(() => {
         original: textInput2.value,
         uppercase: uppercase.value,
         wordCount: wordCount.value,
-        charCount: textInput2.value.length
+        charCount: textInput2.value.length,
     };
 }, [textInput2, uppercase, wordCount]);
 
@@ -514,7 +526,8 @@ buttonElement.onclick = () => {
 const container = new XynTag("div");
 const containerElement = container.render();
 containerElement.className = "example-container";
-containerElement.style.cssText = "margin: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;";
+containerElement.style.cssText =
+    "margin: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;";
 
 containerElement.appendChild(buttonElement);
 
@@ -594,14 +607,16 @@ const listEffect = effect(() => {
     // Add each item with remove button
     items.value.forEach((item, index) => {
         const li = document.createElement("li");
-        li.style.cssText = "margin: 5px 0; padding: 3px; display: flex; justify-content: space-between; align-items: center;";
+        li.style.cssText =
+            "margin: 5px 0; padding: 3px; display: flex; justify-content: space-between; align-items: center;";
 
         const itemText = document.createElement("span");
         itemText.textContent = item;
 
         const removeButton = document.createElement("button");
         removeButton.textContent = "×";
-        removeButton.style.cssText = "background: none; border: none; color: #ff4444; cursor: pointer; font-size: 16px; padding: 2px 6px; margin-left: 10px;";
+        removeButton.style.cssText =
+            "background: none; border: none; color: #ff4444; cursor: pointer; font-size: 16px; padding: 2px 6px; margin-left: 10px;";
         removeButton.onclick = () => {
             items.value = items.value.filter((_, i) => i !== index);
         };
@@ -616,7 +631,8 @@ const listEffect = effect(() => {
 const listContainer = new XynTag("div");
 const listContainerElement = listContainer.render();
 listContainerElement.className = "example-container";
-listContainerElement.style.cssText = "margin: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;";
+listContainerElement.style.cssText =
+    "margin: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;";
 
 listContainerElement.appendChild(inputElement);
 listContainerElement.appendChild(addButtonElement);
@@ -628,72 +644,75 @@ const mountList = createMount(listContainer, "body");
 mountList();
 
 // Global theme management
-const savedTheme = localStorage.getItem('xynhtml-theme') || getSystemTheme();
+const savedTheme = localStorage.getItem("xynhtml-theme") || getSystemTheme();
 const globalTheme = signal(savedTheme);
 
 // Apply global theme
 function applyGlobalTheme(theme) {
-    const isDark = theme === 'dark';
+    const isDark = theme === "dark";
 
     // Set data attribute for CSS targeting
-    document.body.setAttribute('data-theme', theme);
-    document.documentElement.setAttribute('data-theme', theme);
+    document.body.setAttribute("data-theme", theme);
+    document.documentElement.setAttribute("data-theme", theme);
 
-    document.documentElement.style.setProperty('--color-background', isDark ? '#121212' : '#f8f8f8');
-    document.body.style.backgroundColor = isDark ? '#121212' : '#f8f8f8';
-    document.body.style.color = isDark ? '#ffffff' : '#000000';
+    document.documentElement.style.setProperty(
+        "--color-background",
+        isDark ? "#121212" : "#f8f8f8",
+    );
+    document.body.style.backgroundColor = isDark ? "#121212" : "#f8f8f8";
+    document.body.style.color = isDark ? "#ffffff" : "#000000";
 
     // Update all example containers
-    document.querySelectorAll('.example-container').forEach(container => {
+    document.querySelectorAll(".example-container").forEach((container) => {
         if (isDark) {
-            container.style.backgroundColor = '#2d2d2d';
-            container.style.borderColor = '#666';
-            container.style.color = '#ffffff';
+            container.style.backgroundColor = "#2d2d2d";
+            container.style.borderColor = "#666";
+            container.style.color = "#ffffff";
         } else {
-            container.style.backgroundColor = '#f9f9f9';
-            container.style.borderColor = '#ddd';
-            container.style.color = '#000000';
+            container.style.backgroundColor = "#f9f9f9";
+            container.style.borderColor = "#ddd";
+            container.style.color = "#000000";
         }
     });
 
     // Update form elements
-    document.querySelectorAll('input, button').forEach(element => {
-        if (element.type !== 'button' && element.tagName !== 'BUTTON') {
+    document.querySelectorAll("input, button").forEach((element) => {
+        if (element.type !== "button" && element.tagName !== "BUTTON") {
             if (isDark) {
-                element.style.backgroundColor = '#3d3d3d';
-                element.style.color = '#ffffff';
-                element.style.borderColor = '#666';
+                element.style.backgroundColor = "#3d3d3d";
+                element.style.color = "#ffffff";
+                element.style.borderColor = "#666";
             } else {
-                element.style.backgroundColor = '#ffffff';
-                element.style.color = '#000000';
-                element.style.borderColor = '#ccc';
+                element.style.backgroundColor = "#ffffff";
+                element.style.color = "#000000";
+                element.style.borderColor = "#ccc";
             }
         }
     });
 }
 
 // Create global theme switcher at top of page
-const globalThemeSwitcher = document.createElement('div');
-globalThemeSwitcher.className = 'theme-switcher';
+const globalThemeSwitcher = document.createElement("div");
+globalThemeSwitcher.className = "theme-switcher";
 
-const globalThemeButton = document.createElement('button');
+const globalThemeButton = document.createElement("button");
 
 // Update global theme button text
 const updateGlobalThemeButton = () => {
-    globalThemeButton.textContent = `${globalTheme.value === 'light' ? '☀️ Light Mode' : '🌙 Dark Mode'}`;
+    globalThemeButton.textContent = `${globalTheme.value === "light" ? "☀️ Light Mode" : "🌙 Dark Mode"}`;
 };
 
 updateGlobalThemeButton();
 
 globalThemeButton.onclick = () => {
-    const newTheme = globalTheme.value === 'light' ? 'dark' : 'light';
+    const newTheme = globalTheme.value === "light" ? "dark" : "light";
     globalTheme.value = newTheme;
-    localStorage.setItem('xynhtml-theme', newTheme);
+    localStorage.setItem("xynhtml-theme", newTheme);
     applyGlobalTheme(newTheme);
     updateGlobalThemeButton();
 
     // Show confirmation message with improved styling
-    const confirmation = document.createElement('div');
+    const confirmation = document.createElement("div");
     confirmation.style.cssText = `
         position: fixed; 
         top: 60px; 
@@ -712,7 +731,7 @@ globalThemeButton.onclick = () => {
     document.body.appendChild(confirmation);
 
     setTimeout(() => {
-        confirmation.style.animation = 'slideOutRight 0.3s ease-in forwards';
+        confirmation.style.animation = "slideOutRight 0.3s ease-in forwards";
         setTimeout(() => {
             if (document.body.contains(confirmation)) {
                 document.body.removeChild(confirmation);
@@ -782,22 +801,24 @@ cardElement.appendChild(cardContent.render());
 // Create placeholder for hidden state
 const hiddenPlaceholder = new XynTag("div");
 const hiddenPlaceholderElement = hiddenPlaceholder.render();
-hiddenPlaceholderElement.style.cssText = "padding: 20px; margin: 10px; color: #666; font-style: italic;";
+hiddenPlaceholderElement.style.cssText =
+    "padding: 20px; margin: 10px; color: #666; font-style: italic;";
 hiddenPlaceholderElement.textContent = "Card is hidden";
 
 // Create XynSwitch for conditional rendering
-const cardSwitch = new XynSwitch(isVisible, new Map([
-    [true, card]
-]));
+const cardSwitch = new XynSwitch(isVisible, new Map([[true, card]]));
 
 // Create toggle button
 const toggleButton = new XynTag("button");
 const toggleButtonElement = toggleButton.render();
-toggleButtonElement.style.cssText = "padding: 8px 16px; margin: 5px; cursor: pointer;";
+toggleButtonElement.style.cssText =
+    "padding: 8px 16px; margin: 5px; cursor: pointer;";
 
 // Update button text based on visibility
 const toggleTextEffect = effect(() => {
-    toggleButtonElement.textContent = isVisible.value ? "Hide Card" : "Show Card";
+    toggleButtonElement.textContent = isVisible.value
+        ? "Hide Card"
+        : "Show Card";
 }, [isVisible]);
 
 toggleButtonElement.onclick = () => {
@@ -807,7 +828,8 @@ toggleButtonElement.onclick = () => {
 // Create local theme toggle button
 const themeButton = new XynTag("button");
 const themeButtonElement = themeButton.render();
-themeButtonElement.style.cssText = "padding: 8px 16px; margin: 5px; cursor: pointer;";
+themeButtonElement.style.cssText =
+    "padding: 8px 16px; margin: 5px; cursor: pointer;";
 themeButtonElement.textContent = "Toggle Local Theme";
 themeButtonElement.onclick = () => {
     localTheme.value = localTheme.value === "light" ? "dark" : "light";
@@ -819,13 +841,13 @@ const cardTheme = derived(() => {
         return {
             backgroundColor: "#2d2d2d",
             color: "#ffffff",
-            borderColor: "#666"
+            borderColor: "#666",
         };
     } else {
         return {
             backgroundColor: "#f0f8ff",
             color: "#000000",
-            borderColor: "#007acc"
+            borderColor: "#007acc",
         };
     }
 }, [localTheme]);
@@ -839,7 +861,8 @@ effect(() => {
 const conditionalContainer = new XynTag("div");
 const conditionalContainerElement = conditionalContainer.render();
 conditionalContainer.css`example-container`;
-conditionalContainerElement.style.cssText = "margin: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px;";
+conditionalContainerElement.style.cssText =
+    "margin: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px;";
 
 conditionalContainerElement.appendChild(toggleButtonElement);
 conditionalContainerElement.appendChild(themeButtonElement);
@@ -894,13 +917,15 @@ const isFormValid = derived(() => {
 const form = new XynTag("form");
 const formElement = form.render();
 formElement.className = "example-container";
-formElement.style.cssText = "padding: 20px; border: 1px solid #ddd; border-radius: 5px; margin: 20px; background-color: #fafafa;";
+formElement.style.cssText =
+    "padding: 20px; border: 1px solid #ddd; border-radius: 5px; margin: 20px; background-color: #fafafa;";
 
 // Email input
 const emailInput = document.createElement("input");
 emailInput.type = "email";
 emailInput.placeholder = "Enter your email";
-emailInput.style.cssText = "width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px;";
+emailInput.style.cssText =
+    "width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px;";
 emailInput.oninput = (e) => {
     email.value = e.target.value;
 };
@@ -913,7 +938,8 @@ emailValidation.style.cssText = "font-size: 12px; margin: 5px 0;";
 const passwordInput = document.createElement("input");
 passwordInput.type = "password";
 passwordInput.placeholder = "Enter your password";
-passwordInput.style.cssText = "width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px;";
+passwordInput.style.cssText =
+    "width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px;";
 passwordInput.oninput = (e) => {
     password.value = e.target.value;
 };
@@ -926,7 +952,8 @@ passwordValidation.style.cssText = "font-size: 12px; margin: 5px 0;";
 const submitButton = document.createElement("button");
 submitButton.type = "button";
 submitButton.textContent = "Submit";
-submitButton.style.cssText = "padding: 10px 20px; margin: 10px 0; border: none; border-radius: 4px; cursor: pointer;";
+submitButton.style.cssText =
+    "padding: 10px 20px; margin: 10px 0; border: none; border-radius: 4px; cursor: pointer;";
 submitButton.onclick = () => {
     if (isFormValid.value) {
         output(`Form submitted! Email: ${email.value}`);
@@ -935,20 +962,30 @@ submitButton.onclick = () => {
 
 // Effects for validation styling
 effect(() => {
-    emailInput.style.borderColor = email.value && !isValidEmail.value ? "#ff4444" : "#ccc";
-    emailValidation.textContent = email.value && !isValidEmail.value ? "Please enter a valid email address" : "";
+    emailInput.style.borderColor =
+        email.value && !isValidEmail.value ? "#ff4444" : "#ccc";
+    emailValidation.textContent =
+        email.value && !isValidEmail.value
+            ? "Please enter a valid email address"
+            : "";
     emailValidation.style.color = "#ff4444";
 }, [email, isValidEmail]);
 
 effect(() => {
-    passwordInput.style.borderColor = password.value && !isValidPassword.value ? "#ff4444" : "#ccc";
-    passwordValidation.textContent = password.value && !isValidPassword.value ? "Password must be at least 8 characters long" : "";
+    passwordInput.style.borderColor =
+        password.value && !isValidPassword.value ? "#ff4444" : "#ccc";
+    passwordValidation.textContent =
+        password.value && !isValidPassword.value
+            ? "Password must be at least 8 characters long"
+            : "";
     passwordValidation.style.color = "#ff4444";
 }, [password, isValidPassword]);
 
 effect(() => {
     submitButton.disabled = !isFormValid.value;
-    submitButton.style.backgroundColor = isFormValid.value ? "#007acc" : "#cccccc";
+    submitButton.style.backgroundColor = isFormValid.value
+        ? "#007acc"
+        : "#cccccc";
     submitButton.style.color = isFormValid.value ? "white" : "#666666";
 }, [isFormValid]);
 
@@ -974,40 +1011,50 @@ mountForm();
 
 // Detect system theme preference
 function getSystemTheme() {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
 }
 
 // Listen for system theme changes and update global theme if no preference is stored
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    if (!localStorage.getItem('xynhtml-theme')) {
-        const systemTheme = getSystemTheme();
-        globalTheme.value = systemTheme;
-        applyGlobalTheme(systemTheme);
-        updateGlobalThemeButton();
-    }
-});
+window
+    .matchMedia("(prefers-color-scheme: dark)")
+    .addEventListener("change", () => {
+        if (!localStorage.getItem("xynhtml-theme")) {
+            const systemTheme = getSystemTheme();
+            globalTheme.value = systemTheme;
+            applyGlobalTheme(systemTheme);
+            updateGlobalThemeButton();
+        }
+    });
 
 // Observer to apply theme to newly created example containers
 const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
-        if (mutation.type === 'childList') {
+        if (mutation.type === "childList") {
             mutation.addedNodes.forEach((node) => {
-                if (node.nodeType === 1) { // Element node
-                    const containers = node.classList?.contains('example-container')
+                if (node.nodeType === 1) {
+                    // Element node
+                    const containers = node.classList?.contains(
+                        "example-container",
+                    )
                         ? [node]
-                        : Array.from(node.querySelectorAll?.('.example-container') || []);
+                        : Array.from(
+                              node.querySelectorAll?.(".example-container") ||
+                                  [],
+                          );
 
-                    containers.forEach(container => {
+                    containers.forEach((container) => {
                         const theme = globalTheme.value;
                         container.className = `example-container theme-${theme}`;
-                        if (theme === 'dark') {
-                            container.style.backgroundColor = '#2d2d2d';
-                            container.style.borderColor = '#555';
-                            container.style.color = '#ffffff';
+                        if (theme === "dark") {
+                            container.style.backgroundColor = "#2d2d2d";
+                            container.style.borderColor = "#555";
+                            container.style.color = "#ffffff";
                         } else {
-                            container.style.backgroundColor = '#f9f9f9';
-                            container.style.borderColor = '#ddd';
-                            container.style.color = '#000000';
+                            container.style.backgroundColor = "#f9f9f9";
+                            container.style.borderColor = "#ddd";
+                            container.style.color = "#000000";
                         }
                     });
                 }
@@ -1018,9 +1065,8 @@ const observer = new MutationObserver((mutations) => {
 
 observer.observe(document.body, {
     childList: true,
-    subtree: true
+    subtree: true,
 });
 
 // Apply initial theme
 applyGlobalTheme(globalTheme.value);
-

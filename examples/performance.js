@@ -1,5 +1,4 @@
-
-import { signal, tag } from "../src/xyn_html.js";
+import { signal, tag } from "../src/xyn_html_legacy.js";
 
 export const title = "Example 5: Performance - No Unnecessary Updates";
 
@@ -10,7 +9,9 @@ export async function example5(output) {
     output.signalUpdate("performanceSignal", performanceSignal);
 
     const perfSubscriber = () => {
-        output(`Performance signal updated ${updateCount++} times, value: ${performanceSignal.value}`);
+        output(
+            `Performance signal updated ${updateCount++} times, value: ${performanceSignal.value}`,
+        );
     };
     performanceSignal.subscribe(perfSubscriber);
 

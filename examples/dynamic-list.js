@@ -1,4 +1,4 @@
-import { signal, tag, effect } from "../src/xyn_html.js";
+import { signal, tag, effect } from "../src/xyn_html_legacy.js";
 
 export const title = "Example 11: Dynamic List with XynTag and createMount";
 
@@ -74,4 +74,3 @@ export async function example11(output) {
     output("Dynamic list created below:");
     output.append(listContainer);
 }
-

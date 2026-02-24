@@ -1,4 +1,4 @@
-import { effect, signal, derived, tag } from "../src/xyn_html.js";
+import { effect, signal, derived, tag } from "../src/xyn_html_legacy.js";
 
 export const title = "Example 4: Complex State Management";
 
@@ -12,9 +12,9 @@ export async function example4(output) {
     // Derived signal for filtered todos
     const filteredTodos = derived(() => {
         if (filter.value === "completed") {
-            return todos.value.filter(todo => todo.completed);
+            return todos.value.filter((todo) => todo.completed);
         } else if (filter.value === "pending") {
-            return todos.value.filter(todo => !todo.completed);
+            return todos.value.filter((todo) => !todo.completed);
         }
         return todos.value;
     }, [todos, filter]);
@@ -29,7 +29,7 @@ export async function example4(output) {
     todos.value = [
         { id: 1, text: "Learn XynHTML", completed: false },
         { id: 2, text: "Build a project", completed: true },
-        { id: 3, text: "Write documentation", completed: false }
+        { id: 3, text: "Write documentation", completed: false },
     ];
 
     // Test different filters

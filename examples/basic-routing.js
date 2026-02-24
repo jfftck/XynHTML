@@ -1,19 +1,32 @@
 // Basic routing example - demonstrates XynRouter with simple navigation
-import { signal, derived, tag, text, mountNext } from "../src/xyn_html.js";
-import { XynRouter, route, pathMatcher, basicRouting } from "../src/xyn_html_extra.js";
+import {
+    signal,
+    derived,
+    tag,
+    text,
+    mountNext,
+} from "../src/xyn_html_legacy.js";
+import {
+    XynRouter,
+    route,
+    pathMatcher,
+    basicRouting,
+} from "../src/xyn_html_extra.js";
 
 export const title = "Example 16: Basic Client-Side Routing";
 
 export async function example16(output) {
-    output("Click the navigation links to switch between pages (client-side routing):");
-    
+    output(
+        "Click the navigation links to switch between pages (client-side routing):",
+    );
+
     const currentRoute = signal("home");
     const router = XynRouter.create(signal, derived);
-    
+
     const nav = tag`nav`;
     nav.css.classes`router-nav`;
     const navElement = nav.render();
-    
+
     const createNavLink = (label, path) => {
         const link = tag`a`;
         link.attributes.set("href", path);
@@ -24,68 +37,73 @@ export async function example16(output) {
         });
         return link;
     };
-    
+
     mountNext(createNavLink("Home", "/"), navElement);
     mountNext(createNavLink("About", "/about"), navElement);
     mountNext(createNavLink("Contact", "/contact"), navElement);
-    
+
     const contentArea = tag`div`;
     contentArea.css.classes`route-content`;
     const contentElement = contentArea.render();
-    
+
     const renderRoute = router.routes(
-        route(
-            pathMatcher("", ""),
-            basicRouting(currentRoute),
-            "home"
-        ),
-        route(
-            pathMatcher("", "about"),
-            basicRouting(currentRoute),
-            "about"
-        ),
+        route(pathMatcher("", ""), basicRouting(currentRoute), "home"),
+        route(pathMatcher("", "about"), basicRouting(currentRoute), "about"),
         route(
             pathMatcher("", "contact"),
             basicRouting(currentRoute),
-            "contact"
-        )
+            "contact",
+        ),
     );
-    
+
     renderRoute.subscribe(() => {});
-    
+
     currentRoute.subscribe(() => {
         contentArea.children.clear();
-        
+
         const heading = tag`h4`;
         const paragraph = tag`p`;
-        
-        switch(currentRoute.value) {
+
+        switch (currentRoute.value) {
             case "home":
                 heading.children.add(text("🏠 Home Page"));
-                paragraph.children.add(text("Welcome to the home page! This is rendered using XynRouter."));
+                paragraph.children.add(
+                    text(
+                        "Welcome to the home page! This is rendered using XynRouter.",
+                    ),
+                );
                 output("Navigated to: Home");
                 break;
             case "about":
                 heading.children.add(text("ℹ️ About Page"));
-                paragraph.children.add(text("This is the about page. Learn more about client-side routing with XynHTML!"));
+                paragraph.children.add(
+                    text(
+                        "This is the about page. Learn more about client-side routing with XynHTML!",
+                    ),
+                );
                 output("Navigated to: About");
                 break;
             case "contact":
                 heading.children.add(text("📧 Contact Page"));
-                paragraph.children.add(text("Get in touch with us! This page demonstrates path-based routing."));
+                paragraph.children.add(
+                    text(
+                        "Get in touch with us! This page demonstrates path-based routing.",
+                    ),
+                );
                 output("Navigated to: Contact");
                 break;
             default:
                 heading.children.add(text("404 Not Found"));
                 paragraph.children.add(text("Page not found"));
         }
-        
+
         mountNext(heading, contentElement);
         mountNext(paragraph, contentElement);
     });
-    
+
     const style = tag`style`;
-    style.children.add(text(`
+    style.children.add(
+        text(`
         .router-nav {
             display: flex;
             gap: 15px;
@@ -128,8 +146,9 @@ export async function example16(output) {
         [data-theme="dark"] .route-content h4 {
             color: #9f7aea;
         }
-    `));
-    
+    `),
+    );
+
     output.append(style);
     output.append(nav);
     output.append(contentArea);

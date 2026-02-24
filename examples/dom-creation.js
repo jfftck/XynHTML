@@ -1,4 +1,4 @@
-import { xyn, signal, tag, text } from "../src/xyn_html.js";
+import { xyn, signal, tag, text } from "../src/xyn_html_legacy.js";
 
 export const title = "Example 10: DOM Creation with Xyn";
 

@@ -1,4 +1,4 @@
-import { effect, signal, derived, tag } from "../src/xyn_html.js";
+import { effect, signal, derived, tag } from "../src/xyn_html_legacy.js";
 
 export const title = "Example 7: Chained Derived Values";
 
@@ -10,7 +10,7 @@ export async function example7(output) {
     }, [textInput]);
 
     const wordCount = derived(() => {
-        return uppercase.value.split(' ').length;
+        return uppercase.value.split(" ").length;
     }, [uppercase]);
 
     output.signalUpdate("textInput", textInput);
@@ -22,7 +22,7 @@ export async function example7(output) {
             original: textInput.value,
             uppercase: uppercase.value,
             wordCount: wordCount.value,
-            charCount: textInput.value.length
+            charCount: textInput.value.length,
         };
     }, [textInput]); // Note that we only need to watch for changes on textInput.
 

@@ -1,5 +1,11 @@
 // Advanced routing example - demonstrates path parameters and exact matching
-import { signal, derived, tag, text, mountNext } from "../src/xyn_html.js";
+import {
+    signal,
+    derived,
+    tag,
+    text,
+    mountNext,
+} from "../src/xyn_html_legacy.js";
 import {
     XynRouter,
     route,

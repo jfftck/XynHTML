@@ -1,4 +1,4 @@
-import { signal, derived, tag, text, effect } from "../src/xyn_html.js";
+import { signal, derived, tag, text, effect } from "../src/xyn_html_legacy.js";
 
 export const title = "Example 13: Form with Reactive Validation";
 
@@ -60,20 +60,30 @@ export async function example13(output) {
 
     // Effects for validation styling
     effect(() => {
-        emailInput.style.borderColor = email.value && !isValidEmail.value ? "#ff4444" : "#ccc";
-        emailValidation.textContent = email.value && !isValidEmail.value ? "Please enter a valid email address" : "";
+        emailInput.style.borderColor =
+            email.value && !isValidEmail.value ? "#ff4444" : "#ccc";
+        emailValidation.textContent =
+            email.value && !isValidEmail.value
+                ? "Please enter a valid email address"
+                : "";
         emailValidation.style.color = "#ff4444";
     }, [email, isValidEmail]);
 
     effect(() => {
-        passwordInput.style.borderColor = password.value && !isValidPassword.value ? "#ff4444" : "#ccc";
-        passwordValidation.textContent = password.value && !isValidPassword.value ? "Password must be at least 8 characters long" : "";
+        passwordInput.style.borderColor =
+            password.value && !isValidPassword.value ? "#ff4444" : "#ccc";
+        passwordValidation.textContent =
+            password.value && !isValidPassword.value
+                ? "Password must be at least 8 characters long"
+                : "";
         passwordValidation.style.color = "#ff4444";
     }, [password, isValidPassword]);
 
     effect(() => {
         submitButton.disabled = !isFormValid.value;
-        submitButton.style.backgroundColor = isFormValid.value ? "#007acc" : "#cccccc";
+        submitButton.style.backgroundColor = isFormValid.value
+            ? "#007acc"
+            : "#cccccc";
         submitButton.style.color = isFormValid.value ? "white" : "#666666";
     }, [isFormValid]);
 
@@ -91,4 +101,3 @@ export async function example13(output) {
     output("Reactive form with validation created below:");
     output.append(form);
 }
-

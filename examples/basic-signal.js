@@ -1,4 +1,4 @@
-import { signal } from "../src/xyn_html.js";
+import { signal } from "../src/xyn_html_legacy.js";
 
 export const title = "Example 1: Basic Signal Usage";
 

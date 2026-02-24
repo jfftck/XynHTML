@@ -1,4 +1,4 @@
-import { signal, tag } from "../src/xyn_html.js";
+import { signal, tag } from "../src/xyn_html_legacy.js";
 
 export const title = "Example 6: Subscription Management";
 

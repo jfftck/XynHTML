@@ -1,5 +1,12 @@
 // Transition tracking example - demonstrates createTransitionState
-import { effect, signal, tag, text, mountNext, xyn } from "../src/xyn_html.js";
+import {
+    effect,
+    signal,
+    tag,
+    text,
+    mountNext,
+    xyn,
+} from "../src/xyn_html_legacy.js";
 import { createTransitionState } from "../src/xyn_html_extra.js";
 
 export const title = "Example 15: Transition State Tracking";
