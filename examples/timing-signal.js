@@ -1,5 +1,5 @@
 import { createSignal, watch, timing } from "../src/xyn_signal.js";
-import { tag, text } from "../src/xyn_html.js";
+import { tag, text } from "../src/xyn_html_legacy.js";
 
 export const title = "Example 23: Timing Functions";
 
